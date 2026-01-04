@@ -10,23 +10,25 @@
   <style>
     :root {
       color-scheme: light;
-      --bg: #0f172a;
-      --card: #111827;
-      --accent: #22c55e;
-      --muted: #94a3b8;
-      --border: #1f2937;
-      --shadow: 0 20px 45px rgba(0,0,0,0.25);
-      --nav-width: 72px;
+       --bg: #e8e8e8;
+      --surface: #ffffff;
+      --accent: #2d79f3;
+      --muted: #4b5563;
+      --border: #dcdcdc;
+      --shadow: 0 18px 40px rgba(17, 17, 17, 0.08);
+      --nav-width: 84px;
+      --text: #151717;
     }
     * { box-sizing: border-box; }
     body {
       margin: 0;
       font-family: "Inter", system-ui, -apple-system, sans-serif;
-      background: radial-gradient(120% 120% at 0% 0%, #111827, #0b1224 48%, #0a1020 100%);
-      color: #e5e7eb;
+      background: var(--bg);
+      color: var(--text);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      padding-bottom: 32px;
     }
     header {
       display: flex;
@@ -35,10 +37,11 @@
       padding: 18px 24px;
       position: sticky;
       top: 0;
-      background: rgba(15, 23, 42, 0.65);
+      background: var(--surface);;
       backdrop-filter: blur(14px);
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid #e2e8f0;
       z-index: 10;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.05);
     }
     .brand {
       display: inline-flex;
@@ -46,31 +49,32 @@
       gap: 12px;
       font-weight: 700;
       letter-spacing: 0.02em;
+      color: var(--text);
     }
     .brand span.logo {
       width: 38px;
       height: 38px;
       border-radius: 12px;
-      background: linear-gradient(135deg, #22c55e, #10b981);
+      background: linear-gradient(135deg, #2d79f3, #4f9bff);
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      color: #0f172a;
+      color: #fff;
       font-weight: 800;
-      box-shadow: 0 10px 30px rgba(34, 197, 94, 0.35);
+      box-shadow: 0 10px 30px rgba(77, 128, 255, 0.25);
     }
     .btn {
       cursor: pointer;
-      border: 0;
+      border: 1px solid #151717;
       border-radius: 12px;
       padding: 12px 16px;
       font-weight: 600;
-      color: #0b1224;
-      background: linear-gradient(120deg, #34d399, #22c55e);
-      box-shadow: 0 12px 28px rgba(34, 197, 94, 0.35);
-      transition: transform 150ms ease, box-shadow 150ms ease;
+      color: #fff;
+      background: #151717;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.08);
+      transition: transform 150ms ease, box-shadow 150ms ease, background 150ms ease;
     }
-    .btn:hover { transform: translateY(-1px); box-shadow: 0 16px 32px rgba(34, 197, 94, 0.42); }
+    .btn:hover { transform: translateY(-1px); box-shadow: 0 16px 32px rgba(0,0,0,0.12); background: #1f1f22; }
     main {
       flex: 1;
       display: grid;
@@ -80,7 +84,7 @@
     .hero {
       max-width: 980px;
       width: min(96vw, 980px);
-      background: linear-gradient(160deg, rgba(34, 197, 94, 0.05), rgba(59, 130, 246, 0.08));
+      background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 22px;
       padding: 48px 52px;
@@ -100,19 +104,20 @@
       gap: 12px;
     }
     .chip {
-      border: 1px solid var(--border);
+      border: 1px solid #e5e7eb;
       border-radius: 12px;
       padding: 10px 12px;
       display: inline-flex;
       align-items: center;
       gap: 10px;
-      background: rgba(255,255,255,0.02);
+      background: #f8fafc;
+      color: var(--text);;
     }
-    .chip .material-symbols-outlined { font-size: 20px; color: #22c55e; }
+    .chip .material-symbols-outlined { font-size: 20px; color: var(--accent); }
     .panel {
       display: none;
       width: min(920px, 96vw);
-      background: var(--card);
+      background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 22px;
       box-shadow: var(--shadow);
@@ -123,7 +128,7 @@
     .panel h2 { margin: 0 0 8px; }
     .auth-tabs {
       display: inline-flex;
-      background: rgba(255,255,255,0.03);
+      background: #f4f6f8;
       padding: 6px;
       border-radius: 12px;
       border: 1px solid var(--border);
@@ -134,45 +139,81 @@
       border-radius: 10px;
       padding: 10px 14px;
       background: transparent;
-      color: #cbd5e1;
+      color: var(--muted);
       font-weight: 600;
       cursor: pointer;
       transition: background 150ms ease, color 150ms ease;
     }
-    .auth-tab.active { background: #111827; color: #f8fafc; }
-    form {
+    .auth-tab.active { background: var(--surface); color: var(--text); box-shadow: inset 0 -2px 0 var(--accent); }
+    .auth-form {
       display: grid;
       gap: 14px;
       margin-top: 12px;
-    }
-    label { font-weight: 600; }
-    input, select {
-      width: 100%;
-      padding: 12px 14px;
-      border-radius: 12px;
+      background: var(--surface);
+      padding: 24px;
+      border-radius: 16px;
       border: 1px solid var(--border);
-      background: #0b1224;
-      color: #e5e7eb;
-      outline: none;
-      transition: border 150ms ease, box-shadow 150ms ease;
     }
-    input:focus, select:focus {
-      border-color: #22c55e;
-      box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
-    }
-    .form-grid {
+    .auth-fields {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 14px;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
     }
+    .flex-column > label {
+      color: #151717;
+      font-weight: 600;
+    }
+    .inputForm {
+      border: 1.5px solid #ecedec;
+      border-radius: 12px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      padding-left: 12px;
+      transition: 0.2s ease-in-out;
+      background: #fff;
+      gap: 8px;
+    }
+    .input {
+      margin-left: 4px;
+      border-radius: 10px;
+      border: none;
+      width: 100%;
+      height: 100%;
+      font-size: 15px;
+      color: var(--text);
+      background: transparent;
+    }
+    ::placeholder {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      color: #9ca3af;
+    }
+    .input:focus { outline: none; }
+    .inputForm:focus-within { border: 1.5px solid var(--accent); box-shadow: 0 0 0 4px rgba(45, 121, 243, 0.12); }
+    .inputIcon { color: #94a3b8; display: inline-flex; align-items: center; }
     .helper { color: var(--muted); font-size: 14px; }
+    .button-submit, .auth-form .btn {
+      margin: 20px 0 10px 0;
+      background-color: #151717;
+      border: none;
+      color: white;
+      font-size: 15px;
+      font-weight: 600;
+      border-radius: 10px;
+      height: 50px;
+      width: 100%;
+      cursor: pointer;
+      transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.08);
+    }
+    .button-submit:hover, .auth-form .btn:hover { transform: translateY(-1px); background: #1f1f22; box-shadow: 0 14px 30px rgba(0,0,0,0.12); }
     .app-shell {
       display: none;
       min-height: calc(100vh - 96px);
       width: 100%;
       gap: 0;
       grid-template-columns: var(--nav-width) 1fr;
-      background: #0b1224;
+      background: #f3f4f6;
       border: 1px solid var(--border);
       border-radius: 22px;
       overflow: hidden;
@@ -180,7 +221,7 @@
     }
     .app-shell.active { display: grid; }
     .sidebar {
-      background: #0b1224;
+      background: #f8fafc;
       border-right: 1px solid var(--border);
       display: grid;
       gap: 18px;
@@ -202,29 +243,30 @@
       width: 100%;
       aspect-ratio: 1 / 1;
       border-radius: 14px;
-      border: 1px solid transparent;
-      background: transparent;
-      color: #e5e7eb;
+      border: 1.5px solid #ecedec;
+      background: #fff;
+      color: var(--text);
       display: grid;
       place-items: center;
       cursor: pointer;
-      transition: background 140ms ease, border 140ms ease, transform 140ms ease;
+      transition: background 140ms ease, border 140ms ease, transform 140ms ease, color 140ms ease;
       margin-bottom: 10px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.04);
     }
-    .nav-btn:hover { background: rgba(255,255,255,0.04); border-color: var(--border); transform: translateY(-1px); }
-    .nav-btn.active { background: rgba(34,197,94,0.15); border-color: #22c55e; color: #22c55e; }
+    .nav-btn:hover { background: #f4f6fb; border-color: var(--accent); transform: translateY(-1px); color: var(--accent); }
+    .nav-btn.active { background: #e8f0ff; border-color: var(--accent); color: var(--accent); }
     .content {
       padding: 26px;
       overflow: auto;
-      background: radial-gradient(120% 140% at 10% 10%, rgba(34, 197, 94, 0.08), rgba(15, 23, 42, 0.95));
+      background: #f3f4f6;
     }
     .content-card {
-      background: rgba(255,255,255,0.02);
+      background: #fff;
       border: 1px solid var(--border);
       border-radius: 18px;
       padding: 22px;
       min-height: 420px;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
     }
     .status {
       display: flex;
@@ -233,26 +275,28 @@
       padding: 12px 14px;
       border-radius: 12px;
       border: 1px dashed var(--border);
-      background: rgba(255,255,255,0.02);
+      background: #fff;
       color: var(--muted);
+      box-shadow: 0 8px 18px rgba(0,0,0,0.03);
     }
     .status .dot {
       width: 10px;
       height: 10px;
       border-radius: 50%;
-      background: #22c55e;
-      box-shadow: 0 0 0 6px rgba(34, 197, 94, 0.18);
+      background: var(--accent);
+      box-shadow: 0 0 0 6px rgba(45, 121, 243, 0.18);
     }
     .sql-block {
       margin-top: 18px;
       padding: 14px 16px;
-      background: #0f172a;
+      background: #fff;
       border: 1px solid var(--border);
       border-radius: 14px;
       white-space: pre-wrap;
       word-break: break-word;
       font-family: "SFMono-Regular", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      color: #cbd5e1;
+      color: #1f2937;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
     }
     .hidden { display: none !important; }
   </style>
@@ -293,39 +337,64 @@
         </div>
       </div>
 
-      <form id="loginForm">
-        <div class="form-grid">
+      <form id="loginForm" class="auth-form">
+        <div class="auth-fields">
           <div>
-            <label for="loginUsername">Логин</label>
-            <input id="loginUsername" name="username" autocomplete="username" placeholder="admin@example.com" required>
+            <div class="flex-column">
+              <label for="loginUsername">Логин</label>
+            </div>
+            <div class="inputForm">
+              <span class="inputIcon material-symbols-outlined" aria-hidden="true">mail</span>
+              <input id="loginUsername" class="input" name="username" autocomplete="username" placeholder="admin@example.com" required>
+            </div>
           </div>
           <div>
-            <label for="loginPassword">Пароль</label>
-            <input id="loginPassword" name="password" type="password" autocomplete="current-password" placeholder="••••••••" required>
+            <div class="flex-column">
+              <label for="loginPassword">Пароль</label>
+            </div>
+            <div class="inputForm">
+              <span class="inputIcon material-symbols-outlined" aria-hidden="true">lock</span>
+              <input id="loginPassword" class="input" name="password" type="password" autocomplete="current-password" placeholder="••••••••" required>
+            </div>
           </div>
         </div>
         <p class="helper">В этой форме авторизуются и администраторы, и пользователи их рабочих пространств.</p>
-        <button class="btn" type="submit">Войти</button>
+        <button class="button-submit" type="submit">Войти</button>
       </form>
 
-      <form id="registerForm" class="hidden">
-        <div class="form-grid">
+     <form id="registerForm" class="auth-form hidden">
+        <div class="auth-fields">
           <div>
-            <label for="registerUsername">Логин администратора</label>
-            <input id="registerUsername" name="username" autocomplete="username" placeholder="new-admin@example.com" required>
+            <div class="flex-column">
+              <label for="registerUsername">Логин администратора</label>
+            </div>
+            <div class="inputForm">
+              <span class="inputIcon material-symbols-outlined" aria-hidden="true">person</span>
+              <input id="registerUsername" class="input" name="username" autocomplete="username" placeholder="new-admin@example.com" required>
+            </div>
           </div>
           <div>
-            <label for="registerPassword">Пароль</label>
-            <input id="registerPassword" name="password" type="password" autocomplete="new-password" placeholder="Минимум 8 символов" required>
+            <div class="flex-column">
+              <label for="registerPassword">Пароль</label>
+            </div>
+            <div class="inputForm">
+              <span class="inputIcon material-symbols-outlined" aria-hidden="true">lock</span>
+              <input id="registerPassword" class="input" name="password" type="password" autocomplete="new-password" placeholder="Минимум 8 символов" required>
+            </div>
           </div>
           <div>
-            <label for="registerBalance">Начальный баланс</label>
-            <input id="registerBalance" name="balance" type="number" min="0" step="0.01" placeholder="1000.00">
+            <div class="flex-column">
+              <label for="registerBalance">Начальный баланс</label>
+            </div>
+            <div class="inputForm">
+              <span class="inputIcon material-symbols-outlined" aria-hidden="true">payments</span>
+              <input id="registerBalance" class="input" name="balance" type="number" min="0" step="0.01" placeholder="1000.00">
+            </div>
             <p class="helper">Баланс хранится только у администраторов (платный доступ).</p>
           </div>
         </div>
         <p class="helper">Регистрация создаёт только учётную запись администратора. Обычных пользователей добавляет администратор в своём рабочем пространстве.</p>
-        <button class="btn" type="submit">Зарегистрировать администратора</button>
+        <button class="button-submit" type="submit">Зарегистрировать администратора</button>
       </form>
     </section>
 
