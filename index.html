@@ -1,1 +1,472 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Микросервисы — Панель доступа</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Material+Symbols+Outlined" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #0f172a;
+      --card: #111827;
+      --accent: #22c55e;
+      --muted: #94a3b8;
+      --border: #1f2937;
+      --shadow: 0 20px 45px rgba(0,0,0,0.25);
+      --nav-width: 72px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Inter", system-ui, -apple-system, sans-serif;
+      background: radial-gradient(120% 120% at 0% 0%, #111827, #0b1224 48%, #0a1020 100%);
+      color: #e5e7eb;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 24px;
+      position: sticky;
+      top: 0;
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+      z-index: 10;
+    }
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    .brand span.logo {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #22c55e, #10b981);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #0f172a;
+      font-weight: 800;
+      box-shadow: 0 10px 30px rgba(34, 197, 94, 0.35);
+    }
+    .btn {
+      cursor: pointer;
+      border: 0;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-weight: 600;
+      color: #0b1224;
+      background: linear-gradient(120deg, #34d399, #22c55e);
+      box-shadow: 0 12px 28px rgba(34, 197, 94, 0.35);
+      transition: transform 150ms ease, box-shadow 150ms ease;
+    }
+    .btn:hover { transform: translateY(-1px); box-shadow: 0 16px 32px rgba(34, 197, 94, 0.42); }
+    main {
+      flex: 1;
+      display: grid;
+      place-items: center;
+      padding: 32px 18px 42px;
+    }
+    .hero {
+      max-width: 980px;
+      width: min(96vw, 980px);
+      background: linear-gradient(160deg, rgba(34, 197, 94, 0.05), rgba(59, 130, 246, 0.08));
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 48px 52px;
+      box-shadow: var(--shadow);
+      display: grid;
+      gap: 22px;
+    }
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(28px, 4vw, 42px);
+      line-height: 1.1;
+    }
+    .hero p { margin: 0; color: var(--muted); max-width: 680px; }
+    .hero .highlights {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 12px;
+    }
+    .chip {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255,255,255,0.02);
+    }
+    .chip .material-symbols-outlined { font-size: 20px; color: #22c55e; }
+    .panel {
+      display: none;
+      width: min(920px, 96vw);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+      padding: 32px;
+      gap: 18px;
+    }
+    .panel.active { display: grid; }
+    .panel h2 { margin: 0 0 8px; }
+    .auth-tabs {
+      display: inline-flex;
+      background: rgba(255,255,255,0.03);
+      padding: 6px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      gap: 6px;
+    }
+    .auth-tab {
+      border: 0;
+      border-radius: 10px;
+      padding: 10px 14px;
+      background: transparent;
+      color: #cbd5e1;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 150ms ease, color 150ms ease;
+    }
+    .auth-tab.active { background: #111827; color: #f8fafc; }
+    form {
+      display: grid;
+      gap: 14px;
+      margin-top: 12px;
+    }
+    label { font-weight: 600; }
+    input, select {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #0b1224;
+      color: #e5e7eb;
+      outline: none;
+      transition: border 150ms ease, box-shadow 150ms ease;
+    }
+    input:focus, select:focus {
+      border-color: #22c55e;
+      box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+    }
+    .helper { color: var(--muted); font-size: 14px; }
+    .app-shell {
+      display: none;
+      min-height: calc(100vh - 96px);
+      width: 100%;
+      gap: 0;
+      grid-template-columns: var(--nav-width) 1fr;
+      background: #0b1224;
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+    .app-shell.active { display: grid; }
+    .sidebar {
+      background: #0b1224;
+      border-right: 1px solid var(--border);
+      display: grid;
+      gap: 18px;
+      padding: 14px 10px;
+    }
+    .nav-group {
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+    }
+    .nav-group:first-of-type { border-top: 0; padding-top: 0; }
+    .nav-title {
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 0 10px 6px;
+    }
+    .nav-btn {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: 14px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: #e5e7eb;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      transition: background 140ms ease, border 140ms ease, transform 140ms ease;
+      margin-bottom: 10px;
+    }
+    .nav-btn:hover { background: rgba(255,255,255,0.04); border-color: var(--border); transform: translateY(-1px); }
+    .nav-btn.active { background: rgba(34,197,94,0.15); border-color: #22c55e; color: #22c55e; }
+    .content {
+      padding: 26px;
+      overflow: auto;
+      background: radial-gradient(120% 140% at 10% 10%, rgba(34, 197, 94, 0.08), rgba(15, 23, 42, 0.95));
+    }
+    .content-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 22px;
+      min-height: 420px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px dashed var(--border);
+      background: rgba(255,255,255,0.02);
+      color: var(--muted);
+    }
+    .status .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #22c55e;
+      box-shadow: 0 0 0 6px rgba(34, 197, 94, 0.18);
+    }
+    .sql-block {
+      margin-top: 18px;
+      padding: 14px 16px;
+      background: #0f172a;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: "SFMono-Regular", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      color: #cbd5e1;
+    }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <span class="logo">MS</span>
+      <div>Микросервисы · Панель доступа</div>
+    </div>
+    <button id="openAuth" class="btn">Вход</button>
+  </header>
 
+  <main>
+    <section id="hero" class="hero">
+      <div>
+        <p class="chip"><span class="material-symbols-outlined">spark</span> Минимальный стартовый экран</p>
+        <h1>Управляйте своими микросервисами и рабочими пространствами</h1>
+        <p>Одностраничное приложение с динамической подгрузкой HTML-контента. Авторизуйтесь, чтобы увидеть панель с иконками и переключаться между приложениями без перезагрузки.</p>
+      </div>
+      <div class="highlights">
+        <div class="chip"><span class="material-symbols-outlined">admin_panel_settings</span> Создание администраторов при регистрации</div>
+        <div class="chip"><span class="material-symbols-outlined">group</span> Пользователи привязаны к группе администратора</div>
+        <div class="chip"><span class="material-symbols-outlined">bolt</span> Динамическая загрузка HTML из репозитория</div>
+      </div>
+    </section>
+
+    <section id="authPanel" class="panel" aria-live="polite">
+      <div style="display:flex; justify-content: space-between; align-items:center; gap:14px;">
+        <div>
+          <p class="chip"><span class="material-symbols-outlined">lock</span> Авторизация и регистрация</p>
+          <h2 id="authTitle">Вход в панель</h2>
+          <p class="helper">После успешной авторизации основная страница будет скрыта и появится навигация по микросервисам.</p>
+        </div>
+        <div class="auth-tabs" role="tablist">
+          <button class="auth-tab active" id="tabLogin" role="tab" aria-controls="loginForm">Вход</button>
+          <button class="auth-tab" id="tabRegister" role="tab" aria-controls="registerForm">Регистрация</button>
+        </div>
+      </div>
+
+      <form id="loginForm">
+        <div class="form-grid">
+          <div>
+            <label for="loginUsername">Логин</label>
+            <input id="loginUsername" name="username" autocomplete="username" placeholder="admin@example.com" required>
+          </div>
+          <div>
+            <label for="loginPassword">Пароль</label>
+            <input id="loginPassword" name="password" type="password" autocomplete="current-password" placeholder="••••••••" required>
+          </div>
+        </div>
+        <p class="helper">В этой форме авторизуются и администраторы, и пользователи их рабочих пространств.</p>
+        <button class="btn" type="submit">Войти</button>
+      </form>
+
+      <form id="registerForm" class="hidden">
+        <div class="form-grid">
+          <div>
+            <label for="registerUsername">Логин администратора</label>
+            <input id="registerUsername" name="username" autocomplete="username" placeholder="new-admin@example.com" required>
+          </div>
+          <div>
+            <label for="registerPassword">Пароль</label>
+            <input id="registerPassword" name="password" type="password" autocomplete="new-password" placeholder="Минимум 8 символов" required>
+          </div>
+          <div>
+            <label for="registerBalance">Начальный баланс</label>
+            <input id="registerBalance" name="balance" type="number" min="0" step="0.01" placeholder="1000.00">
+            <p class="helper">Баланс хранится только у администраторов (платный доступ).</p>
+          </div>
+        </div>
+        <p class="helper">Регистрация создаёт только учётную запись администратора. Обычных пользователей добавляет администратор в своём рабочем пространстве.</p>
+        <button class="btn" type="submit">Зарегистрировать администратора</button>
+      </form>
+    </section>
+
+    <section id="appShell" class="app-shell" aria-live="polite">
+      <nav class="sidebar" aria-label="Навигация по микросервисам">
+        <div class="nav-group">
+          <div class="nav-title">Обзор</div>
+          <button class="nav-btn active" data-file="apps/overview.html" aria-label="Обзор">
+            <span class="material-symbols-outlined">dashboard</span>
+          </button>
+          <button class="nav-btn" data-file="apps/reports.html" aria-label="Отчёты">
+            <span class="material-symbols-outlined">pie_chart</span>
+          </button>
+        </div>
+        <div class="nav-group">
+          <div class="nav-title">Рабочие процессы</div>
+          <button class="nav-btn" data-file="apps/automation.html" aria-label="Автоматизация">
+            <span class="material-symbols-outlined">auto_awesome</span>
+          </button>
+          <button class="nav-btn" data-file="apps/monitoring.html" aria-label="Мониторинг">
+            <span class="material-symbols-outlined">monitoring</span>
+          </button>
+        </div>
+        <div class="nav-group">
+          <div class="nav-title">Настройки</div>
+          <button class="nav-btn" data-file="apps/settings.html" aria-label="Настройки">
+            <span class="material-symbols-outlined">tune</span>
+          </button>
+          <button class="nav-btn" data-file="apps/users.html" aria-label="Пользователи">
+            <span class="material-symbols-outlined">group</span>
+          </button>
+        </div>
+      </nav>
+      <div class="content">
+        <div class="status" id="status">
+          <span class="dot" aria-hidden="true"></span>
+          <div id="statusText">Готово к загрузке HTML-файлов из репозитория.</div>
+        </div>
+        <div id="contentCard" class="content-card" role="region" aria-live="polite">
+          <h3>Контент микросервиса</h3>
+          <p class="helper">Нажмите на иконки слева — соответствующий HTML-файл будет загружен и показан здесь.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <section style="padding: 24px; max-width: 960px; margin: 0 auto 32px;">
+    <h3 style="margin-bottom:8px;">SQL для таблицы пользователей (Supabase / Postgres)</h3>
+    <p class="helper">Содержит общий ключ группы, роль, уникальный идентификатор пользователя, логин, пароль, дату последнего входа и баланс администратора.</p>
+    <div class="sql-block" aria-label="SQL запрос">
+CREATE EXTENSION IF NOT EXISTS \"pgcrypto\"; -- для gen_random_uuid()\n\nCREATE TABLE IF NOT EXISTS app_users (\n  group_key uuid NOT NULL DEFAULT gen_random_uuid(), -- общий ключ группы пользователей (генерируется у администратора)\n  role text NOT NULL CHECK (role IN ('admin', 'user')),\n  user_id uuid PRIMARY KEY DEFAULT gen_random_uuid(), -- уникальный ID пользователя\n  username text NOT NULL UNIQUE, -- логин\n  password_hash text NOT NULL, -- храните хэш пароля\n  last_login timestamptz,\n  admin_balance numeric(14,2), -- только для admin\n  CONSTRAINT admin_balance_required CHECK (\n    (role = 'admin' AND admin_balance IS NOT NULL) OR\n    (role = 'user' AND admin_balance IS NULL)\n  )\n);\n\n-- Пользователи одного администратора делят общий group_key (значение админа передавайте при создании user)\n-- При необходимости ограничьте логины внутри группы:\n-- CREATE UNIQUE INDEX IF NOT EXISTS app_users_group_username_key ON app_users (group_key, username);\n    </div>
+  </section>
+
+  <script>
+    const hero = document.getElementById("hero");
+    const authPanel = document.getElementById("authPanel");
+    const appShell = document.getElementById("appShell");
+    const openAuth = document.getElementById("openAuth");
+    const tabLogin = document.getElementById("tabLogin");
+    const tabRegister = document.getElementById("tabRegister");
+    const loginForm = document.getElementById("loginForm");
+    const registerForm = document.getElementById("registerForm");
+    const statusText = document.getElementById("statusText");
+    const contentCard = document.getElementById("contentCard");
+    const authTitle = document.getElementById("authTitle");
+
+    const navButtons = Array.from(document.querySelectorAll(".nav-btn"));
+
+    function showAuth() {
+      hero.classList.add("hidden");
+      authPanel.classList.add("active");
+      appShell.classList.remove("active");
+      authTitle.textContent = tabLogin.classList.contains("active") ? "Вход в панель" : "Регистрация администратора";
+    }
+
+    function showApp(username) {
+      authPanel.classList.remove("active");
+      appShell.classList.add("active");
+      statusText.textContent = `Авторизация успешна. Здравствуйте, ${username}! Выберите микросервис слева.`;
+      loadFragment(document.querySelector(".nav-btn.active")?.dataset.file);
+    }
+
+    function switchTab(tab) {
+      if (tab === "login") {
+        tabLogin.classList.add("active");
+        tabRegister.classList.remove("active");
+        loginForm.classList.remove("hidden");
+        registerForm.classList.add("hidden");
+        authTitle.textContent = "Вход в панель";
+      } else {
+        tabLogin.classList.remove("active");
+        tabRegister.classList.add("active");
+        loginForm.classList.add("hidden");
+        registerForm.classList.remove("hidden");
+        authTitle.textContent = "Регистрация администратора";
+      }
+    }
+
+    async function loadFragment(file) {
+      if (!file) return;
+      navButtons.forEach(btn => btn.classList.toggle("active", btn.dataset.file === file));
+      contentCard.innerHTML = "<p class='helper'>Загружаем HTML...</p>";
+      try {
+        const res = await fetch(file);
+        if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+        const html = await res.text();
+        contentCard.innerHTML = html || "<p class='helper'>Файл пустой, добавьте контент.</p>";
+        statusText.textContent = `Загружен фрагмент: ${file}`;
+      } catch (err) {
+        contentCard.innerHTML = `<p class='helper'>Не удалось загрузить ${file}. Убедитесь, что файл присутствует в репозитории.</p>`;
+        statusText.textContent = `Ошибка загрузки ${file}: ${err.message}`;
+      }
+    }
+
+    openAuth.addEventListener("click", showAuth);
+    tabLogin.addEventListener("click", () => switchTab("login"));
+    tabRegister.addEventListener("click", () => switchTab("register"));
+
+    loginForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const username = e.target.username.value.trim();
+      const password = e.target.password.value.trim();
+      if (!username || !password) return;
+      showApp(username);
+      e.target.reset();
+    });
+
+    registerForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const username = e.target.username.value.trim();
+      const password = e.target.password.value.trim();
+      if (!username || !password) return;
+      alert("Регистрация администратора отправлена. Подключите Supabase, чтобы сохранить данные.");
+      switchTab("login");
+      showAuth();
+      e.target.reset();
+    });
+
+    navButtons.forEach(btn =>
+      btn.addEventListener("click", () => loadFragment(btn.dataset.file))
+    );
+  </script>
+</body>
+</html>
