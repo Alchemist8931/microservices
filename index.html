@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Material+Symbols+Outlined" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
       color-scheme: light;
@@ -462,6 +463,10 @@ CREATE EXTENSION IF NOT EXISTS \"pgcrypto\"; -- для gen_random_uuid()\n\nCREA
     const authTitle = document.getElementById("authTitle");
 
     const navButtons = Array.from(document.querySelectorAll(".nav-btn"));
+    const SUPABASE_URL = "https://XXXX.supabase.co";
+    const SUPABASE_ANON_KEY = "YOUR_ANON_KEY";
+    const { createClient } = supabase;
+    const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     function showAuth() {
       hero.classList.add("hidden");
@@ -513,21 +518,77 @@ CREATE EXTENSION IF NOT EXISTS \"pgcrypto\"; -- для gen_random_uuid()\n\nCREA
     tabLogin.addEventListener("click", () => switchTab("login"));
     tabRegister.addEventListener("click", () => switchTab("register"));
 
-    loginForm.addEventListener("submit", (e) => {
+    loginForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       const username = e.target.username.value.trim();
       const password = e.target.password.value.trim();
       if (!username || !password) return;
-      showApp(username);
+      const { data, error } = await sb.auth.signInWithPassword({
+        email: username,
+        password
+      });
+
+      if (error) {
+        alert("Ошибка входа: " + error.message);
+        return;
+      }
+
+      const uid = data.user.id;
+      const { data: profile, error: pErr } = await sb
+        .from("app_users")
+        .select("username, role, group_key, admin_balance")
+        .eq("user_id", uid)
+        .single();
+
+      if (pErr) {
+        alert("Вход выполнен, но профиль не найден в app_users: " + pErr.message);
+        return;
+      }
+
+      await sb.from("app_users").update({ last_login: new Date().toISOString() }).eq("user_id", uid);
+
+      showApp(profile.username || username);;
       e.target.reset();
     });
 
-    registerForm.addEventListener("submit", (e) => {
+    registerForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       const username = e.target.username.value.trim();
       const password = e.target.password.value.trim();
+      const balance = Number(e.target.balance.value || 0);
       if (!username || !password) return;
-      alert("Регистрация администратора отправлена. Подключите Supabase, чтобы сохранить данные.");
+      const { data, error } = await sb.auth.signUp({
+        email: username,
+        password
+      });
+
+      if (error) {
+        alert("Ошибка регистрации: " + error.message);
+        return;
+      }
+
+      const user = data.user;
+      if (!user) {
+        alert("Аккаунт создан. Подтверди email (если включено подтверждение), затем войди.");
+        switchTab("login");
+        showAuth();
+        e.target.reset();
+        return;
+      }
+
+      const { error: insErr } = await sb.from("app_users").insert([{
+        user_id: user.id,
+        role: "admin",
+        username,
+        admin_balance: balance || 0
+      }]);
+
+      if (insErr) {
+        alert("Auth ok, но не удалось создать профиль app_users: " + insErr.message);
+        return;
+      }
+
+      alert("Администратор зарегистрирован. Теперь можно войти.");
       switchTab("login");
       showAuth();
       e.target.reset();
