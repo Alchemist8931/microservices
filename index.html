@@ -25,6 +25,9 @@
       --modal-width: 1360px;
     }
     * { box-sizing: border-box; }
+    html, body {
+      overflow: hidden;
+    }
     body {
       margin: 0;
       font-family: "Inter", system-ui, -apple-system, sans-serif;
@@ -225,7 +228,7 @@
       top: calc(var(--frame-gap) + var(--header-height));
       align-self: start;
       height: calc(100vh - var(--header-height) - (var(--frame-gap) * 2) - 30px);
-      overflow: auto;
+      overflow: hidden;
     }
     .nav-group {
       border-top: 1px solid var(--border);
@@ -233,14 +236,7 @@
       width: 63px;
     }
     .nav-group:first-of-type { border-top: 0; padding-top: 0; width: 63px; }
-    .nav-title {
-      width: 63px;
-      color: var(--muted);
-      font-size: 12px;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      padding: 0 10px 6px;
-    }
+    .nav-title { display: none; }
     .nav-btn {
       /* width: 100%; */
       width: 63px;
@@ -263,8 +259,7 @@
       align-content: start;
       gap: var(--frame-gap);
       padding: 0;
-      overflow: visible;
-      overflow-x: auto;
+      overflow: hidden;
     }
     .content-card {
       background: #fff;
