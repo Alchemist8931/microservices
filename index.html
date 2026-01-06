@@ -13,7 +13,8 @@
       color-scheme: light;
        --bg: #e8e8e8;
       --surface: #ffffff;
-      --accent: #2d79f3;
+      --accent: #fe7f2d;
+      --accent-bg: rgba(254, 127, 45, 0.12);
       --muted: #4b5563;
       --border: #dcdcdc;
       --shadow: 0 18px 40px rgba(17, 17, 17, 0.08);
@@ -53,26 +54,7 @@
       border-radius: 18px;
       box-shadow: 0 10px 24px rgba(0,0,0,0.08);
     }
-    .brand {
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
-      font-weight: 700;
-      letter-spacing: 0.02em;
-      color: var(--text);
-    }
-    .brand span.logo {
-      width: 38px;
-      height: 38px;
-      border-radius: 12px;
-      background: linear-gradient(135deg, #2d79f3, #4f9bff);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      color: #fff;
-      font-weight: 800;
-      box-shadow: 0 10px 30px rgba(77, 128, 255, 0.25);
-    }
+    .brand { font-weight: 800; letter-spacing: 0.02em; color: var(--text); font-size: 18px; }
     .btn {
       cursor: pointer;
       border: 1px solid #151717;
@@ -240,6 +222,8 @@
       position: sticky;
       top: var(--frame-gap);
       align-self: start;
+      height: calc(100vh - (var(--frame-gap) * 2));
+      overflow: auto;
     }
     .nav-group {
       border-top: 1px solid var(--border);
@@ -271,7 +255,7 @@
       box-shadow: 0 6px 16px rgba(0,0,0,0.04);
     }
     .nav-btn:hover { background: #f4f6fb; border-color: var(--accent); transform: translateY(-1px); color: var(--accent); }
-    .nav-btn.active { background: #e8f0ff; border-color: var(--accent); color: var(--accent); }
+    .nav-btn.active { background: var(--accent-bg, #e8f0ff); border-color: var(--accent); color: var(--accent); }
     .content {
       display: grid;
       align-content: start;
@@ -287,9 +271,8 @@
       padding: 28px;
       min-height: 420px;
       box-shadow: var(--shadow);
-      width: var(--modal-width);
-      max-width: var(--modal-width);
-      margin: 0 auto;
+      width: 100%;
+      max-width: 100%;
     }
     .status {
       display: flex;
@@ -301,9 +284,8 @@
       background: #fff;
       color: var(--muted);
       box-shadow: 0 8px 18px rgba(0,0,0,0.03);
-      width: var(--modal-width);
-      max-width: var(--modal-width);
-      margin: 0 auto;
+      width: 100%;
+      max-width: 100%;
     }
     .status .dot {
       width: 10px;
@@ -339,10 +321,7 @@
 <body>
   <div class="page-frame">
   <header>
-    <div class="brand">
-      <span class="logo">MS</span>
-      <div>Микросервисы · Панель доступа</div>
-    </div>
+    <div class="brand">RIVA Development</div>
     <button id="openAuth" class="btn">Вход</button>
   </header>
 
@@ -437,29 +416,35 @@
     <section id="appShell" class="app-shell" aria-live="polite">
       <nav class="sidebar" aria-label="Навигация по микросервисам">
         <div class="nav-group">
-          <div class="nav-title">Обзор</div>
-          <button class="nav-btn active" data-file="apps/overview.html" aria-label="Обзор">
+          <div class="nav-title">RIVA Development</div>
+          <button class="nav-btn active" data-file="modal1.html" data-group="primary" aria-label="Modal 1">
             <span class="material-symbols-outlined">dashboard</span>
           </button>
-          <button class="nav-btn" data-file="apps/reports.html" aria-label="Отчёты">
-            <span class="material-symbols-outlined">pie_chart</span>
+          <button class="nav-btn" data-file="modal2.html" data-group="primary" aria-label="Modal 2">
+            <span class="material-symbols-outlined">view_quilt</span>
+          </button>
+          <button class="nav-btn" data-file="modal3.html" data-group="primary" aria-label="Modal 3">
+            <span class="material-symbols-outlined">widgets</span>
+          </button>
+          <button class="nav-btn" data-file="modal4.html" data-group="primary" aria-label="Modal 4">
+            <span class="material-symbols-outlined">account_tree</span>
           </button>
         </div>
         <div class="nav-group">
           <div class="nav-title">Рабочие процессы</div>
-          <button class="nav-btn" data-file="apps/automation.html" aria-label="Автоматизация">
+          <button class="nav-btn" data-file="apps/automation.html" data-group="secondary" aria-label="Автоматизация">
             <span class="material-symbols-outlined">auto_awesome</span>
           </button>
-          <button class="nav-btn" data-file="apps/monitoring.html" aria-label="Мониторинг">
+          <button class="nav-btn" data-file="apps/monitoring.html" data-group="secondary" aria-label="Мониторинг">
             <span class="material-symbols-outlined">monitoring</span>
           </button>
         </div>
         <div class="nav-group">
           <div class="nav-title">Настройки</div>
-          <button class="nav-btn" data-file="apps/settings.html" aria-label="Настройки">
+          <button class="nav-btn" data-file="apps/settings.html" data-group="secondary" aria-label="Настройки">
             <span class="material-symbols-outlined">tune</span>
           </button>
-          <button class="nav-btn" data-file="apps/users.html" aria-label="Пользователи">
+          <button class="nav-btn" data-file="apps/users.html" data-group="secondary" aria-label="Пользователи">
             <span class="material-symbols-outlined">group</span>
           </button>
         </div>
@@ -500,6 +485,16 @@ CREATE EXTENSION IF NOT EXISTS \"pgcrypto\"; -- для gen_random_uuid()\n\nCREA
     const sqlSection = document.getElementById("sqlSection");
 
     const navButtons = Array.from(document.querySelectorAll(".nav-btn"));
+    const ACCENTS = {
+      primary: { main: "#fe7f2d", soft: "rgba(254, 127, 45, 0.12)" },
+      secondary: { main: "#212121", soft: "rgba(33, 33, 33, 0.12)" }
+    };
+
+    function updateAccent(group = "primary") {
+      const palette = ACCENTS[group] || ACCENTS.secondary;
+      document.documentElement.style.setProperty("--accent", palette.main);
+      document.documentElement.style.setProperty("--accent-bg", palette.soft);
+    }
     const SUPABASE_URL = "https://ncdwlmgwljjwpuawlssr.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jZHdsbWd3bGpqd3B1YXdsc3NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0NTQxNDksImV4cCI6MjA4MzAzMDE0OX0.rrIznUflWydylTnUZvOxOkeF9eMp91qNN4Bjq2gXRL8";
     const { createClient } = supabase;
@@ -520,7 +515,9 @@ CREATE EXTENSION IF NOT EXISTS \"pgcrypto\"; -- для gen_random_uuid()\n\nCREA
       document.body.classList.add("app-active");
       sqlSection?.classList.add("hidden");
       statusText.textContent = `Авторизация успешна. Здравствуйте, ${username}! Выберите микросервис слева.`;
-      loadFragment(document.querySelector(".nav-btn.active")?.dataset.file);
+      const activeButton = document.querySelector(".nav-btn.active");
+      updateAccent(activeButton?.dataset.group);
+      loadFragment(activeButton?.dataset.file, activeButton?.dataset.group);
     }
 
     function switchTab(tab) {
@@ -539,9 +536,11 @@ CREATE EXTENSION IF NOT EXISTS \"pgcrypto\"; -- для gen_random_uuid()\n\nCREA
       }
     }
 
-    async function loadFragment(file) {
+    async function loadFragment(file, group) {
       if (!file) return;
       navButtons.forEach(btn => btn.classList.toggle("active", btn.dataset.file === file));
+      const activeGroup = group || navButtons.find(btn => btn.dataset.file === file)?.dataset.group;
+      updateAccent(activeGroup);
       contentCard.innerHTML = "<p class='helper'>Загружаем HTML...</p>";
       try {
         const res = await fetch(file);
@@ -550,8 +549,8 @@ CREATE EXTENSION IF NOT EXISTS \"pgcrypto\"; -- для gen_random_uuid()\n\nCREA
         contentCard.innerHTML = html || "<p class='helper'>Файл пустой, добавьте контент.</p>";
         statusText.textContent = `Загружен фрагмент: ${file}`;
       } catch (err) {
-        contentCard.innerHTML = `<p class='helper'>Не удалось загрузить ${file}. Убедитесь, что файл присутствует в репозитории.</p>`;
-        statusText.textContent = `Ошибка загрузки ${file}: ${err.message}`;
+        contentCard.innerHTML = `<p class='helper'>Контент раздела будет доступен позже.</p>`;
+        statusText.textContent = "Контент временно недоступен, попробуйте другой раздел.";
       }
     }
 
@@ -636,8 +635,9 @@ CREATE EXTENSION IF NOT EXISTS \"pgcrypto\"; -- для gen_random_uuid()\n\nCREA
     });
 
     navButtons.forEach(btn =>
-      btn.addEventListener("click", () => loadFragment(btn.dataset.file))
+      btn.addEventListener("click", () => loadFragment(btn.dataset.file, btn.dataset.group))
     );
+    updateAccent(document.querySelector(".nav-btn.active")?.dataset.group);
   </script>
 </body>
 </html>
