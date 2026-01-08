@@ -23,6 +23,7 @@
       --text: #151717;
       --frame-gap: clamp(16px, 2vw, 28px);
       --modal-width: 1360px;
+      --modal-padding: 10px;
       --shell-height: calc(100vh - var(--header-height) - (var(--frame-gap) * 2) - 30px);
     }
     * { box-sizing: border-box; }
@@ -119,7 +120,7 @@
       border: 1px solid var(--border);
       border-radius: 22px;
       box-shadow: var(--shadow);
-      padding: 32px;
+      padding: var(--modal-padding);
       gap: 18px;
     }
     .panel.active { display: grid; }
@@ -266,7 +267,7 @@
       background: #fff;
       border: 1px solid var(--border);
       border-radius: 18px;
-      padding: 28px;
+      padding: var(--modal-padding);
       height: var(--shell-height);
       box-shadow: var(--shadow);
       width: 100%;
