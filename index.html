@@ -306,8 +306,7 @@
     }
     .hidden { display: none !important; }
     body.app-active #hero,
-    body.app-active #authPanel,
-    body.app-active #sqlSection {
+    body.app-active #authPanel {
       display: none !important;
     }
 
@@ -456,13 +455,6 @@
       </div>
     </section>
   </main>
-
-  <section id="sqlSection" style="padding: 0 0 32px;">
-    <h3 style="margin-bottom:8px;">SQL для таблицы пользователей (Supabase / Postgres)</h3>
-    <p class="helper">Содержит общий ключ группы, роль, уникальный идентификатор пользователя, логин, пароль, дату последнего входа и баланс администратора.</p>
-    <div class="sql-block" aria-label="SQL запрос">
-CREATE EXTENSION IF NOT EXISTS \"pgcrypto\"; -- для gen_random_uuid()\n\nCREATE TABLE IF NOT EXISTS app_users (\n  group_key uuid NOT NULL DEFAULT gen_random_uuid(), -- общий ключ группы пользователей (генерируется у администратора)\n  role text NOT NULL CHECK (role IN ('admin', 'user')),\n  user_id uuid PRIMARY KEY DEFAULT gen_random_uuid(), -- уникальный ID пользователя\n  username text NOT NULL UNIQUE, -- логин\n  password_hash text NOT NULL, -- храните хэш пароля\n  last_login timestamptz,\n  admin_balance numeric(14,2), -- только для admin\n  CONSTRAINT admin_balance_required CHECK (\n    (role = 'admin' AND admin_balance IS NOT NULL) OR\n    (role = 'user' AND admin_balance IS NULL)\n  )\n);\n\n-- Пользователи одного администратора делят общий group_key (значение админа передавайте при создании user)\n-- При необходимости ограничьте логины внутри группы:\n-- CREATE UNIQUE INDEX IF NOT EXISTS app_users_group_username_key ON app_users (group_key, username);\n    </div>
-  </section>
     </div>
 
   <script>
@@ -477,7 +469,6 @@ CREATE EXTENSION IF NOT EXISTS \"pgcrypto\"; -- для gen_random_uuid()\n\nCREA
     const statusText = document.getElementById("statusText");
     const contentCard = document.getElementById("contentCard");
     const authTitle = document.getElementById("authTitle");
-    const sqlSection = document.getElementById("sqlSection");
 
     const navButtons = Array.from(document.querySelectorAll(".nav-btn"));
     const ACCENTS = {
@@ -500,7 +491,6 @@ CREATE EXTENSION IF NOT EXISTS \"pgcrypto\"; -- для gen_random_uuid()\n\nCREA
       authPanel.classList.add("active");
       appShell.classList.remove("active");
       document.body.classList.remove("app-active");
-      sqlSection?.classList.remove("hidden");
       authTitle.textContent = tabLogin.classList.contains("active") ? "Вход в панель" : "Регистрация администратора";
     }
 
@@ -508,7 +498,6 @@ CREATE EXTENSION IF NOT EXISTS \"pgcrypto\"; -- для gen_random_uuid()\n\nCREA
       authPanel.classList.remove("active");
       appShell.classList.add("active");
       document.body.classList.add("app-active");
-      sqlSection?.classList.add("hidden");
       statusText.textContent = `Авторизация успешна. Здравствуйте, ${username}! Выберите микросервис слева.`;
       const activeButton = document.querySelector(".nav-btn.active");
       updateAccent(activeButton?.dataset.group);
