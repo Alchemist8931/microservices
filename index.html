@@ -23,6 +23,7 @@
       --text: #151717;
       --frame-gap: clamp(16px, 2vw, 28px);
       --modal-width: 1360px;
+      --shell-height: calc(100vh - var(--header-height) - (var(--frame-gap) * 2) - 30px);
     }
     * { box-sizing: border-box; }
     html, body {
@@ -227,7 +228,7 @@
       position: sticky;
       top: calc(var(--frame-gap) + var(--header-height));
       align-self: start;
-      height: calc(100vh - var(--header-height) - (var(--frame-gap) * 2) - 30px);
+      height: var(--shell-height);
       overflow: hidden;
     }
     .nav-group {
@@ -266,7 +267,7 @@
       border: 1px solid var(--border);
       border-radius: 18px;
       padding: 28px;
-      min-height: 420px;
+      height: var(--shell-height);
       box-shadow: var(--shadow);
       width: 100%;
       max-width: 100%;
@@ -447,14 +448,11 @@
         </div>
       </nav>
       <div class="content">
-        <div class="status" id="status">
-          <span class="dot" aria-hidden="true"></span>
-          <div id="statusText">Готово к загрузке HTML-файлов из репозитория.</div>
-        </div>
         <div id="contentCard" class="content-card" role="region" aria-live="polite">
-          <h3>Контент микросервиса</h3>
-          <p class="helper">Нажмите на иконки слева — соответствующий HTML-файл будет загружен и показан здесь.</p>
-        </div>
+        <h3>Контент микросервиса</h3>
+        <p class="helper">Нажмите на иконки слева — соответствующий HTML-файл будет загружен и показан здесь.</p>
+        <p class="helper" id="statusText">Готово к загрузке HTML-файлов из репозитория.</p>
+      </div>
       </div>
     </section>
   </main>
