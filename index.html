@@ -61,6 +61,11 @@
       border-radius: 18px;
       box-shadow: 0 10px 24px rgba(0,0,0,0.08);
     }
+    .header-actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+    }
     .brand { font-weight: 800; letter-spacing: 0.02em; color: var(--text); font-size: 18px; }
     .btn {
       cursor: pointer;
@@ -74,6 +79,112 @@
       transition: transform 150ms ease, box-shadow 150ms ease, background 150ms ease;
     }
     .btn:hover { transform: translateY(-1px); box-shadow: 0 16px 32px rgba(0,0,0,0.12); background: #1f1f22; }
+    .balance-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: #fff;
+      font-weight: 600;
+      color: var(--text);
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+      transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
+    }
+    .balance-pill:hover {
+      transform: translateY(-1px);
+      border-color: var(--accent);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+    }
+    .balance-pill .material-symbols-outlined {
+      font-size: 20px;
+      color: var(--accent);
+    }
+    .balance-pill span.amount {
+      font-weight: 700;
+    }
+    .balance-pill.hidden { display: none; }
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(17, 17, 17, 0.45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      z-index: 1000;
+    }
+    .modal-backdrop.active {
+      display: flex;
+    }
+    .modal-sheet {
+      background: #fff;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      width: min(680px, 92vw);
+      padding: 24px;
+      display: grid;
+      gap: 18px;
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    .modal-title {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 700;
+    }
+    .modal-close {
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 10px;
+      padding: 8px 10px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .modal-section {
+      background: #f8fafc;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      padding: 16px;
+      display: grid;
+      gap: 12px;
+    }
+    .topup-list {
+      display: grid;
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      font-size: 14px;
+      color: var(--muted);
+    }
+    .topup-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 8px 10px;
+      background: #fff;
+      border-radius: 10px;
+      border: 1px solid #e5e7eb;
+    }
+    .topup-item span {
+      color: var(--text);
+      font-weight: 600;
+    }
+    .topup-form {
+      display: grid;
+      gap: 12px;
+    }
+    .topup-form .button-submit {
+      margin: 0;
+    }
     main {
       flex: 1;
       display: grid;
@@ -310,17 +421,19 @@
     body.app-active #authPanel {
       display: none !important;
     }
-
-    body.app-active .btn#openAuth {
-      display: none;
-    }
   </style>
 </head>
 <body>
   <div class="page-frame">
   <header>
     <div class="brand">RIVA Development</div>
-    <button id="openAuth" class="btn">Вход</button>
+    <div class="header-actions">
+      <button id="balanceTrigger" class="balance-pill hidden" type="button" aria-haspopup="dialog" aria-controls="balanceModal">
+        <span class="material-symbols-outlined" aria-hidden="true">account_balance_wallet</span>
+        Баланс: <span class="amount" id="balanceAmount">0 ₽</span>
+      </button>
+      <button id="openAuth" class="btn">Вход</button>
+    </div>
   </header>
 
   <main>
@@ -463,6 +576,8 @@
     const authPanel = document.getElementById("authPanel");
     const appShell = document.getElementById("appShell");
     const openAuth = document.getElementById("openAuth");
+    const balanceTrigger = document.getElementById("balanceTrigger");
+    const balanceAmount = document.getElementById("balanceAmount");
     const tabLogin = document.getElementById("tabLogin");
     const tabRegister = document.getElementById("tabRegister");
     const loginForm = document.getElementById("loginForm");
@@ -472,6 +587,11 @@
     const authTitle = document.getElementById("authTitle");
 
     const navButtons = Array.from(document.querySelectorAll(".nav-btn"));
+    const balanceState = {
+      isAuthenticated: false,
+      balance: 0,
+      topups: []
+    };
     const ACCENTS = {
       primary: { main: "#fe7f2d", soft: "rgba(254, 127, 45, 0.12)" },
       secondary: { main: "#212121", soft: "rgba(33, 33, 33, 0.12)" }
@@ -493,6 +613,10 @@
       appShell.classList.remove("active");
       document.body.classList.remove("app-active");
       authTitle.textContent = tabLogin.classList.contains("active") ? "Вход в панель" : "Регистрация администратора";
+      openAuth.textContent = "Вход";
+      balanceTrigger.classList.add("hidden");
+      balanceState.isAuthenticated = false;
+      closeBalanceModal();
     }
 
     function showApp(username) {
@@ -503,6 +627,10 @@
       const activeButton = document.querySelector(".nav-btn.active");
       updateAccent(activeButton?.dataset.group);
       loadFragment(activeButton?.dataset.file, activeButton?.dataset.group);
+      openAuth.textContent = "Выйти";
+      balanceTrigger.classList.remove("hidden");
+      balanceState.isAuthenticated = true;
+      updateBalanceDisplay();
     }
 
     function switchTab(tab) {
@@ -539,9 +667,65 @@
       }
     }
 
-    openAuth.addEventListener("click", showAuth);
+    function formatCurrency(value) {
+      return new Intl.NumberFormat("ru-RU", {
+        style: "currency",
+        currency: "RUB",
+        maximumFractionDigits: 2
+      }).format(value);
+    }
+
+    function updateBalanceDisplay() {
+      balanceAmount.textContent = formatCurrency(balanceState.balance || 0);
+      const modalAmount = document.getElementById("balanceModalAmount");
+      if (modalAmount) {
+        modalAmount.textContent = formatCurrency(balanceState.balance || 0);
+      }
+    }
+
+    function renderTopups() {
+      const list = document.getElementById("topupList");
+      list.innerHTML = "";
+      if (balanceState.topups.length === 0) {
+        const empty = document.createElement("li");
+        empty.className = "helper";
+        empty.textContent = "Пополнений пока нет. Добавьте первое, чтобы увидеть историю.";
+        list.appendChild(empty);
+        return;
+      }
+      balanceState.topups.slice(0, 5).forEach((topup) => {
+        const item = document.createElement("li");
+        item.className = "topup-item";
+        item.innerHTML = `<div>${topup.label}</div><span>${formatCurrency(topup.amount)}</span>`;
+        list.appendChild(item);
+      });
+    }
+
+    function openBalanceModal() {
+      const modal = document.getElementById("balanceModal");
+      modal.classList.add("active");
+      modal.setAttribute("aria-hidden", "false");
+      updateBalanceDisplay();
+      renderTopups();
+    }
+
+    function closeBalanceModal() {
+      const modal = document.getElementById("balanceModal");
+      modal.classList.remove("active");
+      modal.setAttribute("aria-hidden", "true");
+    }
+
+    openAuth.addEventListener("click", async () => {
+      if (!balanceState.isAuthenticated) {
+        showAuth();
+        return;
+      }
+      await sb.auth.signOut();
+      showAuth();
+    });
     tabLogin.addEventListener("click", () => switchTab("login"));
     tabRegister.addEventListener("click", () => switchTab("register"));
+    balanceTrigger.addEventListener("click", openBalanceModal);
 
     loginForm.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -571,6 +755,8 @@
       }
 
       await sb.from("app_users").update({ last_login: new Date().toISOString() }).eq("user_id", uid);
+      balanceState.balance = Number(profile.admin_balance || 0);
+      balanceState.topups = [];
 
       showApp(profile.username || username);;
       e.target.reset();
@@ -623,6 +809,53 @@
       btn.addEventListener("click", () => loadFragment(btn.dataset.file, btn.dataset.group))
     );
     updateAccent(document.querySelector(".nav-btn.active")?.dataset.group);
+
+    document.getElementById("balanceClose").addEventListener("click", closeBalanceModal);
+    document.getElementById("balanceModal").addEventListener("click", (event) => {
+      if (event.target.id === "balanceModal") {
+        closeBalanceModal();
+      }
+    });
+    document.getElementById("topupForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+      const amountField = document.getElementById("topupAmount");
+      const amount = Number(amountField.value || 0);
+      if (amount <= 0) return;
+      balanceState.balance += amount;
+      balanceState.topups.unshift({
+        label: `Пополнение ${new Date().toLocaleString("ru-RU")}`,
+        amount
+      });
+      updateBalanceDisplay();
+      renderTopups();
+      amountField.value = "";
+    });
   </script>
+  <div id="balanceModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="balanceTitle" aria-hidden="true">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <h2 class="modal-title" id="balanceTitle">Баланс личного кабинета</h2>
+        <button class="modal-close" id="balanceClose" type="button">Закрыть</button>
+      </div>
+      <div class="modal-section">
+        <strong>Текущий баланс: <span id="balanceModalAmount"></span></strong>
+        <p class="helper">Нажмите «Пополнить», чтобы увеличить баланс. История обновится сразу.</p>
+      </div>
+      <div class="modal-section">
+        <h3 style="margin:0;">Последние пополнения</h3>
+        <ul class="topup-list" id="topupList"></ul>
+      </div>
+      <div class="modal-section">
+        <h3 style="margin:0;">Пополнить баланс</h3>
+        <form id="topupForm" class="topup-form">
+          <div class="inputForm">
+            <span class="inputIcon material-symbols-outlined" aria-hidden="true">payments</span>
+            <input id="topupAmount" class="input" type="number" min="1" step="0.01" placeholder="Сумма пополнения">
+          </div>
+          <button class="button-submit" type="submit">Пополнить</button>
+        </form>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
