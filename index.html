@@ -52,102 +52,14 @@
       align-items: center;
       justify-content: space-between;
       min-height: var(--header-height);
-      padding: 10px 22px;
+      padding: 18px 22px;
       position: relative;
       background: var(--surface);
       border-bottom: 1px solid #e2e8f0;
       border-radius: 18px;
       box-shadow: 0 10px 24px rgba(0,0,0,0.08);
     }
-    .brand { display: flex; align-items: center; }
-    .brand-badge {
-      position: relative;
-      display: inline-flex;
-      align-items: center;
-      gap: 20px;
-      padding: 10px 16px 10px 10px;
-      border-radius: 14px;
-      background: var(--accent-bg);
-      border: 1px solid var(--accent);
-      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35), 0 10px 24px rgba(0,0,0,0.06);
-      margin: 0;
-      overflow: visible;
-      isolation: isolate;
-    }
-    .riva-logo {
-      position: relative;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: clamp(32px, 5vw, 46px);
-      font-weight: 800;
-      letter-spacing: 0.12em;
-      color: var(--text);
-      padding-right: 6px;
-      min-width: max-content;
-    }
-    .riva-text { position: relative; z-index: 2; }
-    .dev-text {
-      font-size: clamp(18px, 3vw, 22px);
-      font-weight: 700;
-      letter-spacing: 0.02em;
-      color: var(--text);
-      white-space: nowrap;
-    }
-    .riva-logo .orbit {
-      --orbit-period: 10s;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      border-radius: 50%;
-      transform: translate(-50%, -50%);
-      transform-style: preserve-3d;
-      animation: orbit-rotate var(--orbit-period) linear infinite;
-      animation-delay: var(--orbit-delay, 0s);
-      pointer-events: none;
-      z-index: 1;
-    }
-    .riva-logo .orbit::after {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 100%;
-      transform: translate(-50%, -50%);
-      width: var(--planet-size, 6px);
-      height: var(--planet-size, 6px);
-      border-radius: 50%;
-      background: var(--accent);
-      animation: planet-rotate var(--orbit-period) linear infinite;
-      animation-delay: var(--orbit-delay, 0s);
-    }
-    .riva-logo .orbit-1 { width: 148px; height: 148px; --planet-size: 4px; --orbit-delay: calc(var(--orbit-period) * -0.68); }
-    .riva-logo .orbit-2 { width: 156px; height: 156px; --planet-size: 8px; --orbit-delay: calc(var(--orbit-period) * -0.03); }
-    .riva-logo .orbit-3 { width: 164px; height: 164px; --planet-size: 12px; --orbit-delay: calc(var(--orbit-period) * -0.23); }
-    .riva-logo .orbit-4 { width: 172px; height: 172px; --planet-size: 5px; --orbit-delay: calc(var(--orbit-period) * -0.36); }
-    .riva-logo .orbit-5 { width: 180px; height: 180px; --planet-size: 6px; --orbit-delay: calc(var(--orbit-period) * -0.72); }
-    .riva-logo .orbit-6 { width: 188px; height: 188px; --planet-size: 12px; --orbit-delay: calc(var(--orbit-period) * -0.17); }
-    .riva-logo .orbit-7 { width: 196px; height: 196px; --planet-size: 5px; --orbit-delay: calc(var(--orbit-period) * -0.56); }
-    .riva-logo .orbit-8 { width: 204px; height: 204px; --planet-size: 6px; --orbit-delay: calc(var(--orbit-period) * -0.50); }
-    .riva-logo .orbit-9 { width: 212px; height: 212px; --planet-size: 12px; --orbit-delay: calc(var(--orbit-period) * -0.34); }
-    .riva-logo .orbit-10 { width: 220px; height: 220px; --planet-size: 9px; --orbit-delay: calc(var(--orbit-period) * -0.82); }
-    .riva-logo .orbit-11 { width: 228px; height: 228px; --planet-size: 6px; --orbit-delay: calc(var(--orbit-period) * -0.22); }
-    .riva-logo .orbit-12 { width: 236px; height: 236px; --planet-size: 12px; --orbit-delay: calc(var(--orbit-period) * -0.01); }
-    .riva-logo .orbit-13 { width: 244px; height: 244px; --planet-size: 6px; --orbit-delay: calc(var(--orbit-period) * -0.80); }
-    .riva-logo .orbit-14 { width: 252px; height: 252px; --planet-size: 10px; --orbit-delay: calc(var(--orbit-period) * -0.34); }
-    .riva-logo .orbit-15 { width: 260px; height: 260px; --planet-size: 8px; --orbit-delay: calc(var(--orbit-period) * -0.06); }
-    .riva-logo .orbit-16 { width: 268px; height: 268px; --planet-size: 8px; --orbit-delay: calc(var(--orbit-period) * -0.50); }
-    .riva-logo .orbit-17 { width: 276px; height: 276px; --planet-size: 11px; --orbit-delay: calc(var(--orbit-period) * -0.96); }
-    .riva-logo .orbit-18 { width: 284px; height: 284px; --planet-size: 7px; --orbit-delay: calc(var(--orbit-period) * -0.08); }
-    .riva-logo .orbit-19 { width: 292px; height: 292px; --planet-size: 5px; --orbit-delay: calc(var(--orbit-period) * -0.32); }
-    .riva-logo .orbit-20 { width: 300px; height: 300px; --planet-size: 8px; --orbit-delay: calc(var(--orbit-period) * -0.97); }
-    @keyframes orbit-rotate {
-      from { transform: translate(-50%, -50%) rotateY(0deg); }
-      to { transform: translate(-50%, -50%) rotateY(360deg); }
-    }
-    @keyframes planet-rotate {
-      from { transform: translate(-50%, -50%) rotateY(0deg); }
-      to { transform: translate(-50%, -50%) rotateY(-360deg); }
-    }
+    .brand { font-weight: 800; letter-spacing: 0.02em; color: var(--text); font-size: 18px; }
     .btn {
       cursor: pointer;
       border: 1px solid #151717;
@@ -406,34 +318,7 @@
 <body>
   <div class="page-frame">
   <header>
-    <div class="brand" aria-label="RIVA Development">
-      <div class="brand-badge">
-        <div class="riva-logo" aria-hidden="true">
-          <span class="riva-text">RIVA</span>
-          <div class="orbit orbit-1"></div>
-          <div class="orbit orbit-2"></div>
-          <div class="orbit orbit-3"></div>
-          <div class="orbit orbit-4"></div>
-          <div class="orbit orbit-5"></div>
-          <div class="orbit orbit-6"></div>
-          <div class="orbit orbit-7"></div>
-          <div class="orbit orbit-8"></div>
-          <div class="orbit orbit-9"></div>
-          <div class="orbit orbit-10"></div>
-          <div class="orbit orbit-11"></div>
-          <div class="orbit orbit-12"></div>
-          <div class="orbit orbit-13"></div>
-          <div class="orbit orbit-14"></div>
-          <div class="orbit orbit-15"></div>
-          <div class="orbit orbit-16"></div>
-          <div class="orbit orbit-17"></div>
-          <div class="orbit orbit-18"></div>
-          <div class="orbit orbit-19"></div>
-          <div class="orbit orbit-20"></div>
-        </div>
-        <span class="dev-text">Development</span>
-      </div>
-    </div>
+    <div class="brand">RIVA Development</div>
     <button id="openAuth" class="btn">Вход</button>
   </header>
 
