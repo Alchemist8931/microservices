@@ -1,2 +1,1076 @@
-<div class="helper" style="color: var(--text); font-weight: 600;">Раздел 1</div>
-<p class="helper" style="color: var(--text); margin-top: 6px;">Заглушка контента для первой вкладки RIVA Development.</p>
+<div id="warehouseApp" class="wh-app">
+  <style>
+    .wh-app {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .wh-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .wh-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0;
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      color: var(--text);
+    }
+
+    .wh-title .material-symbols-outlined {
+      color: var(--accent);
+      font-size: 22px;
+    }
+
+    .wh-tabs {
+      display: inline-flex;
+      background: #f4f6f8;
+      padding: 6px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .wh-tab {
+      border: 0;
+      border-radius: 10px;
+      padding: 10px 14px;
+      background: transparent;
+      color: var(--muted);
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 150ms ease, color 150ms ease;
+      white-space: nowrap;
+    }
+
+    .wh-tab.active {
+      background: var(--surface);
+      color: var(--text);
+      box-shadow: inset 0 -2px 0 var(--accent);
+    }
+
+    .wh-panel {
+      display: none;
+      flex: 1;
+      min-height: 0;
+    }
+    .wh-panel.active {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      min-height: 0;
+      flex: 1;
+    }
+
+    .wh-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 14px;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.06);
+    }
+
+    .wh-form {
+      display: grid;
+      gap: 12px;
+    }
+
+    .wh-form-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 12px;
+      align-items: end;
+    }
+
+    .wh-field {
+      display: grid;
+      gap: 6px;
+    }
+    .wh-field label {
+      font-weight: 700;
+      color: var(--text);
+      font-size: 12px;
+      letter-spacing: 0.02em;
+    }
+
+    .wh-field textarea.input {
+      height: 92px;
+      resize: vertical;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1.5px solid #ecedec;
+      font-size: 14px;
+      font-family: "Inter", system-ui, -apple-system, sans-serif;
+    }
+    .wh-field textarea.input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(254,127,45,0.12);
+    }
+
+    .col-3 { grid-column: span 3; }
+    .col-4 { grid-column: span 4; }
+    .col-5 { grid-column: span 5; }
+    .col-6 { grid-column: span 6; }
+    .col-7 { grid-column: span 7; }
+    .col-8 { grid-column: span 8; }
+    .col-9 { grid-column: span 9; }
+    .col-12 { grid-column: span 12; }
+
+    @media (max-width: 1100px) {
+      .col-3,.col-4,.col-5,.col-6,.col-7,.col-8,.col-9 { grid-column: span 12; }
+    }
+
+    .wh-list-wrap {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .wh-list {
+      flex: 1;
+      min-height: 0;
+      overflow: auto;
+      padding-right: 6px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .wh-list::-webkit-scrollbar { width: 8px; }
+    .wh-list::-webkit-scrollbar-track { background: transparent; }
+    .wh-list::-webkit-scrollbar-thumb {
+      background: rgba(21, 23, 23, 0.18);
+      border-radius: 999px;
+    }
+
+    .wh-item {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 12px 12px 10px;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.06);
+      display: grid;
+      gap: 10px;
+      transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
+    }
+    .wh-item:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 16px 32px rgba(0,0,0,0.10);
+      border-color: rgba(254,127,45,0.55);
+    }
+
+    .wh-item-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .wh-item-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 240px;
+    }
+
+    .wh-check {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .wh-check input[type="checkbox"] {
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--text);
+      border-radius: 6px;
+      position: relative;
+      cursor: pointer;
+      background: transparent;
+      transition: background 0.15s ease, transform 0.15s ease;
+    }
+    .wh-check input[type="checkbox"]:checked {
+      background: var(--text);
+      transform: scale(1.03);
+    }
+    .wh-check input[type="checkbox"]::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: #fff;
+      clip-path: polygon(25% 52%, 40% 67%, 76% 30%, 84% 38%, 40% 82%, 17% 58%);
+      opacity: 0;
+      transition: opacity 0.15s ease;
+    }
+    .wh-check input[type="checkbox"]:checked::after {
+      opacity: 1;
+    }
+
+    .wh-badges {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .wh-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: #fff;
+      font-weight: 800;
+      font-size: 12px;
+      color: var(--text);
+    }
+    .wh-badge.soft {
+      background: var(--accent-bg);
+      border-color: rgba(254,127,45,0.35);
+      color: #151717;
+    }
+
+    .wh-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 10px;
+    }
+
+    .wh-kv {
+      grid-column: span 3;
+      background: #f8fafc;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 10px 10px;
+      display: grid;
+      gap: 4px;
+      min-height: 54px;
+    }
+    .wh-kv .k {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      color: rgba(21,23,23,0.70);
+      text-transform: uppercase;
+    }
+    .wh-kv .v {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .span-4 { grid-column: span 4; }
+    .span-6 { grid-column: span 6; }
+    .span-12 { grid-column: span 12; }
+
+    @media (max-width: 1100px) {
+      .wh-kv, .span-4, .span-6 { grid-column: span 12; }
+      .wh-item-left { min-width: 0; }
+    }
+
+    .wh-actions-float {
+      position: sticky;
+      bottom: 0;
+      display: none;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      padding: 10px 0 0;
+      z-index: 5;
+    }
+
+    .wh-actions-float.visible {
+      display: flex;
+    }
+
+    .wh-btn {
+      cursor: pointer;
+      border: 1px solid #151717;
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-weight: 800;
+      color: #fff;
+      background: #151717;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.08);
+      transition: transform 150ms ease, box-shadow 150ms ease, background 150ms ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+    .wh-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 16px 32px rgba(0,0,0,0.12);
+      background: #1f1f22;
+    }
+
+    .wh-btn.secondary {
+      background: #fff;
+      color: #151717;
+      border-color: var(--border);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.06);
+    }
+    .wh-btn.secondary:hover {
+      background: #f8fafc;
+      border-color: rgba(254,127,45,0.55);
+      color: var(--accent);
+    }
+
+    .wh-empty {
+      padding: 16px;
+      border-radius: 14px;
+      border: 1px dashed var(--border);
+      color: var(--muted);
+      background: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.03);
+    }
+    .wh-empty .material-symbols-outlined { color: var(--accent); }
+
+    .wh-auth-warn {
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: 1px dashed rgba(254,127,45,0.55);
+      background: rgba(254,127,45,0.10);
+      color: #151717;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .wh-auth-warn .material-symbols-outlined { color: var(--accent); }
+  </style>
+
+  <div class="wh-head">
+    <h2 class="wh-title">
+      <span class="material-symbols-outlined" aria-hidden="true">inventory_2</span>
+      Управление складом
+    </h2>
+
+    <div class="wh-tabs" role="tablist" aria-label="Подстраницы управления складом">
+      <button class="wh-tab active" data-tab="orders" role="tab" aria-selected="true">Заказы</button>
+      <button class="wh-tab" data-tab="materials" role="tab" aria-selected="false">Склад материалов</button>
+      <button class="wh-tab" data-tab="products" role="tab" aria-selected="false">Склад готовой продукции</button>
+      <button class="wh-tab" data-tab="stocks" role="tab" aria-selected="false">Управление остатками</button>
+    </div>
+  </div>
+
+  <!-- ====== ORDERS ====== -->
+  <section class="wh-panel active" id="panel-orders" role="tabpanel">
+    <div id="whAuthWarn" class="wh-auth-warn" style="display:none;">
+      <span class="material-symbols-outlined" aria-hidden="true">lock</span>
+      Вы не авторизованы. Войдите в приложении, чтобы работать со складом.
+    </div>
+
+    <div class="wh-card">
+      <div class="helper" style="color:var(--text); font-weight:800; margin-bottom:10px;">
+        Создать заказ
+      </div>
+
+      <div class="wh-form">
+        <div class="wh-form-grid">
+          <div class="wh-field col-3">
+            <label>Артикул товара</label>
+            <div class="inputForm">
+              <span class="inputIcon material-symbols-outlined" aria-hidden="true">qr_code</span>
+              <input id="ord_sku" class="input" placeholder="RIV-0881" />
+            </div>
+          </div>
+
+          <div class="wh-field col-6">
+            <label>Наименование товара</label>
+            <div class="inputForm">
+              <span class="inputIcon material-symbols-outlined" aria-hidden="true">inventory</span>
+              <input id="ord_name" class="input" placeholder="Например: Профиль алюминиевый..." />
+            </div>
+          </div>
+
+          <div class="wh-field col-3">
+            <label>Ед. изм. (текст)</label>
+            <div class="inputForm">
+              <span class="inputIcon material-symbols-outlined" aria-hidden="true">straighten</span>
+              <input id="ord_unit" class="input" placeholder="шт / м / кг" />
+            </div>
+          </div>
+
+          <div class="wh-field col-3">
+            <label>Количество</label>
+            <div class="inputForm">
+              <span class="inputIcon material-symbols-outlined" aria-hidden="true">numbers</span>
+              <input id="ord_qty" class="input" type="number" step="0.001" placeholder="1" />
+            </div>
+          </div>
+
+          <div class="wh-field col-3">
+            <label>Цена за единицу</label>
+            <div class="inputForm">
+              <span class="inputIcon material-symbols-outlined" aria-hidden="true">payments</span>
+              <input id="ord_price" class="input" type="number" step="0.01" placeholder="0.00" />
+            </div>
+          </div>
+
+          <div class="wh-field col-3">
+            <label>Сумма</label>
+            <div class="inputForm">
+              <span class="inputIcon material-symbols-outlined" aria-hidden="true">calculate</span>
+              <input id="ord_amount" class="input" type="number" step="0.01" placeholder="Авто (qty * price)" />
+            </div>
+          </div>
+
+          <div class="wh-field col-3">
+            <label>Поставщик</label>
+            <div class="inputForm">
+              <span class="inputIcon material-symbols-outlined" aria-hidden="true">store</span>
+              <input id="ord_supplier" class="input" placeholder="Компания / ФИО" />
+            </div>
+          </div>
+
+          <div class="wh-field col-6">
+            <label>Контакты поставщика</label>
+            <div class="inputForm">
+              <span class="inputIcon material-symbols-outlined" aria-hidden="true">contact_phone</span>
+              <input id="ord_contacts" class="input" placeholder="+7..., email, ссылка, и т.п." />
+            </div>
+          </div>
+
+          <div class="wh-field col-6">
+            <label>Планируемый срок доставки</label>
+            <div class="inputForm">
+              <span class="inputIcon material-symbols-outlined" aria-hidden="true">event</span>
+              <input id="ord_delivery" class="input" type="date" />
+            </div>
+          </div>
+
+          <div class="wh-field col-12">
+            <label>Комментарий пользователя</label>
+            <textarea id="ord_comment" class="input" placeholder="Комментарий по заказу..."></textarea>
+          </div>
+        </div>
+
+        <button id="btnCreateOrder" class="button-submit" type="button" style="margin: 0;">
+          Создать запись заказа
+        </button>
+        <div class="helper" style="margin-top: 6px;">
+          Категория будет <b>«заказ»</b>, статус — <b>«заказано»</b>.
+        </div>
+      </div>
+    </div>
+
+    <div class="wh-list-wrap">
+      <div class="helper" style="color:var(--text); font-weight:800;">
+        Мои заказы (категория: «заказ»)
+      </div>
+
+      <div id="ordersList" class="wh-list"></div>
+
+      <div id="ordersActions" class="wh-actions-float">
+        <button id="btnCancelOrder" class="wh-btn secondary" type="button">
+          <span class="material-symbols-outlined" aria-hidden="true">cancel</span>
+          Отменить заказ
+        </button>
+        <button id="btnMoveToWarehouse" class="wh-btn" type="button">
+          <span class="material-symbols-outlined" aria-hidden="true">move_to_inbox</span>
+          Переместить на склад
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== MATERIALS ====== -->
+  <section class="wh-panel" id="panel-materials" role="tabpanel">
+    <div class="wh-list-wrap">
+      <div class="helper" style="color:var(--text); font-weight:800;">
+        Склад материалов (категория: «материалы»)
+      </div>
+
+      <div id="materialsList" class="wh-list"></div>
+
+      <div id="materialsActions" class="wh-actions-float">
+        <button id="btnWriteOff" class="wh-btn" type="button">
+          <span class="material-symbols-outlined" aria-hidden="true">remove_circle</span>
+          Списать остатки
+        </button>
+      </div>
+
+      <div class="helper" style="margin-top: -2px;">
+        Списание создаёт новые записи со статусом <b>«списание»</b> и отрицательным количеством.
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== PRODUCTS (stub) ====== -->
+  <section class="wh-panel" id="panel-products" role="tabpanel">
+    <div class="wh-empty">
+      <span class="material-symbols-outlined" aria-hidden="true">package_2</span>
+      Подстраница «Склад готовой продукции» пока не наполнена.
+    </div>
+  </section>
+
+  <!-- ====== STOCKS (stub) ====== -->
+  <section class="wh-panel" id="panel-stocks" role="tabpanel">
+    <div class="wh-empty">
+      <span class="material-symbols-outlined" aria-hidden="true">rule</span>
+      Подстраница «Управление остатками» пока не наполнена.
+    </div>
+  </section>
+
+  <template id="tplItem">
+    <div class="wh-item" data-id="">
+      <div class="wh-item-top">
+        <div class="wh-item-left">
+          <label class="wh-check" title="Выбрать запись">
+            <input type="checkbox" />
+          </label>
+          <div class="wh-badges">
+            <span class="wh-badge soft" data-badge="category">категория</span>
+            <span class="wh-badge" data-badge="status">статус</span>
+          </div>
+        </div>
+        <div class="wh-badges">
+          <span class="wh-badge" data-badge="datetime">дата</span>
+        </div>
+      </div>
+
+      <div class="wh-grid">
+        <div class="wh-kv span-4">
+          <div class="k">Артикул</div>
+          <div class="v" data-field="sku"></div>
+        </div>
+        <div class="wh-kv span-6">
+          <div class="k">Наименование</div>
+          <div class="v" data-field="item_name"></div>
+        </div>
+        <div class="wh-kv span-2">
+          <div class="k">Ед. изм.</div>
+          <div class="v" data-field="unit"></div>
+        </div>
+
+        <div class="wh-kv span-2">
+          <div class="k">Количество</div>
+          <div class="v" data-field="quantity"></div>
+        </div>
+        <div class="wh-kv span-2">
+          <div class="k">Цена</div>
+          <div class="v" data-field="unit_price"></div>
+        </div>
+        <div class="wh-kv span-2">
+          <div class="k">Сумма</div>
+          <div class="v" data-field="amount"></div>
+        </div>
+        <div class="wh-kv span-6">
+          <div class="k">Поставщик</div>
+          <div class="v" data-field="supplier"></div>
+        </div>
+
+        <div class="wh-kv span-6" data-only="orders">
+          <div class="k">Контакты поставщика</div>
+          <div class="v" data-field="supplier_contacts"></div>
+        </div>
+
+        <div class="wh-kv span-6" data-only="orders">
+          <div class="k">Планируемый срок доставки</div>
+          <div class="v" data-field="planned_delivery"></div>
+        </div>
+
+        <div class="wh-kv span-12" data-only="orders">
+          <div class="k">Комментарий</div>
+          <div class="v" data-field="comment"></div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <script>
+    (function () {
+      const root = document.getElementById("warehouseApp");
+      if (!root) return;
+
+      // защита от повторной инициализации (если пользователь перезагружает вкладку слева)
+      if (root.dataset.inited === "1") return;
+      root.dataset.inited = "1";
+
+      const SUPABASE_URL = "https://ncdwlmgwljjwpuawlssr.supabase.co";
+      const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jZHdsbWd3bGpqd3B1YXdsc3NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0NTQxNDksImV4cCI6MjA4MzAzMDE0OX0.rrIznUflWydylTnUZvOxOkeF9eMp91qNN4Bjq2gXRL8";
+
+      const sb = (function () {
+        try {
+          const supa = window.supabase;
+          if (!supa || typeof supa.createClient !== "function") return null;
+          return supa.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        } catch (e) {
+          return null;
+        }
+      })();
+
+      const tabs = Array.from(root.querySelectorAll(".wh-tab"));
+      const panels = {
+        orders: root.querySelector("#panel-orders"),
+        materials: root.querySelector("#panel-materials"),
+        products: root.querySelector("#panel-products"),
+        stocks: root.querySelector("#panel-stocks"),
+      };
+
+      const warn = root.querySelector("#whAuthWarn");
+
+      const ordersList = root.querySelector("#ordersList");
+      const materialsList = root.querySelector("#materialsList");
+      const tpl = root.querySelector("#tplItem");
+
+      const ordersActions = root.querySelector("#ordersActions");
+      const materialsActions = root.querySelector("#materialsActions");
+
+      const btnCreateOrder = root.querySelector("#btnCreateOrder");
+      const btnCancelOrder = root.querySelector("#btnCancelOrder");
+      const btnMoveToWarehouse = root.querySelector("#btnMoveToWarehouse");
+      const btnWriteOff = root.querySelector("#btnWriteOff");
+
+      const f = {
+        sku: root.querySelector("#ord_sku"),
+        name: root.querySelector("#ord_name"),
+        unit: root.querySelector("#ord_unit"),
+        qty: root.querySelector("#ord_qty"),
+        price: root.querySelector("#ord_price"),
+        amount: root.querySelector("#ord_amount"),
+        supplier: root.querySelector("#ord_supplier"),
+        contacts: root.querySelector("#ord_contacts"),
+        delivery: root.querySelector("#ord_delivery"),
+        comment: root.querySelector("#ord_comment"),
+      };
+
+      const state = {
+        userId: null,
+        activeTab: "orders",
+        orders: [],
+        materials: [],
+        selectedOrders: new Set(),
+        selectedMaterials: new Set(),
+      };
+
+      function toNum(v) {
+        if (v === null || v === undefined || v === "") return null;
+        const n = Number(String(v).replace(",", "."));
+        return Number.isFinite(n) ? n : null;
+      }
+
+      function fmtMoney(n) {
+        const num = toNum(n);
+        if (num === null) return "";
+        return new Intl.NumberFormat("ru-RU", { style: "currency", currency: "RUB", maximumFractionDigits: 2 }).format(num);
+      }
+
+      function fmtQty(n) {
+        const num = toNum(n);
+        if (num === null) return "";
+        return new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 3 }).format(num);
+      }
+
+      function fmtDateTime(iso) {
+        if (!iso) return "";
+        const d = new Date(iso);
+        if (Number.isNaN(d.getTime())) return "";
+        return d.toLocaleString("ru-RU");
+      }
+
+      function fmtDate(isoDate) {
+        if (!isoDate) return "";
+        const d = new Date(isoDate);
+        if (Number.isNaN(d.getTime())) return "";
+        return d.toLocaleDateString("ru-RU");
+      }
+
+      function setActiveTab(key) {
+        state.activeTab = key;
+        tabs.forEach(t => {
+          const on = t.dataset.tab === key;
+          t.classList.toggle("active", on);
+          t.setAttribute("aria-selected", on ? "true" : "false");
+        });
+        Object.entries(panels).forEach(([k, el]) => {
+          if (!el) return;
+          el.classList.toggle("active", k === key);
+        });
+
+        // прячем экшены при смене вкладок
+        updateActionBars();
+      }
+
+      tabs.forEach(btn => {
+        btn.addEventListener("click", () => setActiveTab(btn.dataset.tab));
+      });
+
+      function updateActionBars() {
+        const oHas = state.selectedOrders.size > 0;
+        const mHas = state.selectedMaterials.size > 0;
+
+        if (ordersActions) ordersActions.classList.toggle("visible", state.activeTab === "orders" && oHas);
+        if (materialsActions) materialsActions.classList.toggle("visible", state.activeTab === "materials" && mHas);
+      }
+
+      function clearSelections() {
+        state.selectedOrders.clear();
+        state.selectedMaterials.clear();
+        // снять галочки визуально
+        root.querySelectorAll('.wh-item input[type="checkbox"]').forEach(cb => cb.checked = false);
+        updateActionBars();
+      }
+
+      function renderEmpty(container, text) {
+        container.innerHTML = "";
+        const div = document.createElement("div");
+        div.className = "wh-empty";
+        div.innerHTML = `<span class="material-symbols-outlined" aria-hidden="true">info</span>${text}`;
+        container.appendChild(div);
+      }
+
+      function renderList(container, records, mode) {
+        container.innerHTML = "";
+        if (!Array.isArray(records) || records.length === 0) {
+          renderEmpty(container, "Пока нет записей.");
+          return;
+        }
+
+        const frag = document.createDocumentFragment();
+
+        records.forEach(rec => {
+          const node = tpl.content.firstElementChild.cloneNode(true);
+          node.dataset.id = rec.id;
+
+          const cb = node.querySelector('input[type="checkbox"]');
+          cb.addEventListener("change", () => {
+            const id = rec.id;
+            if (mode === "orders") {
+              if (cb.checked) state.selectedOrders.add(id);
+              else state.selectedOrders.delete(id);
+            } else if (mode === "materials") {
+              if (cb.checked) state.selectedMaterials.add(id);
+              else state.selectedMaterials.delete(id);
+            }
+            updateActionBars();
+          });
+
+          const bCat = node.querySelector('[data-badge="category"]');
+          const bSt = node.querySelector('[data-badge="status"]');
+          const bDt = node.querySelector('[data-badge="datetime"]');
+
+          if (bCat) bCat.textContent = rec.category || "";
+          if (bSt) bSt.textContent = rec.status || "";
+          if (bDt) bDt.textContent = fmtDateTime(rec.event_at || rec.created_at);
+
+          const set = (field, val) => {
+            const el = node.querySelector(`[data-field="${field}"]`);
+            if (el) el.textContent = val ?? "";
+          };
+
+          set("sku", rec.sku || "");
+          set("item_name", rec.item_name || "");
+          set("unit", rec.unit || "");
+          set("quantity", fmtQty(rec.quantity));
+          set("unit_price", fmtMoney(rec.unit_price));
+          set("amount", fmtMoney(rec.amount));
+          set("supplier", rec.supplier || "");
+
+          const onlyOrdersEls = Array.from(node.querySelectorAll('[data-only="orders"]'));
+          onlyOrdersEls.forEach(el => el.style.display = (mode === "orders") ? "" : "none");
+
+          set("supplier_contacts", rec.supplier_contacts || "");
+          set("planned_delivery", rec.planned_delivery_date ? fmtDate(rec.planned_delivery_date) : "");
+          set("comment", rec.comment || "");
+
+          frag.appendChild(node);
+        });
+
+        container.appendChild(frag);
+      }
+
+      async function ensureAuth() {
+        if (!sb) {
+          if (warn) {
+            warn.style.display = "";
+            warn.textContent = "Supabase клиент не найден. Проверь, что подключен @supabase/supabase-js.";
+          }
+          return false;
+        }
+
+        try {
+          const { data } = await sb.auth.getSession();
+          const session = data?.session || null;
+          const userId = session?.user?.id || null;
+
+          state.userId = userId;
+          if (!userId) {
+            if (warn) warn.style.display = "";
+            return false;
+          } else {
+            if (warn) warn.style.display = "none";
+            return true;
+          }
+        } catch (e) {
+          if (warn) warn.style.display = "";
+          return false;
+        }
+      }
+
+      async function loadOrders() {
+        if (!state.userId) return;
+        const { data, error } = await sb
+          .from("warehouse")
+          .select("*")
+          .eq("category", "заказ")
+          .order("event_at", { ascending: false });
+
+        if (error) {
+          renderEmpty(ordersList, "Ошибка загрузки заказов: " + error.message);
+          return;
+        }
+
+        state.orders = data || [];
+        renderList(ordersList, state.orders, "orders");
+      }
+
+      async function loadMaterials() {
+        if (!state.userId) return;
+        const { data, error } = await sb
+          .from("warehouse")
+          .select("*")
+          .eq("category", "материалы")
+          .order("event_at", { ascending: false });
+
+        if (error) {
+          renderEmpty(materialsList, "Ошибка загрузки материалов: " + error.message);
+          return;
+        }
+
+        state.materials = data || [];
+        renderList(materialsList, state.materials, "materials");
+      }
+
+      function calcAmount(qty, price, manualAmount) {
+        const q = toNum(qty);
+        const p = toNum(price);
+        const a = toNum(manualAmount);
+        if (a !== null) return a;
+        if (q !== null && p !== null) return q * p;
+        if (p !== null) return p;
+        return 0;
+      }
+
+      function readOrderForm() {
+        const sku = (f.sku.value || "").trim();
+        const item_name = (f.name.value || "").trim();
+
+        const unit = (f.unit.value || "").trim();
+        const quantity = toNum(f.qty.value);
+        const unit_price = toNum(f.price.value);
+        const amount = calcAmount(quantity, unit_price, f.amount.value);
+
+        const supplier = (f.supplier.value || "").trim();
+        const supplier_contacts = (f.contacts.value || "").trim();
+        const planned_delivery_date = f.delivery.value ? f.delivery.value : null;
+        const comment = (f.comment.value || "").trim();
+
+        return {
+          sku,
+          item_name,
+          unit: unit || null,
+          quantity: (quantity === null ? 1 : quantity),
+          unit_price: (unit_price === null ? 0 : unit_price),
+          amount: Number(amount || 0),
+          supplier: supplier || null,
+          supplier_contacts: supplier_contacts || null,
+          planned_delivery_date,
+          comment: comment || null,
+        };
+      }
+
+      function clearOrderForm() {
+        Object.values(f).forEach(el => {
+          if (!el) return;
+          el.value = "";
+        });
+        f.qty.value = "";
+        f.price.value = "";
+        f.amount.value = "";
+      }
+
+      btnCreateOrder.addEventListener("click", async () => {
+        const ok = await ensureAuth();
+        if (!ok) return;
+
+        const payload = readOrderForm();
+        if (!payload.sku || !payload.item_name) {
+          alert("Заполни обязательные поля: Артикул и Наименование.");
+          return;
+        }
+
+        const insert = {
+          user_id: state.userId,
+          event_at: new Date().toISOString(),
+          sku: payload.sku,
+          item_name: payload.item_name,
+          category: "заказ",
+          status: "заказано",
+          unit: payload.unit,
+          quantity: payload.quantity,
+          unit_price: payload.unit_price,
+          amount: payload.amount,
+          supplier: payload.supplier,
+          supplier_contacts: payload.supplier_contacts,
+          planned_delivery_date: payload.planned_delivery_date,
+          comment: payload.comment,
+        };
+
+        const { error } = await sb.from("warehouse").insert([insert]);
+        if (error) {
+          alert("Ошибка создания заказа: " + error.message);
+          return;
+        }
+
+        clearOrderForm();
+        clearSelections();
+        await loadOrders();
+      });
+
+      btnCancelOrder.addEventListener("click", async () => {
+        if (state.selectedOrders.size === 0) return;
+
+        const confirmed = confirm("Подтвердите отмену выбранного(ых) заказа(ов).");
+        if (!confirmed) return;
+
+        const ids = Array.from(state.selectedOrders);
+        const { error } = await sb
+          .from("warehouse")
+          .update({ status: "заказ отменен" })
+          .in("id", ids);
+
+        if (error) {
+          alert("Ошибка отмены заказа: " + error.message);
+          return;
+        }
+
+        clearSelections();
+        await loadOrders();
+      });
+
+      btnMoveToWarehouse.addEventListener("click", async () => {
+        if (state.selectedOrders.size === 0) return;
+
+        const ids = Array.from(state.selectedOrders);
+        const now = new Date().toISOString();
+
+        const { error } = await sb
+          .from("warehouse")
+          .update({ category: "материалы", status: "поступление", event_at: now })
+          .in("id", ids);
+
+        if (error) {
+          alert("Ошибка перемещения на склад: " + error.message);
+          return;
+        }
+
+        clearSelections();
+        await loadOrders();
+        await loadMaterials();
+      });
+
+      btnWriteOff.addEventListener("click", async () => {
+        if (state.selectedMaterials.size === 0) return;
+
+        const confirmed = confirm("Подтвердите списание остатков по выбранным позициям.\nБудут созданы новые записи со статусом «списание» и отрицательным количеством.");
+        if (!confirmed) return;
+
+        // берём данные из уже загруженных материалов
+        const selected = new Set(state.selectedMaterials);
+        const rows = (state.materials || []).filter(r => selected.has(r.id));
+
+        if (rows.length === 0) {
+          alert("Не удалось найти выбранные записи. Обнови список и попробуй снова.");
+          return;
+        }
+
+        const now = new Date().toISOString();
+
+        const inserts = rows.map(r => {
+          const qty = toNum(r.quantity);
+          const qNeg = qty === null ? -1 : -Math.abs(qty);
+          const price = toNum(r.unit_price) ?? 0;
+          const amount = qNeg * price;
+
+          return {
+            user_id: state.userId,
+            event_at: now,
+            sku: r.sku,
+            item_name: r.item_name,
+            category: "материалы",
+            status: "списание",
+            unit: r.unit,
+            quantity: qNeg,
+            unit_price: price,
+            amount: amount,
+            supplier: r.supplier,
+            supplier_contacts: null,
+            planned_delivery_date: null,
+            comment: r.comment || null,
+          };
+        });
+
+        const { error } = await sb.from("warehouse").insert(inserts);
+        if (error) {
+          alert("Ошибка списания: " + error.message);
+          return;
+        }
+
+        clearSelections();
+        await loadMaterials();
+      });
+
+      // авто-подсказка суммы при вводе qty/price
+      function wireAutoAmount() {
+        const recompute = () => {
+          const qty = toNum(f.qty.value);
+          const price = toNum(f.price.value);
+          if (qty === null && price === null) return;
+          if (f.amount.value && String(f.amount.value).trim() !== "") return; // если пользователь ввёл сумму вручную — не трогаем
+          const amount = calcAmount(qty, price, null);
+          f.amount.value = Number(amount || 0).toFixed(2);
+        };
+        f.qty.addEventListener("input", recompute);
+        f.price.addEventListener("input", recompute);
+      }
+
+      async function boot() {
+        wireAutoAmount();
+        const ok = await ensureAuth();
+        if (!ok) {
+          // всё равно покажем пустые списки
+          renderEmpty(ordersList, "Нет данных (нужна авторизация).");
+          renderEmpty(materialsList, "Нет данных (нужна авторизация).");
+          return;
+        }
+        await loadOrders();
+        await loadMaterials();
+      }
+
+      boot();
+    })();
+  </script>
+</div>
