@@ -92,6 +92,13 @@
       align-items: end;
     }
 
+    .wh-form-row {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 12px;
+      align-items: end;
+    }
+
     .wh-field {
       display: grid;
       gap: 6px;
@@ -129,6 +136,11 @@
 
     @media (max-width: 1100px) {
       .col-3,.col-4,.col-5,.col-6,.col-7,.col-8,.col-9 { grid-column: span 12; }
+      .wh-form-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 720px) {
+      .wh-form-row { grid-template-columns: 1fr; }
     }
 
     .wh-list-wrap {
@@ -159,10 +171,10 @@
       background: #fff;
       border: 1px solid var(--border);
       border-radius: 18px;
-      padding: 12px 12px 10px;
+      padding: 10px 12px;
       box-shadow: 0 10px 24px rgba(0,0,0,0.06);
       display: grid;
-      gap: 10px;
+      gap: 8px;
       transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
     }
     .wh-item:hover {
@@ -251,6 +263,10 @@
       gap: 10px;
     }
 
+    .wh-grid--compact {
+      gap: 8px;
+    }
+
     .wh-kv {
       grid-column: span 3;
       background: #f8fafc;
@@ -260,6 +276,10 @@
       display: grid;
       gap: 4px;
       min-height: 54px;
+    }
+    .wh-grid--compact .wh-kv {
+      padding: 8px 8px;
+      min-height: 46px;
     }
     .wh-kv .k {
       font-size: 11px;
@@ -277,12 +297,14 @@
       white-space: nowrap;
     }
 
+    .span-1 { grid-column: span 1; }
+    .span-2 { grid-column: span 2; }
     .span-4 { grid-column: span 4; }
     .span-6 { grid-column: span 6; }
     .span-12 { grid-column: span 12; }
 
     @media (max-width: 1100px) {
-      .wh-kv, .span-4, .span-6 { grid-column: span 12; }
+      .wh-kv, .span-1, .span-2, .span-4, .span-6 { grid-column: span 12; }
       .wh-item-left { min-width: 0; }
     }
 
@@ -388,8 +410,8 @@
       </div>
 
       <div class="wh-form">
-        <div class="wh-form-grid">
-          <div class="wh-field col-3">
+        <div class="wh-form-row">
+          <div class="wh-field">
             <label>артикул</label>
             <div class="inputForm">
               <span class="inputIcon material-symbols-outlined" aria-hidden="true">qr_code</span>
@@ -397,7 +419,7 @@
             </div>
           </div>
 
-          <div class="wh-field col-6">
+          <div class="wh-field">
             <label>Наименование товара</label>
             <div class="inputForm">
               <span class="inputIcon material-symbols-outlined" aria-hidden="true">inventory</span>
@@ -405,7 +427,7 @@
             </div>
           </div>
 
-          <div class="wh-field col-3">
+          <div class="wh-field">
             <label>Ед. изм.</label>
             <div class="inputForm">
               <span class="inputIcon material-symbols-outlined" aria-hidden="true">straighten</span>
@@ -413,7 +435,7 @@
             </div>
           </div>
 
-          <div class="wh-field col-3">
+          <div class="wh-field">
             <label>Кол-во</label>
             <div class="inputForm">
               <span class="inputIcon material-symbols-outlined" aria-hidden="true">numbers</span>
@@ -421,7 +443,7 @@
             </div>
           </div>
 
-          <div class="wh-field col-3">
+          <div class="wh-field">
             <label>цена ед.</label>
             <div class="inputForm">
               <span class="inputIcon material-symbols-outlined" aria-hidden="true">payments</span>
@@ -429,7 +451,7 @@
             </div>
           </div>
 
-          <div class="wh-field col-3">
+          <div class="wh-field">
             <label>сумма</label>
             <div class="inputForm">
               <span class="inputIcon material-symbols-outlined" aria-hidden="true">calculate</span>
@@ -437,7 +459,17 @@
             </div>
           </div>
 
-          <div class="wh-field col-3">
+          <div class="wh-field">
+            <label>планируемый срок поставки</label>
+            <div class="inputForm">
+              <span class="inputIcon material-symbols-outlined" aria-hidden="true">event</span>
+              <input id="ord_delivery" class="input" type="date" />
+            </div>
+          </div>
+        </div>
+
+        <div class="wh-form-grid">
+          <div class="wh-field col-4">
             <label>поставщик</label>
             <div class="inputForm">
               <span class="inputIcon material-symbols-outlined" aria-hidden="true">store</span>
@@ -445,19 +477,11 @@
             </div>
           </div>
 
-          <div class="wh-field col-6">
+          <div class="wh-field col-12">
             <label>контакты поставщика</label>
             <div class="inputForm">
               <span class="inputIcon material-symbols-outlined" aria-hidden="true">contact_phone</span>
               <input id="ord_contacts" class="input" placeholder="+7..., email, ссылка, и т.п." />
-            </div>
-          </div>
-
-          <div class="wh-field col-6">
-            <label>срок доставки</label>
-            <div class="inputForm">
-              <span class="inputIcon material-symbols-outlined" aria-hidden="true">event</span>
-              <input id="ord_delivery" class="input" type="date" />
             </div>
           </div>
 
@@ -551,48 +575,48 @@
         </div>
       </div>
 
-      <div class="wh-grid">
-        <div class="wh-kv span-4">
+      <div class="wh-grid wh-grid--compact">
+        <div class="wh-kv span-2">
           <div class="k">Артикул</div>
           <div class="v" data-field="sku"></div>
         </div>
-        <div class="wh-kv span-6">
+        <div class="wh-kv span-4">
           <div class="k">Наименование</div>
           <div class="v" data-field="item_name"></div>
         </div>
-        <div class="wh-kv span-2">
+        <div class="wh-kv span-1">
           <div class="k">Ед. изм.</div>
           <div class="v" data-field="unit"></div>
         </div>
 
-        <div class="wh-kv span-2">
+        <div class="wh-kv span-1">
           <div class="k">Количество</div>
           <div class="v" data-field="quantity"></div>
         </div>
-        <div class="wh-kv span-2">
+        <div class="wh-kv span-1">
           <div class="k">Цена</div>
           <div class="v" data-field="unit_price"></div>
         </div>
-        <div class="wh-kv span-2">
+        <div class="wh-kv span-1">
           <div class="k">Сумма</div>
           <div class="v" data-field="amount"></div>
         </div>
-        <div class="wh-kv span-6">
+        <div class="wh-kv span-2" data-only="orders">
+          <div class="k">Планируемый срок поставки</div>
+          <div class="v" data-field="planned_delivery"></div>
+        </div>
+
+        <div class="wh-kv span-4">
           <div class="k">Поставщик</div>
           <div class="v" data-field="supplier"></div>
         </div>
 
-        <div class="wh-kv span-6" data-only="orders">
+        <div class="wh-kv span-4" data-only="orders">
           <div class="k">Контакты поставщика</div>
           <div class="v" data-field="supplier_contacts"></div>
         </div>
 
-        <div class="wh-kv span-6" data-only="orders">
-          <div class="k">Планируемый срок доставки</div>
-          <div class="v" data-field="planned_delivery"></div>
-        </div>
-
-        <div class="wh-kv span-12" data-only="orders">
+        <div class="wh-kv span-4" data-only="orders">
           <div class="k">Комментарий</div>
           <div class="v" data-field="comment"></div>
         </div>
