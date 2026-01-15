@@ -85,18 +85,48 @@
       gap: 12px;
     }
 
-    .wh-form-grid {
-      display: grid;
-      grid-template-columns: repeat(12, 1fr);
-      gap: 12px;
-      align-items: end;
+    .wh-form.compact {
+      gap: 10px;
     }
 
-    .wh-form-row {
-      display: grid;
-      grid-template-columns: repeat(7, minmax(0, 1fr));
-      gap: 12px;
-      align-items: end;
+    .wh-form.compact .wh-form-row,
+    .wh-form.compact .wh-form-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 12px;
+      align-items: flex-end;
+    }
+
+    .wh-form.compact .wh-field {
+      --field-width: 180px;
+      width: min(var(--field-width), 100%);
+      flex: 0 0 auto;
+    }
+
+    .wh-form.compact .wh-field.full {
+      --field-width: 640px;
+    }
+
+    .wh-form.compact .inputForm {
+      height: 40px;
+      border-radius: 10px;
+      padding-left: 10px;
+      gap: 6px;
+    }
+
+    .wh-form.compact .input {
+      font-size: 14px;
+      margin-left: 2px;
+    }
+
+    .wh-form.compact .inputIcon {
+      font-size: 18px;
+    }
+
+    .wh-form.compact .wh-field label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
     }
 
     .wh-field {
@@ -119,28 +149,34 @@
       font-size: 14px;
       font-family: "Inter", system-ui, -apple-system, sans-serif;
     }
+
+    .wh-form.compact .wh-field textarea.input {
+      height: 80px;
+      border-radius: 10px;
+      font-size: 13px;
+    }
+
+    .wh-form.compact .wh-field .inputForm,
+    .wh-form.compact .wh-field textarea.input {
+      width: 100%;
+    }
+
+    .wh-form.compact .button-submit {
+      width: auto;
+      height: 42px;
+      padding: 0 18px;
+      border-radius: 12px;
+    }
     .wh-field textarea.input:focus {
       outline: none;
       border-color: var(--accent);
       box-shadow: 0 0 0 4px rgba(254,127,45,0.12);
     }
 
-    .col-3 { grid-column: span 3; }
-    .col-4 { grid-column: span 4; }
-    .col-5 { grid-column: span 5; }
-    .col-6 { grid-column: span 6; }
-    .col-7 { grid-column: span 7; }
-    .col-8 { grid-column: span 8; }
-    .col-9 { grid-column: span 9; }
-    .col-12 { grid-column: span 12; }
-
-    @media (max-width: 1100px) {
-      .col-3,.col-4,.col-5,.col-6,.col-7,.col-8,.col-9 { grid-column: span 12; }
-      .wh-form-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    }
-
     @media (max-width: 720px) {
-      .wh-form-row { grid-template-columns: 1fr; }
+      .wh-form.compact .wh-field {
+        width: 100%;
+      }
     }
 
     .wh-list-wrap {
@@ -409,25 +445,25 @@
         Создать заказ
       </div>
 
-      <div class="wh-form">
+      <div class="wh-form compact">
         <div class="wh-form-row">
-          <div class="wh-field">
+          <div class="wh-field" style="--field-width: 170px;">
             <label>артикул</label>
             <div class="inputForm">
               <span class="inputIcon material-symbols-outlined" aria-hidden="true">qr_code</span>
-              <input id="ord_sku" class="input" style="width: 190px;" placeholder="RIV-0881"/>
+              <input id="ord_sku" class="input" placeholder="RIV-0881"/>
             </div>
           </div>
 
-          <div class="wh-field">
+          <div class="wh-field" style="--field-width: 320px;">
             <label>Наименование товара</label>
             <div class="inputForm">
               <span class="inputIcon material-symbols-outlined" aria-hidden="true">inventory</span>
-              <input id="ord_name" class="input" style="width: 360px;" placeholder="Например: Профиль алюминиевый..." />
+              <input id="ord_name" class="input" placeholder="Например: Профиль алюминиевый..." />
             </div>
           </div>
 
-          <div class="wh-field">
+          <div class="wh-field" style="--field-width: 120px;">
             <label>Ед. изм.</label>
             <div class="inputForm">
               <span class="inputIcon material-symbols-outlined" aria-hidden="true">straighten</span>
@@ -435,7 +471,7 @@
             </div>
           </div>
 
-          <div class="wh-field">
+          <div class="wh-field" style="--field-width: 110px;">
             <label>Кол-во</label>
             <div class="inputForm">
               <span class="inputIcon material-symbols-outlined" aria-hidden="true">numbers</span>
@@ -443,7 +479,7 @@
             </div>
           </div>
 
-          <div class="wh-field">
+          <div class="wh-field" style="--field-width: 130px;">
             <label>цена ед.</label>
             <div class="inputForm">
               <span class="inputIcon material-symbols-outlined" aria-hidden="true">payments</span>
@@ -451,7 +487,7 @@
             </div>
           </div>
 
-          <div class="wh-field">
+          <div class="wh-field" style="--field-width: 150px;">
             <label>сумма</label>
             <div class="inputForm">
               <span class="inputIcon material-symbols-outlined" aria-hidden="true">calculate</span>
@@ -459,7 +495,7 @@
             </div>
           </div>
 
-          <div class="wh-field">
+          <div class="wh-field" style="--field-width: 170px;">
             <label>планируемый срок поставки</label>
             <div class="inputForm">
               <span class="inputIcon material-symbols-outlined" aria-hidden="true">event</span>
@@ -469,7 +505,7 @@
         </div>
 
         <div class="wh-form-grid">
-          <div class="wh-field col-4">
+          <div class="wh-field" style="--field-width: 220px;">
             <label>поставщик</label>
             <div class="inputForm">
               <span class="inputIcon material-symbols-outlined" aria-hidden="true">store</span>
@@ -477,7 +513,7 @@
             </div>
           </div>
 
-          <div class="wh-field col-12">
+          <div class="wh-field" style="--field-width: 420px;">
             <label>контакты поставщика</label>
             <div class="inputForm">
               <span class="inputIcon material-symbols-outlined" aria-hidden="true">contact_phone</span>
@@ -485,7 +521,7 @@
             </div>
           </div>
 
-          <div class="wh-field col-12">
+          <div class="wh-field full">
             <label>комментарий</label>
             <textarea id="ord_comment" class="input" placeholder="Комментарий по заказу..."></textarea>
           </div>
