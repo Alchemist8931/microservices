@@ -67,36 +67,85 @@
       gap: 12px;
     }
     .brand { font-weight: 800; letter-spacing: 0.02em; color: var(--text); font-size: 18px; }
-    .btn {
-      cursor: pointer;
-      border: 1px solid #151717;
-      border-radius: 12px;
-      padding: 12px 16px;
-      font-weight: 600;
-      color: #fff;
-      background: #151717;
-      box-shadow: 0 10px 24px rgba(0,0,0,0.08);
-      transition: transform 150ms ease, box-shadow 150ms ease, background 150ms ease;
+    .compact-field {
+      width: var(--field-width, 100%);
+      height: var(--field-height, 38px);
+      padding: var(--field-padding, 0 12px);
+      border-radius: var(--field-radius, 9px);
+      outline: none;
+      background-color: #f2f2f2;
+      border: 1px solid transparent;
+      transition: all 0.3s cubic-bezier(0.15, 0.83, 0.66, 1);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text);
     }
-    .btn:hover { transform: translateY(-1px); box-shadow: 0 16px 32px rgba(0,0,0,0.12); background: #1f1f22; }
-    .balance-pill {
+    .compact-field:focus,
+    .compact-field:focus-within {
+      border: 1px solid transparent;
+      box-shadow: 0 0 0 2px #242424;
+      background-color: transparent;
+    }
+    input.compact-field,
+    textarea.compact-field,
+    select.compact-field {
+      display: block;
+      font-size: 13px;
+      font-family: inherit;
+    }
+    textarea.compact-field {
+      min-height: var(--field-min-height, 80px);
+      height: auto;
+      padding: var(--field-padding, 10px 12px);
+      resize: vertical;
+    }
+    .compact-field input,
+    .compact-field textarea,
+    .compact-field select {
+      border: 0;
+      background: transparent;
+      width: 100%;
+      height: 100%;
+      font-size: 13px;
+      font-family: inherit;
+      color: var(--text);
+      outline: none;
+    }
+    .compact-field input[type="number"]::-webkit-outer-spin-button,
+    .compact-field input[type="number"]::-webkit-inner-spin-button,
+    input.compact-field::-webkit-outer-spin-button,
+    input.compact-field::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    .compact-field input[type="number"],
+    input.compact-field[type="number"] {
+      -moz-appearance: textfield;
+    }
+    .compact-button {
+      height: var(--btn-height, 35px);
+      width: var(--btn-width, auto);
+      padding: var(--btn-padding, 0 18px);
+      border-radius: var(--btn-radius, 11px);
+      border: var(--btn-border, 0);
+      outline: none;
+      color: var(--btn-color, #ffffff);
+      font-size: var(--btn-font-size, 13px);
+      font-weight: var(--btn-font-weight, 700);
+      background: var(--btn-bg, linear-gradient(180deg, #363636 0%, #1B1B1B 50%, #000000 100%));
+      box-shadow: var(--btn-shadow, 0px 0px 0px 0px #FFFFFF, 0px 0px 0px 0px #000000);
+      transition: all 0.3s cubic-bezier(0.15, 0.83, 0.66, 1);
       display: inline-flex;
       align-items: center;
-      gap: 10px;
-      padding: 10px 14px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      background: #fff;
-      font-weight: 600;
-      color: var(--text);
+      justify-content: center;
+      gap: var(--btn-gap, 6px);
       cursor: pointer;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.06);
-      transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
     }
-    .balance-pill:hover {
+    .compact-button:hover {
+      background: var(--btn-hover-bg, var(--btn-bg, #1b1b1b));
+      box-shadow: var(--btn-hover-shadow, 0px 0px 0px 2px #FFFFFF, 0px 0px 0px 4px #0000003a);
       transform: translateY(-1px);
-      border-color: var(--accent);
-      box-shadow: 0 12px 24px rgba(0,0,0,0.1);
     }
     .balance-pill .material-symbols-outlined {
       font-size: 20px;
@@ -139,14 +188,6 @@
       margin: 0;
       font-size: 20px;
       font-weight: 700;
-    }
-    .modal-close {
-      border: 1px solid var(--border);
-      background: #fff;
-      border-radius: 10px;
-      padding: 8px 10px;
-      cursor: pointer;
-      font-weight: 600;
     }
     .modal-section {
       background: #f8fafc;
@@ -244,17 +285,12 @@
       border: 1px solid var(--border);
       gap: 6px;
     }
-    .auth-tab {
-      border: 0;
-      border-radius: 10px;
-      padding: 10px 14px;
-      background: transparent;
-      color: var(--muted);
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 150ms ease, color 150ms ease;
+    .auth-tab.active {
+      --btn-bg: var(--surface);
+      --btn-color: var(--text);
+      --btn-border: 1px solid var(--border);
+      --btn-shadow: none;
     }
-    .auth-tab.active { background: var(--surface); color: var(--text); box-shadow: inset 0 -2px 0 var(--accent); }
     .auth-form {
       display: grid;
       gap: 14px;
@@ -274,49 +310,24 @@
       font-weight: 600;
     }
     .inputForm {
-      border: 1.5px solid #ecedec;
-      border-radius: 12px;
-      height: 50px;
       display: flex;
       align-items: center;
-      padding-left: 12px;
-      transition: 0.2s ease-in-out;
-      background: #fff;
       gap: 8px;
     }
     .input {
-      margin-left: 4px;
-      border-radius: 10px;
-      border: none;
       width: 100%;
       height: 100%;
-      font-size: 15px;
+      font-size: 13px;
       color: var(--text);
       background: transparent;
+      border: 0;
     }
     ::placeholder {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
       color: #9ca3af;
     }
-    .input:focus { outline: none; }
-    .inputForm:focus-within { border: 1.5px solid var(--accent); box-shadow: 0 0 0 4px rgba(45, 121, 243, 0.12); }
     .inputIcon { color: #94a3b8; display: inline-flex; align-items: center; }
     .helper { color: var(--muted); font-size: 14px; }
-    .button-submit, .auth-form .btn {
-      margin: 20px 0 10px 0;
-      background-color: #151717;
-      border: none;
-      color: white;
-      font-size: 15px;
-      font-weight: 600;
-      border-radius: 10px;
-      height: 50px;
-      width: 100%;
-      cursor: pointer;
-      transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
-      box-shadow: 0 10px 24px rgba(0,0,0,0.08);
-    }
-    .button-submit:hover, .auth-form .btn:hover { transform: translateY(-1px); background: #1f1f22; box-shadow: 0 14px 30px rgba(0,0,0,0.12); }
     .app-shell {
       display: none;
       width: 100%;
@@ -351,22 +362,18 @@
     .nav-group:first-of-type { border-top: 0; padding-top: 0; width: 63px; }
     .nav-title { display: none; }
     .nav-btn {
-      /* width: 100%; */
-      width: 63px;
-      aspect-ratio: 1 / 1;
-      border-radius: 14px;
-      border: 1.5px solid #ecedec;
-      background: #fff;
-      color: var(--text);
-      display: grid;
-      place-items: center;
-      cursor: pointer;
-      transition: background 140ms ease, border 140ms ease, transform 140ms ease, color 140ms ease;
       margin-bottom: 10px;
-      box-shadow: 0 6px 16px rgba(0,0,0,0.04);
     }
-    .nav-btn:hover { background: #f4f6fb; border-color: var(--accent); transform: translateY(-1px); color: var(--accent); }
-    .nav-btn.active { background: var(--accent-bg, #e8f0ff); border-color: var(--accent); color: var(--accent); }
+    .nav-btn:hover {
+      --btn-bg: #f4f6fb;
+      --btn-border: 1.5px solid var(--accent);
+      --btn-color: var(--accent);
+    }
+    .nav-btn.active {
+      --btn-bg: var(--accent-bg, #e8f0ff);
+      --btn-border: 1.5px solid var(--accent);
+      --btn-color: var(--accent);
+    }
     .content {
       display: grid;
       align-content: start;
@@ -428,11 +435,11 @@
   <header>
     <div class="brand">RIVA Development</div>
     <div class="header-actions">
-      <button id="balanceTrigger" class="balance-pill hidden" type="button" aria-haspopup="dialog" aria-controls="balanceModal">
+      <button id="balanceTrigger" class="balance-pill hidden compact-button" type="button" aria-haspopup="dialog" aria-controls="balanceModal" style="--btn-height: 36px; --btn-padding: 0 14px; --btn-radius: 999px; --btn-bg: #ffffff; --btn-color: var(--text); --btn-border: 1px solid var(--border); --btn-shadow: 0 8px 20px rgba(0,0,0,0.06); --btn-hover-shadow: 0 12px 24px rgba(0,0,0,0.1); --btn-gap: 10px; --btn-font-weight: 600;">
         <span class="material-symbols-outlined" aria-hidden="true">account_balance_wallet</span>
         Баланс: <span class="amount" id="balanceAmount">0 ₽</span>
       </button>
-      <button id="openAuth" class="btn">Вход</button>
+      <button id="openAuth" class="btn compact-button" style="--btn-height: 36px; --btn-padding: 0 16px;">Вход</button>
     </div>
   </header>
 
@@ -458,8 +465,8 @@
           <p class="helper">После успешной авторизации основная страница будет скрыта и появится навигация по микросервисам.</p>
         </div>
         <div class="auth-tabs" role="tablist">
-          <button class="auth-tab active" id="tabLogin" role="tab" aria-controls="loginForm">Вход</button>
-          <button class="auth-tab" id="tabRegister" role="tab" aria-controls="registerForm">Регистрация</button>
+          <button class="auth-tab compact-button active" id="tabLogin" role="tab" aria-controls="loginForm" style="--btn-bg: transparent; --btn-color: var(--muted); --btn-border: 1px solid transparent; --btn-shadow: none; --btn-hover-shadow: none; --btn-height: 32px; --btn-padding: 0 12px; --btn-font-weight: 600; --btn-font-size: 12px;">Вход</button>
+          <button class="auth-tab compact-button" id="tabRegister" role="tab" aria-controls="registerForm" style="--btn-bg: transparent; --btn-color: var(--muted); --btn-border: 1px solid transparent; --btn-shadow: none; --btn-hover-shadow: none; --btn-height: 32px; --btn-padding: 0 12px; --btn-font-weight: 600; --btn-font-size: 12px;">Регистрация</button>
         </div>
       </div>
 
@@ -469,7 +476,7 @@
             <div class="flex-column">
               <label for="loginUsername">Логин</label>
             </div>
-            <div class="inputForm">
+            <div class="inputForm compact-field">
               <span class="inputIcon material-symbols-outlined" aria-hidden="true">mail</span>
               <input id="loginUsername" class="input" name="username" autocomplete="username" placeholder="admin@example.com" required>
             </div>
@@ -478,14 +485,14 @@
             <div class="flex-column">
               <label for="loginPassword">Пароль</label>
             </div>
-            <div class="inputForm">
+            <div class="inputForm compact-field">
               <span class="inputIcon material-symbols-outlined" aria-hidden="true">lock</span>
               <input id="loginPassword" class="input" name="password" type="password" autocomplete="current-password" placeholder="••••••••" required>
             </div>
           </div>
         </div>
         <p class="helper">В этой форме авторизуются и администраторы, и пользователи их рабочих пространств.</p>
-        <button class="button-submit" type="submit">Войти</button>
+        <button class="button-submit compact-button" type="submit" style="--btn-width: 100%; --btn-height: 40px; --btn-padding: 0 18px; --btn-font-size: 14px; --btn-font-weight: 600; margin: 20px 0 10px;">Войти</button>
       </form>
 
      <form id="registerForm" class="auth-form hidden">
@@ -494,7 +501,7 @@
             <div class="flex-column">
               <label for="registerUsername">Логин администратора</label>
             </div>
-            <div class="inputForm">
+            <div class="inputForm compact-field">
               <span class="inputIcon material-symbols-outlined" aria-hidden="true">person</span>
               <input id="registerUsername" class="input" name="username" autocomplete="username" placeholder="new-admin@example.com" required>
             </div>
@@ -503,7 +510,7 @@
             <div class="flex-column">
               <label for="registerPassword">Пароль</label>
             </div>
-            <div class="inputForm">
+            <div class="inputForm compact-field">
               <span class="inputIcon material-symbols-outlined" aria-hidden="true">lock</span>
               <input id="registerPassword" class="input" name="password" type="password" autocomplete="new-password" placeholder="Минимум 8 символов" required>
             </div>
@@ -512,7 +519,7 @@
             <div class="flex-column">
               <label for="registerBalance">Начальный баланс</label>
             </div>
-            <div class="inputForm">
+            <div class="inputForm compact-field">
               <span class="inputIcon material-symbols-outlined" aria-hidden="true">payments</span>
               <input id="registerBalance" class="input" name="balance" type="number" min="0" step="0.01" placeholder="1000.00">
             </div>
@@ -520,7 +527,7 @@
           </div>
         </div>
         <p class="helper">Регистрация создаёт только учётную запись администратора. Обычных пользователей добавляет администратор в своём рабочем пространстве.</p>
-        <button class="button-submit" type="submit">Зарегистрировать администратора</button>
+        <button class="button-submit compact-button" type="submit" style="--btn-width: 100%; --btn-height: 40px; --btn-padding: 0 18px; --btn-font-size: 14px; --btn-font-weight: 600; margin: 20px 0 10px;">Зарегистрировать администратора</button>
       </form>
     </section>
 
@@ -528,34 +535,34 @@
       <nav class="sidebar" aria-label="Навигация по микросервисам">
         <div class="nav-group">
           <div class="nav-title">RIVA Development</div>
-          <button class="nav-btn active" data-file="modal1.html" data-group="primary" aria-label="Modal 1">
+          <button class="nav-btn compact-button active" data-file="modal1.html" data-group="primary" aria-label="Modal 1" style="--btn-width: 63px; --btn-height: 63px; --btn-padding: 0; --btn-radius: 14px; --btn-bg: #ffffff; --btn-color: var(--text); --btn-border: 1.5px solid #ecedec; --btn-shadow: 0 6px 16px rgba(0,0,0,0.04); --btn-hover-shadow: 0 6px 16px rgba(0,0,0,0.04);">
             <span class="material-symbols-outlined">dashboard</span>
           </button>
-          <button class="nav-btn" data-file="modal2.html" data-group="primary" aria-label="Modal 2">
+          <button class="nav-btn compact-button" data-file="modal2.html" data-group="primary" aria-label="Modal 2" style="--btn-width: 63px; --btn-height: 63px; --btn-padding: 0; --btn-radius: 14px; --btn-bg: #ffffff; --btn-color: var(--text); --btn-border: 1.5px solid #ecedec; --btn-shadow: 0 6px 16px rgba(0,0,0,0.04); --btn-hover-shadow: 0 6px 16px rgba(0,0,0,0.04);">
             <span class="material-symbols-outlined">view_quilt</span>
           </button>
-          <button class="nav-btn" data-file="modal3.html" data-group="primary" aria-label="Modal 3">
+          <button class="nav-btn compact-button" data-file="modal3.html" data-group="primary" aria-label="Modal 3" style="--btn-width: 63px; --btn-height: 63px; --btn-padding: 0; --btn-radius: 14px; --btn-bg: #ffffff; --btn-color: var(--text); --btn-border: 1.5px solid #ecedec; --btn-shadow: 0 6px 16px rgba(0,0,0,0.04); --btn-hover-shadow: 0 6px 16px rgba(0,0,0,0.04);">
             <span class="material-symbols-outlined">widgets</span>
           </button>
-          <button class="nav-btn" data-file="modal4.html" data-group="primary" aria-label="Modal 4">
+          <button class="nav-btn compact-button" data-file="modal4.html" data-group="primary" aria-label="Modal 4" style="--btn-width: 63px; --btn-height: 63px; --btn-padding: 0; --btn-radius: 14px; --btn-bg: #ffffff; --btn-color: var(--text); --btn-border: 1.5px solid #ecedec; --btn-shadow: 0 6px 16px rgba(0,0,0,0.04); --btn-hover-shadow: 0 6px 16px rgba(0,0,0,0.04);">
             <span class="material-symbols-outlined">account_tree</span>
           </button>
         </div>
         <div class="nav-group">
           <div class="nav-title">Рабочие процессы</div>
-          <button class="nav-btn" data-file="apps/automation.html" data-group="secondary" aria-label="Автоматизация">
+          <button class="nav-btn compact-button" data-file="apps/automation.html" data-group="secondary" aria-label="Автоматизация" style="--btn-width: 63px; --btn-height: 63px; --btn-padding: 0; --btn-radius: 14px; --btn-bg: #ffffff; --btn-color: var(--text); --btn-border: 1.5px solid #ecedec; --btn-shadow: 0 6px 16px rgba(0,0,0,0.04); --btn-hover-shadow: 0 6px 16px rgba(0,0,0,0.04);">
             <span class="material-symbols-outlined">auto_awesome</span>
           </button>
-          <button class="nav-btn" data-file="apps/monitoring.html" data-group="secondary" aria-label="Мониторинг">
+          <button class="nav-btn compact-button" data-file="apps/monitoring.html" data-group="secondary" aria-label="Мониторинг" style="--btn-width: 63px; --btn-height: 63px; --btn-padding: 0; --btn-radius: 14px; --btn-bg: #ffffff; --btn-color: var(--text); --btn-border: 1.5px solid #ecedec; --btn-shadow: 0 6px 16px rgba(0,0,0,0.04); --btn-hover-shadow: 0 6px 16px rgba(0,0,0,0.04);">
             <span class="material-symbols-outlined">monitoring</span>
           </button>
         </div>
         <div class="nav-group">
           <div class="nav-title">Настройки</div>
-          <button class="nav-btn" data-file="apps/settings.html" data-group="secondary" aria-label="Настройки">
+          <button class="nav-btn compact-button" data-file="apps/settings.html" data-group="secondary" aria-label="Настройки" style="--btn-width: 63px; --btn-height: 63px; --btn-padding: 0; --btn-radius: 14px; --btn-bg: #ffffff; --btn-color: var(--text); --btn-border: 1.5px solid #ecedec; --btn-shadow: 0 6px 16px rgba(0,0,0,0.04); --btn-hover-shadow: 0 6px 16px rgba(0,0,0,0.04);">
             <span class="material-symbols-outlined">tune</span>
           </button>
-          <button class="nav-btn" data-file="apps/users.html" data-group="secondary" aria-label="Пользователи">
+          <button class="nav-btn compact-button" data-file="apps/users.html" data-group="secondary" aria-label="Пользователи" style="--btn-width: 63px; --btn-height: 63px; --btn-padding: 0; --btn-radius: 14px; --btn-bg: #ffffff; --btn-color: var(--text); --btn-border: 1.5px solid #ecedec; --btn-shadow: 0 6px 16px rgba(0,0,0,0.04); --btn-hover-shadow: 0 6px 16px rgba(0,0,0,0.04);">
             <span class="material-symbols-outlined">group</span>
           </button>
         </div>
@@ -575,7 +582,7 @@
     <div class="modal-sheet">
       <div class="modal-header">
         <h2 class="modal-title" id="balanceTitle">Баланс личного кабинета</h2>
-        <button class="modal-close" id="balanceClose" type="button">Закрыть</button>
+        <button class="modal-close compact-button" id="balanceClose" type="button" style="--btn-height: 32px; --btn-padding: 0 12px; --btn-font-size: 12px; --btn-font-weight: 600; --btn-bg: #ffffff; --btn-color: var(--text); --btn-border: 1px solid var(--border); --btn-shadow: none; --btn-hover-shadow: none;">Закрыть</button>
       </div>
       <div class="modal-section">
         <strong>Текущий баланс: <span id="balanceModalAmount"></span></strong>
@@ -588,11 +595,11 @@
       <div class="modal-section">
         <h3 style="margin:0;">Пополнить баланс</h3>
         <form id="topupForm" class="topup-form">
-          <div class="inputForm">
+          <div class="inputForm compact-field">
             <span class="inputIcon material-symbols-outlined" aria-hidden="true">payments</span>
             <input id="topupAmount" class="input" type="number" min="1" step="0.01" placeholder="Сумма пополнения">
           </div>
-          <button class="button-submit" type="submit">Пополнить</button>
+          <button class="button-submit compact-button" type="submit" style="--btn-width: 100%; --btn-height: 36px; --btn-padding: 0 16px; --btn-font-size: 13px; --btn-font-weight: 600;">Пополнить</button>
         </form>
       </div>
     </div>
