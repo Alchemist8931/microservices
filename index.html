@@ -67,7 +67,49 @@
       align-items: center;
       gap: 12px;
     }
-    .brand { font-weight: 800; letter-spacing: 0.02em; color: var(--text); font-size: 18px; }
+    .buttonAA {
+  margin: 0;
+  height: auto;
+  background: transparent;
+  padding: 0;
+  border: none;
+  cursor: pointer;
+}
+
+/* button styling */
+.buttonAA {
+  --border-right: 6px;
+  --text-stroke-color: rgba(255,255,255,0.6);
+  --animation-color: #fe7f2d;
+  --fs-size:2em;
+  letter-spacing:3px;
+  text-decoration: none;
+  font-size: var(--fs-size);
+  font-family: "Arial";
+  position: relative;
+  text-transform: uppercase;
+  color: transparent;
+  -webkit-text-stroke: 1px var(--text-stroke-color);
+}
+/* this is the text, when you hover on button */
+.hover-text {
+  position: absolute;
+  box-sizing: border-box;
+  content: attr(data-text);
+  color: var(--animation-color);
+  width: 0%;
+  inset: 0;
+  border-radius: 4px;
+  border-right: var(--border-right) solid var(--animation-color);
+  overflow: hidden;
+  transition: 0.5s;
+  -webkit-text-stroke: 1px var(--animation-color);
+}
+/* hover */
+.buttonAA:hover .hover-text {
+  width: 100%;
+  filter: drop-shadow(0 0 23px var(--animation-color))
+}
     .compact-field {
       width: var(--field-width, 100%);
       height: var(--field-height, 38px);
@@ -434,7 +476,10 @@
 <body>
   <div class="page-frame">
   <header>
-    <div class="brand">RIVA Development</div>
+    <button class="buttonAA" data-text="Awesome">
+    <span class="actual-text">&nbsp;RIVA_Development&nbsp;</span>
+    <span aria-hidden="true" class="hover-text">&nbsp;RIVA_Development&nbsp;</span>
+    </button>
     <div class="header-actions">
       <button id="balanceTrigger" class="balance-pill hidden compact-button" type="button" aria-haspopup="dialog" aria-controls="balanceModal" style="--btn-height: 36px; --btn-padding: 0 14px; --btn-radius: 999px; --btn-bg: #ffffff; --btn-color: var(--text); --btn-border: 1px solid var(--border); --btn-shadow: 0 8px 20px rgba(0,0,0,0.06); --btn-hover-shadow: 0 12px 24px rgba(0,0,0,0.1); --btn-gap: 10px; --btn-font-weight: 600;">
         <span class="material-symbols-outlined" aria-hidden="true">account_balance_wallet</span>
