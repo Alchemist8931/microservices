@@ -190,6 +190,32 @@
       box-shadow: var(--btn-hover-shadow, 0px 0px 0px 2px #FFFFFF, 0px 0px 0px 4px #0000003a);
       transform: translateY(-1px);
     }
+    .card {
+      box-sizing: border-box;
+      width: 120px;
+      height: 40px;
+      background: rgba(226, 226, 226, 0.80);
+      border: 1px solid #676662;
+      box-shadow: 12px 17px 51px rgba(0, 0, 0, 0.22);
+      backdrop-filter: blur(6px);
+      border-radius: 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.5s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      font-weight: bolder;
+      color: black;
+    }
+    .card:hover {
+      border: 1px solid black;
+      transform: scale(1.10);
+    }
+    .card:active {
+      transform: scale(0.90) rotateZ(1.7deg);
+    }
     .balance-pill .material-symbols-outlined {
       font-size: 20px;
       color: var(--accent);
@@ -485,7 +511,7 @@
         <span class="material-symbols-outlined" aria-hidden="true">account_balance_wallet</span>
         Баланс: <span class="amount" id="balanceAmount">0 ₽</span>
       </button>
-      <button id="openAuth" class="btn compact-button" style="--btn-height: 36px; --btn-padding: 0 16px;">Вход</button>
+      <button id="openAuth" class="card">Вход</button>
     </div>
   </header>
 
@@ -538,7 +564,7 @@
           </div>
         </div>
         <p class="helper">В этой форме авторизуются и администраторы, и пользователи их рабочих пространств.</p>
-        <button class="button-submit compact-button" type="submit" style="--btn-width: 100%; --btn-height: 40px; --btn-padding: 0 18px; --btn-font-size: 14px; --btn-font-weight: 600; margin: 20px 0 10px;">Войти</button>
+        <button class="button-submit card" type="submit" style="margin: 20px 0 10px;">Войти</button>
       </form>
 
      <form id="registerForm" class="auth-form hidden">
@@ -573,7 +599,7 @@
           </div>
         </div>
         <p class="helper">Регистрация создаёт только учётную запись администратора. Обычных пользователей добавляет администратор в своём рабочем пространстве.</p>
-        <button class="button-submit compact-button" type="submit" style="--btn-width: 100%; --btn-height: 40px; --btn-padding: 0 18px; --btn-font-size: 14px; --btn-font-weight: 600; margin: 20px 0 10px;">Зарегистрировать администратора</button>
+        <button class="button-submit card" type="submit" style="margin: 20px 0 10px;">Зарегистрировать администратора</button>
       </form>
     </section>
 
@@ -628,7 +654,7 @@
     <div class="modal-sheet">
       <div class="modal-header">
         <h2 class="modal-title" id="balanceTitle">Баланс личного кабинета</h2>
-        <button class="modal-close compact-button" id="balanceClose" type="button" style="--btn-height: 32px; --btn-padding: 0 12px; --btn-font-size: 12px; --btn-font-weight: 600; --btn-bg: #ffffff; --btn-color: var(--text); --btn-border: 1px solid var(--border); --btn-shadow: none; --btn-hover-shadow: none;">Закрыть</button>
+        <button class="modal-close card" id="balanceClose" type="button">Закрыть</button>
       </div>
       <div class="modal-section">
         <strong>Текущий баланс: <span id="balanceModalAmount"></span></strong>
@@ -645,7 +671,7 @@
             <span class="inputIcon material-symbols-outlined" aria-hidden="true">payments</span>
             <input id="topupAmount" class="input" type="number" min="1" step="0.01" placeholder="Сумма пополнения">
           </div>
-          <button class="button-submit compact-button" type="submit" style="--btn-width: 100%; --btn-height: 36px; --btn-padding: 0 16px; --btn-font-size: 13px; --btn-font-weight: 600;">Пополнить</button>
+          <button class="button-submit card" type="submit">Пополнить</button>
         </form>
       </div>
     </div>
