@@ -160,7 +160,7 @@
       padding: 10px 12px;
       box-shadow: 0 10px 24px rgba(0,0,0,0.06);
       display: grid;
-      gap: 8px;
+      gap: 6px;
       transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
     }
     .wh-item:hover {
@@ -280,6 +280,103 @@
       gap: 8px;
     }
 
+    .wh-row {
+      display: grid;
+      grid-template-columns: 120px minmax(180px, 2.4fr) 90px 90px 110px 120px 140px 44px;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .wh-row-input {
+      width: 100%;
+      height: 32px;
+      padding: 0 10px;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+      background: #f8fafc;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text);
+      outline: none;
+    }
+
+    .wh-row-input[readonly] {
+      cursor: default;
+    }
+
+    .wh-row-input::placeholder {
+      color: rgba(21,23,23,0.45);
+      font-weight: 600;
+    }
+
+    .wh-row-info {
+      position: relative;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .wh-info-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      border: 1px solid #e5e7eb;
+      background: #ffffff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text);
+      cursor: default;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+    }
+
+    .wh-info-btn .material-symbols-outlined {
+      font-size: 18px;
+    }
+
+    .wh-tooltip {
+      position: absolute;
+      right: 0;
+      bottom: calc(100% + 8px);
+      min-width: 260px;
+      max-width: 360px;
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 10px 12px;
+      box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(4px);
+      transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s ease;
+      z-index: 5;
+      display: grid;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text);
+    }
+
+    .wh-row-info:hover .wh-tooltip,
+    .wh-row-info:focus-within .wh-tooltip {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .wh-tooltip .label {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: rgba(21,23,23,0.65);
+    }
+
+    .wh-tooltip .value {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text);
+      word-break: break-word;
+    }
+
     .wh-kv {
       grid-column: span 3;
       background: #f8fafc;
@@ -319,6 +416,9 @@
     @media (max-width: 1100px) {
       .wh-kv, .span-1, .span-2, .span-4, .span-6 { grid-column: span 12; }
       .wh-item-left { min-width: 0; }
+      .wh-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
     }
 
     .wh-actions-float {
@@ -560,50 +660,33 @@
         </div>
       </div>
 
-      <div class="wh-grid wh-grid--compact">
-        <div class="wh-kv span-2">
-          <div class="k">Артикул</div>
-          <div class="v" data-field="sku"></div>
-        </div>
-        <div class="wh-kv span-4">
-          <div class="k">Наименование</div>
-          <div class="v" data-field="item_name"></div>
-        </div>
-        <div class="wh-kv span-1">
-          <div class="k">Ед. изм.</div>
-          <div class="v" data-field="unit"></div>
-        </div>
+      <div class="wh-row">
+        <input class="wh-row-input" data-field="sku" placeholder="Артикул" readonly />
+        <input class="wh-row-input" data-field="item_name" placeholder="Наименование" readonly />
+        <input class="wh-row-input" data-field="unit" placeholder="Ед. изм." readonly />
+        <input class="wh-row-input" data-field="quantity" placeholder="Кол-во" readonly />
+        <input class="wh-row-input" data-field="unit_price" placeholder="Цена" readonly />
+        <input class="wh-row-input" data-field="amount" placeholder="Сумма" readonly />
+        <input class="wh-row-input" data-field="planned_delivery" data-only="orders" placeholder="Поставка" readonly />
 
-        <div class="wh-kv span-1">
-          <div class="k">Количество</div>
-          <div class="v" data-field="quantity"></div>
-        </div>
-        <div class="wh-kv span-1">
-          <div class="k">Цена</div>
-          <div class="v" data-field="unit_price"></div>
-        </div>
-        <div class="wh-kv span-1">
-          <div class="k">Сумма</div>
-          <div class="v" data-field="amount"></div>
-        </div>
-        <div class="wh-kv span-2" data-only="orders">
-          <div class="k">Планируемый срок поставки</div>
-          <div class="v" data-field="planned_delivery"></div>
-        </div>
-
-        <div class="wh-kv span-4">
-          <div class="k">Поставщик</div>
-          <div class="v" data-field="supplier"></div>
-        </div>
-
-        <div class="wh-kv span-4" data-only="orders">
-          <div class="k">Контакты поставщика</div>
-          <div class="v" data-field="supplier_contacts"></div>
-        </div>
-
-        <div class="wh-kv span-4" data-only="orders">
-          <div class="k">Комментарий</div>
-          <div class="v" data-field="comment"></div>
+        <div class="wh-row-info" data-only="orders">
+          <button class="wh-info-btn" type="button" aria-label="Информация о поставщике">
+            <span class="material-symbols-outlined" aria-hidden="true">info</span>
+          </button>
+          <div class="wh-tooltip" role="tooltip">
+            <div>
+              <div class="label">Поставщик</div>
+              <div class="value" data-field="supplier"></div>
+            </div>
+            <div>
+              <div class="label">Контакты</div>
+              <div class="value" data-field="supplier_contacts"></div>
+            </div>
+            <div>
+              <div class="label">Комментарий</div>
+              <div class="value" data-field="comment"></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -786,8 +869,14 @@
           if (bDt) bDt.textContent = fmtDateTime(rec.event_at || rec.created_at);
 
           const set = (field, val) => {
-            const el = node.querySelector(`[data-field="${field}"]`);
-            if (el) el.textContent = val ?? "";
+            const els = node.querySelectorAll(`[data-field="${field}"]`);
+            els.forEach(el => {
+              if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) {
+                el.value = val ?? "";
+              } else {
+                el.textContent = val ?? "";
+              }
+            });
           };
 
           set("sku", rec.sku || "");
