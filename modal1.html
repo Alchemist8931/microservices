@@ -162,7 +162,7 @@
       display: grid;
       gap: 6px;
       transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
-      height: 90px;
+      height: auto;
     }
     .wh-item:hover {
       box-shadow: 0 16px 32px rgba(0,0,0,0.10);
@@ -287,6 +287,14 @@
       align-items: center;
     }
 
+    .wh-item-line {
+      display: grid;
+      grid-template-columns: 24px 170px 120px minmax(180px, 2.2fr) 70px 70px 90px 100px 100px 110px 44px;
+      gap: 8px;
+      align-items: center;
+      width: 100%;
+    }
+
     .wh-row-input {
       width: 100%;
       height: 32px;
@@ -307,6 +315,11 @@
     .wh-row-input::placeholder {
       color: rgba(21,23,23,0.45);
       font-weight: 600;
+    }
+
+    .wh-row-input.is-datetime {
+      font-weight: 700;
+      background: #ffffff;
     }
 
     .wh-row-info {
@@ -417,6 +430,9 @@
       .wh-kv, .span-1, .span-2, .span-4, .span-6 { grid-column: span 12; }
       .wh-item-left { min-width: 0; }
       .wh-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .wh-item-line {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
     }
@@ -645,22 +661,11 @@
 
   <template id="tplItem">
     <div class="wh-item" data-id="">
-      <div class="wh-item-top">
-        <div class="wh-item-left">
-          <label class="wh-check" title="Выбрать запись">
-            <input type="checkbox" />
-          </label>
-          <div class="wh-badges">
-            <span class="wh-badge soft" data-badge="category">категория</span>
-            <span class="wh-badge" data-badge="status">статус</span>
-          </div>
-        </div>
-        <div class="wh-badges">
-          <span class="wh-badge" data-badge="datetime">дата</span>
-        </div>
-      </div>
-
-      <div class="wh-row">
+      <div class="wh-item-line">
+        <label class="wh-check" title="Выбрать запись">
+          <input type="checkbox" />
+        </label>
+        <input class="wh-row-input is-datetime" data-field="datetime" placeholder="Дата/время" readonly />
         <input class="wh-row-input" data-field="sku" placeholder="Артикул" readonly />
         <input class="wh-row-input" data-field="item_name" placeholder="Наименование" readonly />
         <input class="wh-row-input" data-field="unit" placeholder="Ед. изм." readonly />
@@ -860,14 +865,6 @@
             updateActionBars();
           });
 
-          const bCat = node.querySelector('[data-badge="category"]');
-          const bSt = node.querySelector('[data-badge="status"]');
-          const bDt = node.querySelector('[data-badge="datetime"]');
-
-          if (bCat) bCat.textContent = rec.category || "";
-          if (bSt) bSt.textContent = rec.status || "";
-          if (bDt) bDt.textContent = fmtDateTime(rec.event_at || rec.created_at);
-
           const set = (field, val) => {
             const els = node.querySelectorAll(`[data-field="${field}"]`);
             els.forEach(el => {
@@ -885,6 +882,7 @@
           set("quantity", fmtQty(rec.quantity));
           set("unit_price", fmtMoney(rec.unit_price));
           set("amount", fmtMoney(rec.amount));
+          set("datetime", fmtDateTime(rec.event_at || rec.created_at));
           set("supplier", rec.supplier || "");
 
           const onlyOrdersEls = Array.from(node.querySelectorAll('[data-only="orders"]'));
