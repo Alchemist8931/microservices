@@ -463,8 +463,15 @@
     .wh-order-actions {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: flex-start;
       gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .wh-order-actions-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
       flex-wrap: wrap;
     }
 
@@ -633,22 +640,24 @@
         </div>
 
         <div class="wh-order-actions">
-          <button id="btnCreateOrder" class="button-submit card" type="button" style="width: 220px; margin: 0; justify-self: end;">
-            Создать запись заказа
-          </button>
-          <div class="wh-edit-actions">
-            <button id="btnEditMode" class="button-submit card" type="button" style="width: 220px; margin: 0; justify-self: end;">
-              Режим редактирования
+          <div class="wh-order-actions-left">
+            <button id="btnCreateOrder" class="button-submit card" type="button" style="width: 220px; margin: 0; justify-self: end;">
+              Создать запись заказа
             </button>
-            <div id="editModeActions" class="wh-edit-actions-group">
-              <button id="btnSaveEdits" class="wh-btn compact-button" type="button" style="--btn-height: 36px; --btn-padding: 0 16px; --btn-font-size: 12px; --btn-font-weight: 700; --btn-gap: 8px; width: 220px;">
-                <span class="material-symbols-outlined" aria-hidden="true">save</span>
-                Сохранить
+            <div class="wh-edit-actions">
+              <button id="btnEditMode" class="button-submit card" type="button" style="width: 220px; margin: 0; justify-self: end;">
+                Режим редактирования
               </button>
-              <button id="btnCancelEdits" class="wh-btn secondary compact-button" type="button" style="--btn-height: 36px; --btn-padding: 0 16px; --btn-font-size: 12px; --btn-font-weight: 700; --btn-bg: #ffffff; --btn-color: #151717; --btn-border: 1px solid var(--border); --btn-shadow: 0 8px 20px rgba(0,0,0,0.06); --btn-hover-bg: #f8fafc; --btn-hover-shadow: 0 8px 20px rgba(0,0,0,0.06); --btn-gap: 8px; width: 220px;">
-                <span class="material-symbols-outlined" aria-hidden="true">close</span>
-                Отменить
-              </button>
+              <div id="editModeActions" class="wh-edit-actions-group">
+                <button id="btnSaveEdits" class="wh-btn compact-button" type="button" style="--btn-height: 36px; --btn-padding: 0 16px; --btn-font-size: 12px; --btn-font-weight: 700; --btn-gap: 8px; width: 220px;">
+                  <span class="material-symbols-outlined" aria-hidden="true">save</span>
+                  Сохранить
+                </button>
+                <button id="btnCancelEdits" class="wh-btn secondary compact-button" type="button" style="--btn-height: 36px; --btn-padding: 0 16px; --btn-font-size: 12px; --btn-font-weight: 700; --btn-bg: #ffffff; --btn-color: #151717; --btn-border: 1px solid var(--border); --btn-shadow: 0 8px 20px rgba(0,0,0,0.06); --btn-hover-bg: #f8fafc; --btn-hover-shadow: 0 8px 20px rgba(0,0,0,0.06); --btn-gap: 8px; width: 220px;">
+                  <span class="material-symbols-outlined" aria-hidden="true">close</span>
+                  Отменить
+                </button>
+              </div>
             </div>
           </div>
           <div id="ordersActions" class="wh-actions-float wh-actions-inline">
