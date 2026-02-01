@@ -462,6 +462,23 @@
       flex-wrap: wrap;
     }
 
+    .wh-edit-actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .wh-edit-actions-group {
+      display: none;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .wh-edit-actions-group.visible {
+      display: inline-flex;
+    }
+
     .wh-actions-inline {
       position: static;
       padding: 0;
@@ -613,10 +630,29 @@
           <button id="btnCreateOrder" class="button-submit card" type="button" style="width: 220px; margin: 0; justify-self: end;">
             Создать запись заказа
           </button>
+          <div class="wh-edit-actions">
+            <button id="btnEditMode" class="button-submit card" type="button" style="width: 220px; margin: 0; justify-self: end;">
+              Режим редактирования
+            </button>
+            <div id="editModeActions" class="wh-edit-actions-group">
+              <button id="btnSaveEdits" class="wh-btn compact-button" type="button" style="--btn-height: 36px; --btn-padding: 0 16px; --btn-font-size: 12px; --btn-font-weight: 700; --btn-gap: 8px; width: 220px;">
+                <span class="material-symbols-outlined" aria-hidden="true">save</span>
+                Сохранить
+              </button>
+              <button id="btnCancelEdits" class="wh-btn secondary compact-button" type="button" style="--btn-height: 36px; --btn-padding: 0 16px; --btn-font-size: 12px; --btn-font-weight: 700; --btn-bg: #ffffff; --btn-color: #151717; --btn-border: 1px solid var(--border); --btn-shadow: 0 8px 20px rgba(0,0,0,0.06); --btn-hover-bg: #f8fafc; --btn-hover-shadow: 0 8px 20px rgba(0,0,0,0.06); --btn-gap: 8px; width: 220px;">
+                <span class="material-symbols-outlined" aria-hidden="true">close</span>
+                Отменить
+              </button>
+            </div>
+          </div>
           <div id="ordersActions" class="wh-actions-float wh-actions-inline">
             <button id="btnCancelOrder" class="wh-btn secondary compact-button" type="button" style="--btn-height: 36px; --btn-padding: 0 16px; --btn-font-size: 12px; --btn-font-weight: 700; --btn-bg: #ffffff; --btn-color: #151717; --btn-border: 1px solid var(--border); --btn-shadow: 0 8px 20px rgba(0,0,0,0.06); --btn-hover-bg: #f8fafc; --btn-hover-shadow: 0 8px 20px rgba(0,0,0,0.06); --btn-gap: 8px;">
               <span class="material-symbols-outlined" aria-hidden="true">cancel</span>
               Отменить заказ
+            </button>
+            <button id="btnCreateCopy" class="wh-btn compact-button" type="button" style="--btn-height: 36px; --btn-padding: 0 16px; --btn-font-size: 12px; --btn-font-weight: 700; --btn-gap: 8px;">
+              <span class="material-symbols-outlined" aria-hidden="true">content_copy</span>
+              Создать копию
             </button>
             <button id="btnMoveToWarehouse" class="wh-btn compact-button" type="button" style="--btn-height: 36px; --btn-padding: 0 16px; --btn-font-size: 12px; --btn-font-weight: 700; --btn-gap: 8px;">
               <span class="material-symbols-outlined" aria-hidden="true">move_to_inbox</span>
@@ -753,7 +789,12 @@
       const materialsActions = root.querySelector("#materialsActions");
 
       const btnCreateOrder = root.querySelector("#btnCreateOrder");
+      const btnEditMode = root.querySelector("#btnEditMode");
+      const btnSaveEdits = root.querySelector("#btnSaveEdits");
+      const btnCancelEdits = root.querySelector("#btnCancelEdits");
+      const editModeActions = root.querySelector("#editModeActions");
       const btnCancelOrder = root.querySelector("#btnCancelOrder");
+      const btnCreateCopy = root.querySelector("#btnCreateCopy");
       const btnMoveToWarehouse = root.querySelector("#btnMoveToWarehouse");
       const btnWriteOff = root.querySelector("#btnWriteOff");
 
@@ -777,11 +818,12 @@
         materials: [],
         selectedOrders: new Set(),
         selectedMaterials: new Set(),
+        editMode: false,
       };
 
       function toNum(v) {
         if (v === null || v === undefined || v === "") return null;
-        const n = Number(String(v).replace(",", "."));
+        const n = Number(String(v).replace(/[^\d.,-]/g, "").replace(",", "."));
         return Number.isFinite(n) ? n : null;
       }
 
@@ -870,15 +912,7 @@
 
           const cb = node.querySelector('input[type="checkbox"]');
           cb.addEventListener("change", () => {
-            const id = rec.id;
-            if (mode === "orders") {
-              if (cb.checked) state.selectedOrders.add(id);
-              else state.selectedOrders.delete(id);
-            } else if (mode === "materials") {
-              if (cb.checked) state.selectedMaterials.add(id);
-              else state.selectedMaterials.delete(id);
-            }
-            updateActionBars();
+            toggleSelection(mode, rec.id, cb.checked);
           });
 
           const set = (field, val) => {
@@ -908,10 +942,93 @@
           set("planned_delivery", rec.planned_delivery_date ? fmtDate(rec.planned_delivery_date) : "");
           set("comment", rec.comment || "");
 
+          node.addEventListener("click", (event) => {
+            if (event.target.closest('input, textarea, button, .wh-row-info, label')) return;
+            cb.checked = !cb.checked;
+            cb.dispatchEvent(new Event("change", { bubbles: true }));
+          });
+
+          applyEditModeToNode(node, mode);
+
           frag.appendChild(node);
         });
 
         container.appendChild(frag);
+      }
+
+      function toggleSelection(mode, id, isChecked) {
+        if (mode === "orders") {
+          if (isChecked) state.selectedOrders.add(id);
+          else state.selectedOrders.delete(id);
+        } else if (mode === "materials") {
+          if (isChecked) state.selectedMaterials.add(id);
+          else state.selectedMaterials.delete(id);
+        }
+        updateActionBars();
+      }
+
+      function applyEditModeToNode(node, mode) {
+        if (mode !== "orders") return;
+        const inputs = node.querySelectorAll(".wh-row-input");
+        inputs.forEach(input => {
+          input.readOnly = !state.editMode;
+        });
+        const tooltipValues = node.querySelectorAll('.wh-tooltip [data-field]');
+        tooltipValues.forEach(el => {
+          el.contentEditable = state.editMode ? "true" : "false";
+        });
+      }
+
+      function updateEditControls() {
+        if (!btnEditMode || !editModeActions) return;
+        btnEditMode.style.display = state.editMode ? "none" : "";
+        editModeActions.classList.toggle("visible", state.editMode);
+      }
+
+      function setEditMode(enabled) {
+        state.editMode = enabled;
+        updateEditControls();
+        root.querySelectorAll("#ordersList .wh-item").forEach(node => applyEditModeToNode(node, "orders"));
+      }
+
+      function parseDateInput(value) {
+        if (!value) return null;
+        const trimmed = value.trim();
+        const isoMatch = /^\d{4}-\d{2}-\d{2}$/.test(trimmed);
+        if (isoMatch) return trimmed;
+        const parts = trimmed.split(".");
+        if (parts.length === 3) {
+          const [day, month, year] = parts;
+          if (day && month && year) {
+            return `${year.padStart(4, "0")}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+          }
+        }
+        return null;
+      }
+
+      function readRowValues(node) {
+        const getInput = (field) => node.querySelector(`.wh-row-input[data-field="${field}"]`);
+        const getValue = (field) => {
+          const input = getInput(field);
+          return input ? input.value.trim() : "";
+        };
+        const getTooltip = (field) => {
+          const el = node.querySelector(`.wh-tooltip [data-field="${field}"]`);
+          return el ? el.textContent.trim() : "";
+        };
+
+        return {
+          sku: getValue("sku"),
+          item_name: getValue("item_name"),
+          unit: getValue("unit"),
+          quantity: toNum(getValue("quantity")),
+          unit_price: toNum(getValue("unit_price")),
+          amount: toNum(getValue("amount")),
+          planned_delivery_date: parseDateInput(getValue("planned_delivery")),
+          supplier: getTooltip("supplier"),
+          supplier_contacts: getTooltip("supplier_contacts"),
+          comment: getTooltip("comment"),
+        };
       }
 
       async function ensureAuth() {
@@ -1062,6 +1179,122 @@
         await loadOrders();
       });
 
+      btnEditMode.addEventListener("click", () => {
+        setEditMode(true);
+      });
+
+      btnCancelEdits.addEventListener("click", async () => {
+        setEditMode(false);
+        clearSelections();
+        await loadOrders();
+      });
+
+      btnSaveEdits.addEventListener("click", async () => {
+        if (!state.editMode) return;
+        const ok = await ensureAuth();
+        if (!ok) return;
+
+        const updates = [];
+        const now = new Date().toISOString();
+        const recordsById = new Map((state.orders || []).map(r => [String(r.id), r]));
+
+        root.querySelectorAll("#ordersList .wh-item").forEach(node => {
+          const id = node.dataset.id;
+          const original = recordsById.get(String(id));
+          if (!original) return;
+          const current = readRowValues(node);
+
+          const next = {
+            sku: current.sku || null,
+            item_name: current.item_name || null,
+            unit: current.unit || null,
+            quantity: current.quantity ?? null,
+            unit_price: current.unit_price ?? null,
+            amount: current.amount ?? null,
+            planned_delivery_date: current.planned_delivery_date,
+            supplier: current.supplier || null,
+            supplier_contacts: current.supplier_contacts || null,
+            comment: current.comment || null,
+          };
+
+          const changed = (
+            (original.sku || "") !== (next.sku || "") ||
+            (original.item_name || "") !== (next.item_name || "") ||
+            (original.unit || "") !== (next.unit || "") ||
+            (toNum(original.quantity) ?? null) !== (next.quantity ?? null) ||
+            (toNum(original.unit_price) ?? null) !== (next.unit_price ?? null) ||
+            (toNum(original.amount) ?? null) !== (next.amount ?? null) ||
+            (original.planned_delivery_date || null) !== (next.planned_delivery_date || null) ||
+            (original.supplier || "") !== (next.supplier || "") ||
+            (original.supplier_contacts || "") !== (next.supplier_contacts || "") ||
+            (original.comment || "") !== (next.comment || "")
+          );
+
+          if (changed) {
+            updates.push({ id: original.id, data: { ...next, event_at: now } });
+          }
+        });
+
+        if (updates.length === 0) {
+          alert("Нет изменений для сохранения.");
+          return;
+        }
+
+        const results = await Promise.all(
+          updates.map(update => sb.from("warehouse").update(update.data).eq("id", update.id))
+        );
+        const failed = results.find(r => r.error);
+        if (failed?.error) {
+          alert("Ошибка сохранения: " + failed.error.message);
+          return;
+        }
+
+        setEditMode(false);
+        clearSelections();
+        await loadOrders();
+      });
+
+      btnCreateCopy.addEventListener("click", async () => {
+        if (state.selectedOrders.size === 0) return;
+        const ok = await ensureAuth();
+        if (!ok) return;
+
+        const selected = new Set(state.selectedOrders);
+        const rows = (state.orders || []).filter(r => selected.has(r.id));
+
+        if (rows.length === 0) {
+          alert("Не удалось найти выбранные записи. Обнови список и попробуй снова.");
+          return;
+        }
+
+        const now = new Date().toISOString();
+        const inserts = rows.map(r => ({
+          user_id: state.userId,
+          event_at: now,
+          sku: r.sku,
+          item_name: r.item_name,
+          category: r.category,
+          status: r.status,
+          unit: r.unit,
+          quantity: r.quantity,
+          unit_price: r.unit_price,
+          amount: r.amount,
+          supplier: r.supplier,
+          supplier_contacts: r.supplier_contacts,
+          planned_delivery_date: r.planned_delivery_date,
+          comment: r.comment || null,
+        }));
+
+        const { error } = await sb.from("warehouse").insert(inserts);
+        if (error) {
+          alert("Ошибка создания копии: " + error.message);
+          return;
+        }
+
+        clearSelections();
+        await loadOrders();
+      });
+
       btnCancelOrder.addEventListener("click", async () => {
         if (state.selectedOrders.size === 0) return;
 
@@ -1180,6 +1413,7 @@
         }
         await loadOrders();
         await loadMaterials();
+        updateEditControls();
       }
 
       boot();
