@@ -164,7 +164,7 @@
       gap: 6px;
       transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
       height: 56px;
-      overflow: hidden;
+      overflow: visible;
     }
     .wh-item:hover {
       box-shadow: 0 16px 32px rgba(0,0,0,0.10);
@@ -454,6 +454,21 @@
       display: flex;
     }
 
+    .wh-order-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .wh-actions-inline {
+      position: static;
+      padding: 0;
+      margin-left: auto;
+      justify-content: flex-end;
+    }
+
     .wh-btn {
       white-space: nowrap;
     }
@@ -594,9 +609,21 @@
           </div>
         </div>
 
-        <button id="btnCreateOrder" class="button-submit card" style="width: 220px;" type="button" style="margin: 0; justify-self: end;">
-          Создать запись заказа
-        </button>
+        <div class="wh-order-actions">
+          <button id="btnCreateOrder" class="button-submit card" type="button" style="width: 220px; margin: 0; justify-self: end;">
+            Создать запись заказа
+          </button>
+          <div id="ordersActions" class="wh-actions-float wh-actions-inline">
+            <button id="btnCancelOrder" class="wh-btn secondary compact-button" type="button" style="--btn-height: 36px; --btn-padding: 0 16px; --btn-font-size: 12px; --btn-font-weight: 700; --btn-bg: #ffffff; --btn-color: #151717; --btn-border: 1px solid var(--border); --btn-shadow: 0 8px 20px rgba(0,0,0,0.06); --btn-hover-bg: #f8fafc; --btn-hover-shadow: 0 8px 20px rgba(0,0,0,0.06); --btn-gap: 8px;">
+              <span class="material-symbols-outlined" aria-hidden="true">cancel</span>
+              Отменить заказ
+            </button>
+            <button id="btnMoveToWarehouse" class="wh-btn compact-button" type="button" style="--btn-height: 36px; --btn-padding: 0 16px; --btn-font-size: 12px; --btn-font-weight: 700; --btn-gap: 8px;">
+              <span class="material-symbols-outlined" aria-hidden="true">move_to_inbox</span>
+              Переместить на склад
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -607,16 +634,6 @@
 
       <div id="ordersList" class="wh-list"></div>
 
-      <div id="ordersActions" class="wh-actions-float">
-        <button id="btnCancelOrder" class="wh-btn secondary compact-button" type="button" style="--btn-height: 36px; --btn-padding: 0 16px; --btn-font-size: 12px; --btn-font-weight: 700; --btn-bg: #ffffff; --btn-color: #151717; --btn-border: 1px solid var(--border); --btn-shadow: 0 8px 20px rgba(0,0,0,0.06); --btn-hover-bg: #f8fafc; --btn-hover-shadow: 0 8px 20px rgba(0,0,0,0.06); --btn-gap: 8px;">
-          <span class="material-symbols-outlined" aria-hidden="true">cancel</span>
-          Отменить заказ
-        </button>
-        <button id="btnMoveToWarehouse" class="wh-btn compact-button" type="button" style="--btn-height: 36px; --btn-padding: 0 16px; --btn-font-size: 12px; --btn-font-weight: 700; --btn-gap: 8px;">
-          <span class="material-symbols-outlined" aria-hidden="true">move_to_inbox</span>
-          Переместить на склад
-        </button>
-      </div>
     </div>
   </section>
 
