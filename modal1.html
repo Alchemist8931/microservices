@@ -433,9 +433,9 @@
     }
 
     .wh-tooltip {
-      position: absolute;
-      right: 0;
-      bottom: calc(100% + 8px);
+      position: fixed;
+      top: 0;
+      left: 0;
       min-width: 260px;
       max-width: 360px;
       background: #ffffff;
@@ -447,24 +447,23 @@
       visibility: hidden;
       transform: translateY(4px);
       transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s ease;
-      z-index: 5;
+      z-index: 2000;
       display: grid;
       gap: 6px;
       font-size: 12px;
       color: var(--text);
     }
 
-    .wh-row-info:hover .wh-tooltip,
-    .wh-row-info:focus-within .wh-tooltip {
+    .wh-tooltip.is-open {
       opacity: 1;
       visibility: visible;
       transform: translateY(0);
     }
 
     .wh-docs-modal {
-      position: absolute;
-      right: 0;
-      bottom: calc(100% + 8px);
+      position: fixed;
+      top: 0;
+      left: 0;
       min-width: 300px;
       max-width: 380px;
       background: #ffffff;
@@ -476,15 +475,14 @@
       visibility: hidden;
       transform: translateY(4px);
       transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s ease;
-      z-index: 6;
+      z-index: 2001;
       display: grid;
       gap: 10px;
       font-size: 12px;
       color: var(--text);
     }
 
-    .wh-row-docs:hover .wh-docs-modal,
-    .wh-row-docs:focus-within .wh-docs-modal {
+    .wh-docs-modal.is-open {
       opacity: 1;
       visibility: visible;
       transform: translateY(0);
@@ -1201,6 +1199,77 @@
         });
         input.value = "";
       });
+
+      const popoverGap = 8;
+      const popoverPadding = 12;
+
+      function closeAllPopovers() {
+        root.querySelectorAll(".wh-tooltip.is-open, .wh-docs-modal.is-open").forEach((el) => {
+          el.classList.remove("is-open");
+        });
+      }
+
+      function positionPopover(anchor, popover) {
+        const anchorRect = anchor.getBoundingClientRect();
+        const popRect = popover.getBoundingClientRect();
+        let left = anchorRect.right - popRect.width;
+        left = Math.min(Math.max(left, popoverPadding), window.innerWidth - popRect.width - popoverPadding);
+        let top = anchorRect.top - popRect.height - popoverGap;
+        if (top < popoverPadding) {
+          top = anchorRect.bottom + popoverGap;
+        }
+        if (top + popRect.height > window.innerHeight - popoverPadding) {
+          top = Math.max(popoverPadding, window.innerHeight - popRect.height - popoverPadding);
+        }
+        popover.style.left = `${left}px`;
+        popover.style.top = `${top}px`;
+      }
+
+      function showPopover(anchor, popover) {
+        closeAllPopovers();
+        positionPopover(anchor, popover);
+        popover.classList.add("is-open");
+      }
+
+      function hidePopover(popover) {
+        if (!popover) return;
+        popover.classList.remove("is-open");
+      }
+
+      root.addEventListener("mouseover", (event) => {
+        const anchor = event.target.closest(".wh-row-info, .wh-row-docs");
+        if (!anchor || !root.contains(anchor)) return;
+        const popover = anchor.querySelector(".wh-tooltip, .wh-docs-modal");
+        if (!popover) return;
+        showPopover(anchor, popover);
+      });
+
+      root.addEventListener("mouseout", (event) => {
+        const anchor = event.target.closest(".wh-row-info, .wh-row-docs");
+        if (!anchor) return;
+        if (anchor.contains(event.relatedTarget)) return;
+        const popover = anchor.querySelector(".wh-tooltip, .wh-docs-modal");
+        hidePopover(popover);
+      });
+
+      root.addEventListener("focusin", (event) => {
+        const anchor = event.target.closest(".wh-row-info, .wh-row-docs");
+        if (!anchor) return;
+        const popover = anchor.querySelector(".wh-tooltip, .wh-docs-modal");
+        if (!popover) return;
+        showPopover(anchor, popover);
+      });
+
+      root.addEventListener("focusout", (event) => {
+        const anchor = event.target.closest(".wh-row-info, .wh-row-docs");
+        if (!anchor) return;
+        if (anchor.contains(event.relatedTarget)) return;
+        const popover = anchor.querySelector(".wh-tooltip, .wh-docs-modal");
+        hidePopover(popover);
+      });
+
+      window.addEventListener("resize", closeAllPopovers);
+      window.addEventListener("scroll", closeAllPopovers, true);
 
       const f = {
         sku: root.querySelector("#ord_sku"),
