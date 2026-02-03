@@ -359,7 +359,7 @@
 
     .wh-item-line {
       display: grid;
-      grid-template-columns: 24px 160px 100px minmax(500px, 2.2fr) 70px 70px 90px 100px 100px 44px;
+      grid-template-columns: 24px 160px 100px minmax(400px, 2.2fr) 70px 70px 90px 100px 100px 100px 44px;
       gap: 8px;
       align-items: center;
       width: 100%;
@@ -400,6 +400,17 @@
       width: 100%;
       height: 32px;
       padding: 0 10px;
+      box-sizing: border-box;
+    }
+
+    .wh-row-docs {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      height: 32px;
+      padding: 0 6px;
       box-sizing: border-box;
     }
 
@@ -448,6 +459,131 @@
       opacity: 1;
       visibility: visible;
       transform: translateY(0);
+    }
+
+    .wh-docs-modal {
+      position: absolute;
+      right: 0;
+      bottom: calc(100% + 8px);
+      min-width: 300px;
+      max-width: 380px;
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 12px;
+      box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(4px);
+      transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s ease;
+      z-index: 6;
+      display: grid;
+      gap: 10px;
+      font-size: 12px;
+      color: var(--text);
+    }
+
+    .wh-row-docs:hover .wh-docs-modal,
+    .wh-row-docs:focus-within .wh-docs-modal {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .wh-docs-section {
+      display: grid;
+      gap: 6px;
+      padding: 8px;
+      background: #f8fafc;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+    }
+
+    .wh-docs-title {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: rgba(21,23,23,0.65);
+    }
+
+    .wh-docs-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .wh-docs-hint {
+      font-size: 11px;
+      font-weight: 700;
+      color: rgba(21,23,23,0.65);
+    }
+
+    .wh-docs-section input[type="file"] {
+      display: none;
+    }
+
+    .Btn {
+      width: 50px;
+      height: 50px;
+      border: 2px solid rgb(214, 214, 214);
+      border-radius: 15px;
+      background-color: rgb(255, 255, 255);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      transition-duration: 0.3s;
+      box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.11);
+      padding: 0;
+    }
+
+    .wh-docs-btn {
+      width: 100px;
+      height: 32px;
+      border-radius: 12px;
+    }
+
+    .svgIcon {
+      fill: rgb(70, 70, 70);
+    }
+
+    .icon2 {
+      width: 18px;
+      height: 5px;
+      border-bottom: 2px solid rgb(70, 70, 70);
+      border-left: 2px solid rgb(70, 70, 70);
+      border-right: 2px solid rgb(70, 70, 70);
+    }
+
+    .Btn:hover {
+      background-color: rgb(51, 51, 51);
+      transition-duration: 0.3s;
+    }
+
+    .Btn:hover .icon2 {
+      border-bottom: 2px solid rgb(235, 235, 235);
+      border-left: 2px solid rgb(235, 235, 235);
+      border-right: 2px solid rgb(235, 235, 235);
+    }
+
+    .Btn:hover .svgIcon {
+      fill: rgb(255, 255, 255);
+      animation: slide-in-top 1s linear infinite;
+    }
+
+    @keyframes slide-in-top {
+      0% {
+        transform: translateY(-10px);
+        opacity: 0;
+      }
+
+      100% {
+        transform: translateY(0px);
+        opacity: 1;
+      }
     }
 
     .wh-tooltip .label {
@@ -817,6 +953,88 @@
         <input class="wh-row-input" data-field="amount" placeholder="Сумма" style="text-align: right;" readonly />
         <input class="wh-row-input" data-field="planned_delivery" data-only="orders" placeholder="Поставка" style="text-align: center;" readonly />
 
+        <div class="wh-row-docs" data-only="orders">
+          <button class="Btn wh-docs-btn" type="button" aria-label="Документы заказа">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              height="1em"
+              viewBox="0 0 384 512"
+              class="svgIcon"
+              aria-hidden="true"
+            >
+              <path
+                d="M169.4 470.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L224 370.8 224 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 306.7L54.6 265.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z"
+              ></path>
+            </svg>
+            <span class="icon2"></span>
+          </button>
+          <div class="wh-docs-modal" role="dialog" aria-label="Документы заказа">
+            <div class="wh-docs-section">
+              <div class="wh-docs-title">Счет</div>
+              <div class="wh-docs-actions">
+                <button class="Btn wh-docs-upload-btn" type="button">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    height="1em"
+                    viewBox="0 0 384 512"
+                    class="svgIcon"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M169.4 470.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L224 370.8 224 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 306.7L54.6 265.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z"
+                    ></path>
+                  </svg>
+                  <span class="icon2"></span>
+                </button>
+                <span class="wh-docs-hint">Загрузить файл(ы)</span>
+              </div>
+              <input type="file" multiple />
+            </div>
+            <div class="wh-docs-section">
+              <div class="wh-docs-title">Договор</div>
+              <div class="wh-docs-actions">
+                <button class="Btn wh-docs-upload-btn" type="button">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    height="1em"
+                    viewBox="0 0 384 512"
+                    class="svgIcon"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M169.4 470.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L224 370.8 224 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 306.7L54.6 265.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z"
+                    ></path>
+                  </svg>
+                  <span class="icon2"></span>
+                </button>
+                <span class="wh-docs-hint">Загрузить файл(ы)</span>
+              </div>
+              <input type="file" multiple />
+            </div>
+            <div class="wh-docs-section">
+              <div class="wh-docs-title">Закрывающие документы</div>
+              <div class="wh-docs-actions">
+                <button class="Btn wh-docs-upload-btn" type="button">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    height="1em"
+                    viewBox="0 0 384 512"
+                    class="svgIcon"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M169.4 470.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L224 370.8 224 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 306.7L54.6 265.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z"
+                    ></path>
+                  </svg>
+                  <span class="icon2"></span>
+                </button>
+                <span class="wh-docs-hint">Загрузить файл(ы)</span>
+              </div>
+              <input type="file" multiple />
+            </div>
+          </div>
+        </div>
+
         <div class="wh-row-info" data-only="orders">
           <button class="wh-info-btn" type="button" aria-label="Информация о поставщике">
             <span class="material-symbols-outlined" aria-hidden="true">info</span>
@@ -888,6 +1106,14 @@
       const btnCreateCopy = root.querySelector("#btnCreateCopy");
       const btnMoveToWarehouse = root.querySelector("#btnMoveToWarehouse");
       const btnWriteOff = root.querySelector("#btnWriteOff");
+
+      root.addEventListener("click", (event) => {
+        const uploadBtn = event.target.closest(".wh-docs-upload-btn");
+        if (!uploadBtn) return;
+        const section = uploadBtn.closest(".wh-docs-section");
+        const input = section ? section.querySelector('input[type="file"]') : null;
+        if (input) input.click();
+      });
 
       const f = {
         sku: root.querySelector("#ord_sku"),
