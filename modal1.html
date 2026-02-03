@@ -492,19 +492,11 @@
 
     .wh-docs-section {
       display: grid;
-      gap: 6px;
+      gap: 8px;
       padding: 8px;
       background: #f8fafc;
       border: 1px solid #e5e7eb;
       border-radius: 12px;
-    }
-
-    .wh-docs-title {
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: 0.03em;
-      text-transform: uppercase;
-      color: rgba(21,23,23,0.65);
     }
 
     .wh-docs-actions {
@@ -513,14 +505,70 @@
       gap: 10px;
     }
 
+    .wh-docs-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .wh-docs-title {
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      color: rgba(21,23,23,0.75);
+    }
+
     .wh-docs-hint {
       font-size: 11px;
       font-weight: 700;
-      color: rgba(21,23,23,0.65);
+      color: rgba(21,23,23,0.6);
+    }
+
+    .wh-docs-files {
+      display: grid;
+      gap: 6px;
+    }
+
+    .wh-docs-file {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 8px;
+      background: #ffffff;
+      border: 1px dashed #d2d6dc;
+      border-radius: 10px;
+      font-size: 11px;
+      color: rgba(21,23,23,0.78);
+    }
+
+    .wh-docs-file-ext {
+      font-weight: 800;
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      color: #1f2937;
+      background: rgba(148,163,184,0.2);
+      border-radius: 8px;
+      padding: 2px 6px;
+      text-transform: uppercase;
+      flex: 0 0 auto;
+    }
+
+    .wh-docs-file-name {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: 0;
     }
 
     .wh-docs-section input[type="file"] {
       display: none;
+    }
+
+    .wh-docs-upload-btn {
+      width: 42px;
+      height: 38px;
+      border-radius: 12px;
     }
 
     .Btn {
@@ -970,7 +1018,6 @@
           </button>
           <div class="wh-docs-modal" role="dialog" aria-label="Документы заказа">
             <div class="wh-docs-section">
-              <div class="wh-docs-title">Счет</div>
               <div class="wh-docs-actions">
                 <button class="Btn wh-docs-upload-btn" type="button">
                   <svg
@@ -986,12 +1033,15 @@
                   </svg>
                   <span class="icon2"></span>
                 </button>
-                <span class="wh-docs-hint">Загрузить файл(ы)</span>
+                <div class="wh-docs-meta">
+                  <div class="wh-docs-title">Счет</div>
+                  <div class="wh-docs-hint">Загрузить файл(ы)</div>
+                </div>
               </div>
+              <div class="wh-docs-files"></div>
               <input type="file" multiple />
             </div>
             <div class="wh-docs-section">
-              <div class="wh-docs-title">Договор</div>
               <div class="wh-docs-actions">
                 <button class="Btn wh-docs-upload-btn" type="button">
                   <svg
@@ -1007,12 +1057,15 @@
                   </svg>
                   <span class="icon2"></span>
                 </button>
-                <span class="wh-docs-hint">Загрузить файл(ы)</span>
+                <div class="wh-docs-meta">
+                  <div class="wh-docs-title">Договор</div>
+                  <div class="wh-docs-hint">Загрузить файл(ы)</div>
+                </div>
               </div>
+              <div class="wh-docs-files"></div>
               <input type="file" multiple />
             </div>
             <div class="wh-docs-section">
-              <div class="wh-docs-title">Закрывающие документы</div>
               <div class="wh-docs-actions">
                 <button class="Btn wh-docs-upload-btn" type="button">
                   <svg
@@ -1028,8 +1081,12 @@
                   </svg>
                   <span class="icon2"></span>
                 </button>
-                <span class="wh-docs-hint">Загрузить файл(ы)</span>
+                <div class="wh-docs-meta">
+                  <div class="wh-docs-title">Закрывающие документы</div>
+                  <div class="wh-docs-hint">Загрузить файл(ы)</div>
+                </div>
               </div>
+              <div class="wh-docs-files"></div>
               <input type="file" multiple />
             </div>
           </div>
@@ -1113,6 +1170,36 @@
         const section = uploadBtn.closest(".wh-docs-section");
         const input = section ? section.querySelector('input[type="file"]') : null;
         if (input) input.click();
+      });
+
+      root.addEventListener("change", (event) => {
+        const input = event.target;
+        if (!(input instanceof HTMLInputElement)) return;
+        if (input.type !== "file") return;
+        const section = input.closest(".wh-docs-section");
+        const list = section ? section.querySelector(".wh-docs-files") : null;
+        if (!list) return;
+        const files = Array.from(input.files || []);
+        files.forEach((file) => {
+          const ext = file.name.includes(".") ? file.name.split(".").pop() : "ФАЙЛ";
+          const baseName = file.name.replace(/\.[^/.]+$/, "") || file.name;
+          const item = document.createElement("div");
+          item.className = "wh-docs-file";
+
+          const extEl = document.createElement("span");
+          extEl.className = "wh-docs-file-ext";
+          extEl.textContent = String(ext).toUpperCase();
+
+          const nameEl = document.createElement("span");
+          nameEl.className = "wh-docs-file-name";
+          nameEl.title = file.name;
+          nameEl.textContent = baseName;
+
+          item.appendChild(extEl);
+          item.appendChild(nameEl);
+          list.appendChild(item);
+        });
+        input.value = "";
       });
 
       const f = {
