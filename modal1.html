@@ -33,25 +33,90 @@
       font-size: 22px;
     }
 
-    .wh-tabs {
-      display: inline-flex;
-      background: #f4f6f8;
-      padding: 6px;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      gap: 6px;
-      flex-wrap: wrap;
+    .component-title {
+      width: 100%;
+      position: absolute;
+      z-index: 999;
+      top: 30px;
+      left: 0;
+      padding: 0;
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 700;
+      text-align: center;
+      color: #888;
     }
 
-    .wh-tab {
-      white-space: nowrap;
+    .tab-container {
+      position: relative;
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      padding: 2px;
+      background-color: #dadadb;
+      border-radius: 9px;
     }
 
-    .wh-tab.active {
-      --btn-bg: var(--surface);
-      --btn-color: var(--text);
-      --btn-border: 1px solid var(--border);
-      --btn-shadow: none;
+    .indicator {
+      content: "";
+      width: 200px;
+      height: 28px;
+      background: #ffffff;
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      z-index: 9;
+      border: 0.5px solid rgba(0, 0, 0, 0.04);
+      box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.12), 0px 3px 1px rgba(0, 0, 0, 0.04);
+      border-radius: 7px;
+      transition: all 0.2s ease-out;
+    }
+
+    .tab {
+      width: 200px;
+      height: 28px;
+      position: absolute;
+      z-index: 99;
+      outline: none;
+      opacity: 0;
+    }
+
+    .tab_label {
+      width: 200px;
+      height: 28px;
+      position: relative;
+      z-index: 999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 0;
+      font-size: 0.75rem;
+      opacity: 0.6;
+      cursor: pointer;
+      text-align: center;
+      user-select: none;
+    }
+
+    .tab:checked + .tab_label {
+      opacity: 1;
+      color: #151717;
+      font-weight: 700;
+    }
+
+    .tab--1:checked ~ .indicator {
+      left: 2px;
+    }
+
+    .tab--2:checked ~ .indicator {
+      left: calc(200px + 2px);
+    }
+
+    .tab--3:checked ~ .indicator {
+      left: calc(200px * 2 + 2px);
+    }
+
+    .tab--4:checked ~ .indicator {
+      left: calc(200px * 3 + 2px);
     }
 
     .wh-panel {
@@ -538,11 +603,20 @@
       Управление складом
     </h2>
 
-    <div class="wh-tabs" role="tablist" aria-label="Подстраницы управления складом">
-      <button class="card-mini" data-tab="orders" role="tab" aria-selected="true" style="--btn-bg: transparent; --btn-color: var(--muted); --btn-border: 1px solid transparent; --btn-shadow: none; --btn-hover-shadow: none; --btn-height: 32px; --btn-padding: 0 12px; --btn-font-size: 12px; --btn-font-weight: 700;">Заказы</button>
-      <button class="card-mini" data-tab="materials" role="tab" aria-selected="false" style="--btn-bg: transparent; --btn-color: var(--muted); --btn-border: 1px solid transparent; --btn-shadow: none; --btn-hover-shadow: none; --btn-height: 32px; --btn-padding: 0 12px; --btn-font-size: 12px; --btn-font-weight: 700;">Склад материалов</button>
-      <button class="card-mini" data-tab="products" role="tab" aria-selected="false" style="--btn-bg: transparent; --btn-color: var(--muted); --btn-border: 1px solid transparent; --btn-shadow: none; --btn-hover-shadow: none; --btn-height: 32px; --btn-padding: 0 12px; --btn-font-size: 12px; --btn-font-weight: 700;">Склад готовой продукции</button>
-      <button class="card-mini" data-tab="stocks" role="tab" aria-selected="false" style="--btn-bg: transparent; --btn-color: var(--muted); --btn-border: 1px solid transparent; --btn-shadow: none; --btn-hover-shadow: none; --btn-height: 32px; --btn-padding: 0 12px; --btn-font-size: 12px; --btn-font-weight: 700;">Управление остатками</button>
+    <div class="tab-container" role="tablist" aria-label="Подстраницы управления складом">
+      <input type="radio" name="tab" id="tab1" class="tab tab--1 wh-tab" data-tab="orders" role="tab" aria-selected="true" checked />
+      <label class="tab_label" for="tab1">заказы</label>
+
+      <input type="radio" name="tab" id="tab2" class="tab tab--2 wh-tab" data-tab="materials" role="tab" aria-selected="false" />
+      <label class="tab_label" for="tab2">склад материалов</label>
+
+      <input type="radio" name="tab" id="tab3" class="tab tab--3 wh-tab" data-tab="products" role="tab" aria-selected="false" />
+      <label class="tab_label" for="tab3">склад готовой продукции</label>
+      
+      <input type="radio" name="tab" id="tab4" class="tab tab--4 wh-tab" data-tab="stocks" role="tab" aria-selected="false" />
+      <label class="tab_label" for="tab4">управление остатками</label>
+
+      <div class="indicator"></div>
     </div>
   </div>
 
@@ -874,7 +948,7 @@
         state.activeTab = key;
         tabs.forEach(t => {
           const on = t.dataset.tab === key;
-          t.classList.toggle("active", on);
+          t.checked = on;
           t.setAttribute("aria-selected", on ? "true" : "false");
         });
         Object.entries(panels).forEach(([k, el]) => {
@@ -887,7 +961,7 @@
       }
 
       tabs.forEach(btn => {
-        btn.addEventListener("click", () => setActiveTab(btn.dataset.tab));
+        btn.addEventListener("change", () => setActiveTab(btn.dataset.tab));
       });
 
       function updateActionBars() {
