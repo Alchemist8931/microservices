@@ -365,6 +365,10 @@
       grid-template-columns: 24px 160px 100px minmax(380px, 2.2fr) 70px 70px 90px 100px 110px;
     }
 
+    .wh-item-line.wh-item-line--materials-balances {
+      grid-template-columns: 160px 100px minmax(380px, 2.2fr) 70px 70px 90px 100px;
+    }
+
     .wh-row-input {
       width: 100%;
       height: 32px;
@@ -1553,7 +1557,10 @@
           onlyMaterialsEls.forEach(el => el.style.display = (mode === "materials") ? "" : "none");
 
           const itemLine = node.querySelector('.wh-item-line');
-          if (itemLine) itemLine.classList.toggle('wh-item-line--materials', mode === "materials");
+          if (itemLine) {
+            itemLine.classList.toggle('wh-item-line--materials', mode === "materials");
+            itemLine.classList.toggle('wh-item-line--materials-balances', mode === "materialsBalances");
+          }
 
           set("supplier_contacts", rec.supplier_contacts || "");
           set("planned_delivery", rec.planned_delivery_date ? fmtDate(rec.planned_delivery_date) : "");
