@@ -115,10 +115,6 @@
       left: calc(200px * 2 + 2px);
     }
 
-    .tab--4:checked ~ .indicator {
-      left: calc(200px * 3 + 2px);
-    }
-
     .wh-panel {
       display: none;
       flex: 1;
@@ -852,9 +848,6 @@
 
       <input type="radio" name="tab" id="tab3" class="tab tab--3 wh-tab" data-tab="products" role="tab" aria-selected="false" />
       <label class="tab_label" for="tab3">склад готовой продукции</label>
-      
-      <input type="radio" name="tab" id="tab4" class="tab tab--4 wh-tab" data-tab="stocks" role="tab" aria-selected="false" />
-      <label class="tab_label" for="tab4">управление остатками</label>
 
       <div class="indicator"></div>
     </div>
@@ -1034,14 +1027,6 @@
     </div>
   </section>
 
-  <!-- ====== STOCKS (stub) ====== -->
-  <section class="wh-panel" id="panel-stocks" role="tabpanel">
-    <div class="wh-empty">
-      <span class="material-symbols-outlined" aria-hidden="true">rule</span>
-      Подстраница «Управление остатками» пока не наполнена.
-    </div>
-  </section>
-
   <template id="tplItem">
     <div class="wh-item" data-id="">
       <div class="wh-item-line">
@@ -1203,7 +1188,6 @@
         orders: root.querySelector("#panel-orders"),
         materials: root.querySelector("#panel-materials"),
         products: root.querySelector("#panel-products"),
-        stocks: root.querySelector("#panel-stocks"),
       };
 
       const warn = root.querySelector("#whAuthWarn");
