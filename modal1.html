@@ -781,6 +781,50 @@
       gap: 10px;
     }
     .wh-auth-warn .material-symbols-outlined { color: var(--accent); }
+
+    .wh-materials-view-menu {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      display: none;
+      z-index: 1200;
+      width: 200px;
+      min-width: 200px;
+      max-width: 200px;
+      box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+    }
+
+    .wh-materials-view-menu.visible {
+      display: flex;
+    }
+
+    .wh-materials-view-tab {
+      width: 50%;
+      display: none;
+    }
+
+    .wh-materials-view-label {
+      width: 50%;
+      font-size: 0.72rem;
+      padding: 0 8px;
+      box-sizing: border-box;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .wh-materials-view-indicator {
+      width: calc(50% - 2px);
+      left: 2px;
+    }
+
+    #materialsViewBalances:checked ~ .wh-materials-view-indicator {
+      left: 2px;
+    }
+
+    #materialsViewHistory:checked ~ .wh-materials-view-indicator {
+      left: calc(50% + 1px);
+    }
   </style>
 
   <div class="wh-head">
@@ -795,6 +839,16 @@
 
       <input type="radio" name="tab" id="tab2" class="tab tab--2 wh-tab" data-tab="materials" role="tab" aria-selected="false" />
       <label class="tab_label" for="tab2">склад материалов</label>
+
+      <div id="materialsViewMenu" class="tab-container wh-materials-view-menu" role="tablist" aria-label="Представление склада материалов">
+        <input type="radio" name="materialsView" id="materialsViewBalances" class="tab wh-materials-view-tab" data-view="balances" checked />
+        <label class="tab_label wh-materials-view-label" for="materialsViewBalances">остатки</label>
+
+        <input type="radio" name="materialsView" id="materialsViewHistory" class="tab wh-materials-view-tab" data-view="history" />
+        <label class="tab_label wh-materials-view-label" for="materialsViewHistory">история</label>
+
+        <div class="indicator wh-materials-view-indicator"></div>
+      </div>
 
       <input type="radio" name="tab" id="tab3" class="tab tab--3 wh-tab" data-tab="products" role="tab" aria-selected="false" />
       <label class="tab_label" for="tab3">склад готовой продукции</label>
@@ -1141,6 +1195,10 @@
       })();
 
       const tabs = Array.from(root.querySelectorAll(".wh-tab"));
+      const materialsTabInput = root.querySelector("#tab2");
+      const materialsTabLabel = root.querySelector('label[for="tab2"]');
+      const materialsViewMenu = root.querySelector("#materialsViewMenu");
+      const materialsViewTabs = Array.from(root.querySelectorAll(".wh-materials-view-tab"));
       const panels = {
         orders: root.querySelector("#panel-orders"),
         materials: root.querySelector("#panel-materials"),
@@ -1294,6 +1352,8 @@
         activeTab: "orders",
         orders: [],
         materials: [],
+        materialsBalances: [],
+        materialsView: "balances",
         selectedOrders: new Set(),
         selectedMaterials: new Set(),
         editMode: false,
@@ -1345,6 +1405,7 @@
 
         // прячем экшены при смене вкладок
         updateActionBars();
+        updateMaterialsViewMenu();
       }
 
       tabs.forEach(btn => {
@@ -1356,7 +1417,78 @@
         const mHas = state.selectedMaterials.size > 0;
 
         if (ordersActions) ordersActions.classList.toggle("visible", state.activeTab === "orders" && oHas);
-        if (materialsActions) materialsActions.classList.toggle("visible", state.activeTab === "materials" && mHas);
+        const isHistory = state.materialsView === "history";
+        if (materialsActions) materialsActions.classList.toggle("visible", state.activeTab === "materials" && isHistory && mHas);
+      }
+
+      function syncMaterialsViewMenuWidth() {
+        if (!materialsViewMenu || !materialsTabLabel) return;
+        const width = Math.round(materialsTabLabel.getBoundingClientRect().width) || 200;
+        materialsViewMenu.style.width = `${width}px`;
+        materialsViewMenu.style.minWidth = `${width}px`;
+        materialsViewMenu.style.maxWidth = `${width}px`;
+      }
+
+      function updateMaterialsViewMenu() {
+        if (!materialsViewMenu || !materialsTabInput) return;
+        const shouldShow = state.activeTab === "materials" && materialsTabInput.checked;
+        materialsViewMenu.classList.toggle("visible", shouldShow);
+        if (shouldShow) syncMaterialsViewMenuWidth();
+      }
+
+      function setMaterialsView(view) {
+        state.materialsView = view === "history" ? "history" : "balances";
+        materialsViewTabs.forEach(tab => {
+          tab.checked = tab.dataset.view === state.materialsView;
+        });
+        state.selectedMaterials.clear();
+        renderMaterials();
+        updateActionBars();
+      }
+
+      function buildMaterialsBalances(records) {
+        const bySku = new Map();
+        (records || []).forEach((rec) => {
+          const skuKey = String(rec.sku || "").trim() || "(без артикула)";
+          const prev = bySku.get(skuKey);
+          const qty = toNum(rec.quantity) ?? 0;
+          if (!prev) {
+            bySku.set(skuKey, {
+              ...rec,
+              sku: skuKey,
+              quantity: qty,
+            });
+            return;
+          }
+
+          prev.quantity = (toNum(prev.quantity) ?? 0) + qty;
+          const recDate = new Date(rec.event_at || rec.created_at || 0).getTime();
+          const prevDate = new Date(prev.event_at || prev.created_at || 0).getTime();
+          if (recDate >= prevDate) {
+            prev.item_name = rec.item_name || prev.item_name;
+            prev.unit = rec.unit || prev.unit;
+            prev.unit_price = rec.unit_price;
+            prev.event_at = rec.event_at || prev.event_at;
+            prev.created_at = rec.created_at || prev.created_at;
+            prev.supplier = rec.supplier || prev.supplier;
+          }
+        });
+
+        return Array.from(bySku.values()).map((rec) => {
+          const price = toNum(rec.unit_price) ?? 0;
+          const qty = toNum(rec.quantity) ?? 0;
+          return {
+            ...rec,
+            id: `balance::${rec.sku}`,
+            amount: qty * price,
+          };
+        }).sort((a, b) => String(a.sku || "").localeCompare(String(b.sku || ""), "ru"));
+      }
+
+      function renderMaterials() {
+        const isHistory = state.materialsView === "history";
+        const records = isHistory ? state.materials : state.materialsBalances;
+        renderList(materialsList, records, isHistory ? "materials" : "materialsBalances");
       }
 
       function clearSelections() {
@@ -1389,7 +1521,17 @@
           node.dataset.id = rec.id;
 
           const cb = node.querySelector('input[type="checkbox"]');
+          const selectable = mode !== "materialsBalances";
+          if (!selectable) {
+            cb.checked = false;
+            cb.style.visibility = "hidden";
+            cb.style.pointerEvents = "none";
+          }
           cb.addEventListener("change", () => {
+            if (!selectable) {
+              cb.checked = false;
+              return;
+            }
             toggleSelection(mode, rec.id, cb.checked);
           });
 
@@ -1427,6 +1569,7 @@
           set("comment", rec.comment || "");
 
           node.addEventListener("click", (event) => {
+            if (!selectable) return;
             if (event.target.closest('input, textarea, button, .wh-row-info, label')) return;
             cb.checked = !cb.checked;
             cb.dispatchEvent(new Event("change", { bubbles: true }));
@@ -1574,7 +1717,8 @@
         }
 
         state.materials = data || [];
-        renderList(materialsList, state.materials, "materials");
+        state.materialsBalances = buildMaterialsBalances(state.materials);
+        renderMaterials();
       }
 
       function calcAmount(qty, price, manualAmount) {
@@ -1822,6 +1966,10 @@
       });
 
       btnWriteOff.addEventListener("click", async () => {
+        if (state.materialsView !== "history") {
+          alert("Списание доступно только в представлении «история».");
+          return;
+        }
         if (state.selectedMaterials.size === 0) return;
 
         const confirmed = confirm("Подтвердите списание остатков по выбранным позициям.\nБудут созданы новые записи со статусом «списание» и отрицательным количеством.");
@@ -1897,8 +2045,18 @@
         }
         await loadOrders();
         await loadMaterials();
+        syncMaterialsViewMenuWidth();
+        updateMaterialsViewMenu();
         updateEditControls();
       }
+
+      materialsViewTabs.forEach((tab) => {
+        tab.addEventListener("change", () => {
+          if (tab.checked) setMaterialsView(tab.dataset.view);
+        });
+      });
+
+      window.addEventListener("resize", syncMaterialsViewMenuWidth);
 
       boot();
     })();
