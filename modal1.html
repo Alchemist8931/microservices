@@ -365,6 +365,10 @@
       width: 100%;
     }
 
+    .wh-item-line.wh-item-line--materials {
+      grid-template-columns: 24px 160px 100px minmax(510px, 2.2fr) 70px 70px 90px 100px;
+    }
+
     .wh-row-input {
       width: 100%;
       height: 32px;
@@ -998,6 +1002,7 @@
         <input class="wh-row-input" data-field="unit_price" placeholder="Цена" style="text-align: right;" readonly />
         <input class="wh-row-input" data-field="amount" placeholder="Сумма" style="text-align: right;" readonly />
         <input class="wh-row-input" data-field="planned_delivery" data-only="orders" placeholder="Поставка" style="text-align: center;" readonly />
+        <input class="wh-row-input" data-field="movement_type" data-only="materials" placeholder="Операция" style="text-align: center;" readonly />
 
         <div class="wh-row-docs" data-only="orders">
           <button class="Btn wh-docs-btn" type="button" aria-label="Документы заказа">
@@ -1406,10 +1411,16 @@
           set("unit_price", fmtMoney(rec.unit_price));
           set("amount", fmtMoney(rec.amount));
           set("datetime", fmtDateTime(rec.event_at || rec.created_at));
+          set("movement_type", (toNum(rec.quantity) ?? 0) < 0 ? "списание" : "поступление");
           set("supplier", rec.supplier || "");
 
           const onlyOrdersEls = Array.from(node.querySelectorAll('[data-only="orders"]'));
           onlyOrdersEls.forEach(el => el.style.display = (mode === "orders") ? "" : "none");
+          const onlyMaterialsEls = Array.from(node.querySelectorAll('[data-only="materials"]'));
+          onlyMaterialsEls.forEach(el => el.style.display = (mode === "materials") ? "" : "none");
+
+          const itemLine = node.querySelector('.wh-item-line');
+          if (itemLine) itemLine.classList.toggle('wh-item-line--materials', mode === "materials");
 
           set("supplier_contacts", rec.supplier_contacts || "");
           set("planned_delivery", rec.planned_delivery_date ? fmtDate(rec.planned_delivery_date) : "");
