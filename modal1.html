@@ -1505,11 +1505,18 @@
           node.dataset.id = rec.id;
 
           const cb = node.querySelector('input[type="checkbox"]');
+          const cbWrap = cb?.closest('.wh-check');
+          const datetimeInput = node.querySelector('[data-field="datetime"]');
           const selectable = mode !== "materialsBalances";
           if (!selectable) {
             cb.checked = false;
-            cb.style.visibility = "hidden";
             cb.style.pointerEvents = "none";
+          }
+          if (cbWrap) {
+            cbWrap.style.display = selectable ? "" : "none";
+          }
+          if (datetimeInput) {
+            datetimeInput.style.display = mode === "materialsBalances" ? "none" : "";
           }
           cb.addEventListener("change", () => {
             if (!selectable) {
