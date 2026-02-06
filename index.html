@@ -10,1239 +10,1246 @@
   <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300..700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    :root {
-      color-scheme: light;
-       --bg: #e8e8e8;
-      --surface: #ffffff;
-      --accent: #fe7f2d;
-      --accent-bg: rgba(254, 127, 45, 0.12);
-      --muted: #4b5563;
-      --border: #dcdcdc;
-      --shadow: 0 18px 40px rgba(17, 17, 17, 0.08);
-      --nav-width: 84px;
-      --header-height: 40px;
-      --text: #151717;
-      --frame-gap: clamp(16px, 2vw, 28px);
-      --modal-width: 1360px;
-      --modal-padding: 16px;
-      --shell-height: calc(100vh - var(--header-height) - (var(--frame-gap) * 2) - 60px);
-    }
-    * { box-sizing: border-box; }
-    html, body {
-      overflow: auto;
-    }
-    body {
-      margin: 0;
-      font-family: "Comfortaa", sans-serif;
-      font-weight: 500;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      padding: 0 var(--frame-gap) var(--frame-gap);
-    }
-    .page-frame {
-      width: min(calc(var(--nav-width) + var(--modal-width) + var(--frame-gap) * 3), 100%);
-      margin: 0 auto;
-      padding-top: var(--frame-gap);
-      display: grid;
-      gap: var(--frame-gap);
-    }
-    header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      min-height: var(--header-height);
-      padding: var(--modal-padding);
-      position: relative;
-      background: var(--surface);
-      border-bottom: 1px solid #e2e8f0;
-      border-radius: 18px;
-      box-shadow: 0 10px 24px rgba(0,0,0,0.08);
-    }
-    .header-actions {
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .buttonAA {
-  margin: 0;
-  height: auto;
-  background: transparent;
-  padding: 0;
-  border: none;
-  cursor: pointer;
-}
+  :root{
+    color-scheme: light;
+    --bg:#f2f2f2;
+    --surface:#ffffff;
+    --ink:#111111;
+    --muted:#4b5563;
+    --accent:#fe7f2d;
+    --grid:#111111;
+    --border:#111111;
+    --shadow: 0 14px 36px rgba(0,0,0,.08);
+    --frame-gap: clamp(14px, 2vw, 26px);
+    --header-height: 48px;
+    --nav-width: 84px;
+    --modal-width: 1180px;
+    --modal-padding: 16px;
+    --shell-height: calc(100vh - var(--header-height) - (var(--frame-gap) * 2) - 60px);
+  }
 
-/* button styling */
-.buttonAA {
-  --border-right: 6px;
-  --text-stroke-color: #212121;
-  --animation-color: #fe7f2d;
-  --fs-size:2em;
-  letter-spacing:3px;
-  text-decoration: none;
-  font-size: var(--fs-size);
-  font-family: "Arial";
-  position: relative;
-  text-transform: uppercase;
-  color: transparent;
-  -webkit-text-stroke: 1px var(--text-stroke-color);
-}
-/* this is the text, when you hover on button */
-.hover-text {
-  position: absolute;
-  box-sizing: border-box;
-  content: attr(data-text);
-  color: var(--animation-color);
-  width: 0%;
-  inset: 0;
-  border-radius: 4px;
-  border-right: var(--border-right) solid var(--animation-color);
-  overflow: hidden;
-  transition: 0.5s;
-  -webkit-text-stroke: 1px var(--animation-color);
-}
-/* hover */
-.buttonAA:hover .hover-text {
-  width: 100%;
-  filter: drop-shadow(0 0 23px var(--animation-color))
-}
-    .compact-field {
-      width: var(--field-width, 100%);
-      height: var(--field-height, 38px);
-      padding: var(--field-padding, 0 12px);
-      border-radius: var(--field-radius, 9px);
-      outline: none;
-      background-color: #f2f2f2;
-      border: 1px solid transparent;
-      transition: all 0.3s cubic-bezier(0.15, 0.83, 0.66, 1);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: var(--text);
-    }
-    .compact-field:focus,
-    .compact-field:focus-within {
-      border: 1px solid transparent;
-      box-shadow: 0 0 0 2px #242424;
-      background-color: transparent;
-    }
-    input.compact-field,
-    textarea.compact-field,
-    select.compact-field {
-      display: block;
-      font-size: 13px;
-      font-family: inherit;
-    }
-    textarea.compact-field {
-      min-height: var(--field-min-height, 80px);
-      height: auto;
-      padding: var(--field-padding, 10px 12px);
-      resize: vertical;
-    }
-    .compact-field input,
-    .compact-field textarea,
-    .compact-field select {
-      border: 0;
-      background: transparent;
-      width: 100%;
-      height: 100%;
-      font-size: 13px;
-      font-family: inherit;
-      color: var(--text);
-      outline: none;
-    }
-    .compact-field input[type="number"]::-webkit-outer-spin-button,
-    .compact-field input[type="number"]::-webkit-inner-spin-button,
-    input.compact-field::-webkit-outer-spin-button,
-    input.compact-field::-webkit-inner-spin-button {
-      -webkit-appearance: none;
-      margin: 0;
-    }
-    .compact-field input[type="number"],
-    input.compact-field[type="number"] {
-      -moz-appearance: textfield;
-    }
-    .compact-button {
-      height: var(--btn-height, 35px);
-      width: var(--btn-width, auto);
-      padding: var(--btn-padding, 0 18px);
-      border-radius: var(--btn-radius, 11px);
-      border: var(--btn-border, 0);
-      outline: none;
-      color: var(--btn-color, #ffffff);
-      font-size: var(--btn-font-size, 13px);
-      font-weight: var(--btn-font-weight, 700);
-      background: var(--btn-bg, linear-gradient(180deg, #363636 0%, #1B1B1B 50%, #000000 100%));
-      box-shadow: var(--btn-shadow, 0px 0px 0px 0px #FFFFFF, 0px 0px 0px 0px #000000);
-      transition: all 0.3s cubic-bezier(0.15, 0.83, 0.66, 1);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: var(--btn-gap, 6px);
-      cursor: pointer;
-    }
-    .compact-button:hover {
-      background: var(--btn-hover-bg, var(--btn-bg, #1b1b1b));
-      box-shadow: var(--btn-hover-shadow, 0px 0px 0px 2px #FFFFFF, 0px 0px 0px 4px #0000003a);
-      transform: translateY(-1px);
-    }
-    .card-mini {
-      box-sizing: border-box;
-      width: 120px;
-      height: 28px;
-      background: #212121;
-      border: 1px solid #212121;
-      box-shadow: 12px 17px 51px rgba(0, 0, 0, 0.22);
-      backdrop-filter: blur(6px);
-      border-radius: 10px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.5s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      user-select: none;
-      font-weight: bolder;
-      color: rgba(226, 226, 226, 0.80);
-    }
-    .card-mini:hover {
-      border: 1px solid #212121;
-      transform: scale(1.02);
-      background: rgba(226, 226, 226, 0.80);
-      color: #212121;
-    }
-    .card-mini:active {
-      transform: scale(0.98) rotateZ(1.7deg);
-    }
-    .card {
-      box-sizing: border-box;
-      width: 120px;
-      height: 28px;
-      background: rgba(226, 226, 226, 0.80);
-      border: 1px solid #676662;
-      box-shadow: 12px 17px 51px rgba(0, 0, 0, 0.22);
-      backdrop-filter: blur(6px);
-      border-radius: 10px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.5s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      user-select: none;
-      font-weight: bolder;
-      color: black;
-    }
-    .card:hover {
-      border: 1px solid #454845;
-      transform: scale(1.02);
-      background: black;
-      color: rgba(226, 226, 226, 0.80);
-    }
-    .card:active {
-      transform: scale(0.98) rotateZ(1.7deg);
-    }
-    .balance-pill .material-symbols-outlined {
-      font-size: 20px;
-      color: var(--accent);
-    }
-    .balance-pill span.amount {
-      font-weight: 700;
-    }
-    .balance-pill.hidden { display: none; }
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(17, 17, 17, 0.45);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-      z-index: 1000;
-    }
-    .modal-backdrop.active {
-      display: flex;
-    }
-    .modal-sheet {
-      background: #fff;
-      border-radius: 20px;
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow);
-      width: min(680px, 92vw);
-      padding: 24px;
-      display: grid;
-      gap: 18px;
-    }
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-    }
-    .modal-title {
-      margin: 0;
-      font-size: 20px;
-      font-weight: 700;
-    }
-    .modal-section {
-      background: #f8fafc;
-      border-radius: 14px;
-      border: 1px solid var(--border);
-      padding: 16px;
-      display: grid;
-      gap: 12px;
-    }
-    .topup-list {
-      display: grid;
-      gap: 8px;
-      margin: 0;
-      padding: 0;
-      list-style: none;
-      font-size: 14px;
-      color: var(--muted);
-    }
-    .topup-item {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 8px 10px;
-      background: #fff;
-      border-radius: 10px;
-      border: 1px solid #e5e7eb;
-    }
-    .topup-item span {
-      color: var(--text);
-      font-weight: 600;
-    }
-    .topup-form {
-      display: grid;
-      gap: 12px;
-    }
-    .topup-form .button-submit {
-      margin: 0;
-    }
-    main {
-      flex: 1;
-      display: grid;
-      gap: var(--frame-gap);
-      padding: 0;
-      width: 100%;
-    }
-    .hero {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 22px;
-      padding: 48px 52px;
-      box-shadow: var(--shadow);
-      display: grid;
-      gap: 22px;
-      height: var(--shell-height);
-    }
-    .hero h1 {
-      margin: 0;
-      font-size: clamp(28px, 4vw, 42px);
-      line-height: 1.1;
-    }
-    .hero p { margin: 0; color: var(--muted); max-width: 680px; }
-    .hero .highlights {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-      gap: 12px;
-    }
-    .chip {
-      border: 1px solid #e5e7eb;
-      border-radius: 12px;
-      padding: 10px 12px;
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      background: #f8fafc;
-      color: var(--text);;
-    }
-    .chip .material-symbols-outlined { font-size: 20px; color: var(--accent); }
-    .panel {
-      display: none;
-      width: min(920px, 96vw);
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 22px;
-      box-shadow: var(--shadow);
-      padding: var(--modal-padding);
-      gap: 18px;
-    }
-    .panel.active { display: grid; }
-    .panel h2 { margin: 0 0 8px; }
-    .auth-tabs {
-      display: inline-flex;
-      background: #f4f6f8;
-      padding: 6px;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      gap: 6px;
-    }
-    .auth-tab.active {
-      --btn-bg: var(--surface);
-      --btn-color: var(--text);
-      --btn-border: 1px solid var(--border);
-      --btn-shadow: none;
-    }
-    .auth-form {
-      display: grid;
-      gap: 14px;
-      margin-top: 12px;
-      background: var(--surface);
-      padding: 24px;
-      border-radius: 16px;
-      border: 1px solid var(--border);
-      height: 190px;
-    }
-    .auth-fields {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 16px;
-    }
-    .flex-column > label {
-      color: #151717;
-      font-weight: 600;
-    }
-    .inputForm {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .input {
-      width: 100%;
-      height: 100%;
-      font-size: 13px;
-      color: var(--text);
-      background: transparent;
-      border: 0;
-    }
-    ::placeholder {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-      color: #9ca3af;
-    }
-    .inputIcon { color: #94a3b8; display: inline-flex; align-items: center; }
-    .helper { color: var(--muted); font-size: 14px; }
-    .app-shell {
-      display: none;
-      width: 100%;
-      gap: var(--frame-gap);
-      grid-template-columns: var(--nav-width) 1fr;
-      background: transparent;
-      border-radius: 22px;
-      overflow: visible;
-      align-items: start;
-    }
-    .app-shell.active { display: grid; }
-    .sidebar {
-      background: #f8fafc;
-      border-right: 1px solid var(--border);
-      display: grid;
-      align-content: start;
-      gap: 18px;
-      padding: 14px 10px;
-      border-radius: 18px;
-      box-shadow: var(--shadow);
-      position: sticky;
-      top: calc(var(--frame-gap) + var(--header-height));
-      align-self: start;
-      height: var(--shell-height);
-      overflow: hidden;
-    }
-    .nav-group {
-      border-top: 1px solid var(--border);
-      padding-top: 10px;
-      width: 63px;
-    }
-    .nav-group:first-of-type { border-top: 0; padding-top: 0; width: 63px; }
-    .nav-title { display: none; }
-    .nav-btn {
-      margin-bottom: 10px;
-    }
-    .nav-btn:hover {
-      --btn-bg: #f4f6fb;
-      --btn-border: 1.5px solid var(--accent);
-      --btn-color: var(--accent);
-    }
-    .nav-btn.active {
-      --btn-bg: var(--accent-bg, #e8f0ff);
-      --btn-border: 1.5px solid var(--accent);
-      --btn-color: var(--accent);
-    }
-    .content {
-      display: grid;
-      align-content: start;
-      gap: var(--frame-gap);
-      padding: 0;
-      overflow: hidden;
-    }
-    .content-card {
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: var(--modal-padding);
-      height: var(--shell-height);
-      box-shadow: var(--shadow);
-      width: 100%;
-      max-width: 100%;
-    }
-    .status {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 12px 14px;
-      border-radius: 12px;
-      border: 1px dashed var(--border);
-      background: #fff;
-      color: var(--muted);
-      box-shadow: 0 8px 18px rgba(0,0,0,0.03);
-      width: 100%;
-      max-width: 100%;
-    }
-    .status .dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: var(--accent);
-      box-shadow: 0 0 0 6px rgba(45, 121, 243, 0.18);
-    }
-    .sql-block {
-      margin-top: 18px;
-      padding: 14px 16px;
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      white-space: pre-wrap;
-      word-break: break-word;
-      font-family: "SFMono-Regular", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      color: #1f2937;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
-    }
-    .hidden { display: none !important; }
-    body.app-active #hero,
-    body.app-active #authPanel {
-      display: none !important;
-    }
-    body.app-active {
-      overflow: hidden;
-    }
-    .hero {
-      height: auto;
-      padding: clamp(32px, 4vw, 56px);
-    }
-    .hero-content {
-      display: grid;
-      gap: 22px;
-    }
-    .hero-eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 13px;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      padding: 6px 12px;
-      border: 2px solid #111;
-      background: #fff;
-      width: fit-content;
-    }
-    .hero-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 6px;
-    }
-    .hero-button {
-      border: 2px solid #111;
-      background: #111;
-      color: #fff;
-      padding: 12px 22px;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      font-weight: 700;
-      cursor: pointer;
-    }
-    .hero-button.secondary {
-      background: #fff;
-      color: #111;
-    }
-    .hero-bullets {
-      display: grid;
-      gap: 8px;
-      margin: 0;
-      padding: 0;
-      list-style: none;
-      font-size: 14px;
-    }
-    .hero-bullets li {
-      padding-left: 18px;
-      position: relative;
-    }
-    .hero-bullets li::before {
-      content: "■";
-      position: absolute;
-      left: 0;
-      top: 0;
-      color: #111;
-    }
-    .section-title {
-      margin: 0;
-      font-size: clamp(20px, 3vw, 30px);
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-    }
-    .section-subtitle {
-      margin: 0;
-      color: var(--muted);
-      max-width: 740px;
-    }
-    .problem-grid,
-    .feature-grid,
-    .benefit-grid,
-    .audience-grid,
-    .proof-grid {
-      display: grid;
-      gap: 14px;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    }
-    .block-card {
-      border: 2px solid #111;
-      padding: 16px;
-      background: #fff;
-      display: grid;
-      gap: 10px;
-      min-height: 140px;
-    }
-    .block-card strong {
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-    .steps {
-      display: grid;
-      gap: 16px;
-    }
-    .step-card {
-      display: grid;
-      grid-template-columns: auto 1fr;
-      gap: 16px;
-      border: 3px solid #111;
-      padding: 18px;
-      background: #fdfdfd;
-    }
-    .step-number {
-      font-size: 28px;
-      font-weight: 800;
-      background: #111;
-      color: #fff;
-      width: 48px;
-      height: 48px;
-      display: grid;
-      place-items: center;
-    }
-    .cta-panel {
-      border: 3px solid #111;
-      padding: 22px;
-      display: grid;
-      gap: 12px;
-      background: #fff;
-    }
-    .microtext-list {
-      display: grid;
-      gap: 8px;
-      margin: 0;
-      padding: 0;
-      list-style: none;
-      font-size: 13px;
-      color: var(--muted);
-    }
-  </style>
+  *{ box-sizing:border-box; }
+  html,body{ height:100%; }
+  body{
+    margin:0;
+    font-family:"Comfortaa", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    font-weight:500;
+    background:
+      linear-gradient(90deg, rgba(17,17,17,.06) 1px, transparent 1px) 0 0/24px 24px,
+      linear-gradient(0deg, rgba(17,17,17,.06) 1px, transparent 1px) 0 0/24px 24px,
+      var(--bg);
+    color:var(--ink);
+    overflow:auto;
+    padding: 0 var(--frame-gap) var(--frame-gap);
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+  }
+
+  .page-frame{
+    width:min(calc(var(--nav-width) + var(--modal-width) + var(--frame-gap) * 3), 100%);
+    margin:0 auto;
+    padding-top: var(--frame-gap);
+    display:grid;
+    gap: var(--frame-gap);
+  }
+
+  /* ---------- HEADER ---------- */
+  header{
+    min-height: var(--header-height);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding: 10px 14px;
+    background: var(--surface);
+    border: 3px solid var(--border);
+    box-shadow: var(--shadow);
+  }
+
+  .header-actions{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+
+  .brand{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+    user-select:none;
+  }
+  .brand .logo{
+    font-weight:900;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    padding: 8px 10px;
+    border: 2px solid var(--border);
+    background:#fff;
+  }
+  .brand .tag{
+    font-size:12px;
+    color:var(--muted);
+    letter-spacing:.02em;
+  }
+
+  /* ---------- BUTTONS (BRUTAL) ---------- */
+  .btn{
+    border: 3px solid var(--border);
+    background:#fff;
+    color:var(--ink);
+    padding: 10px 14px;
+    font-weight:800;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    cursor:pointer;
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
+    box-shadow: 6px 6px 0 var(--ink);
+  }
+  .btn:hover{ transform: translate(-1px,-1px); box-shadow: 8px 8px 0 var(--ink); }
+  .btn:active{ transform: translate(1px,1px); box-shadow: 4px 4px 0 var(--ink); }
+
+  .btn.primary{
+    background: var(--ink);
+    color:#fff;
+  }
+  .btn.ghost{
+    background:#fff;
+  }
+
+  .btn.icon{
+    padding: 10px 12px;
+  }
+
+  .balance-pill{
+    --chip-bg:#fff;
+    border: 3px solid var(--border);
+    background: var(--chip-bg);
+    padding: 10px 12px;
+    font-weight:800;
+    letter-spacing:.02em;
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    box-shadow: 6px 6px 0 var(--ink);
+  }
+  .balance-pill.hidden{ display:none; }
+  .balance-pill .material-symbols-outlined{ font-size:20px; color: var(--accent); }
+  .balance-pill .amount{ font-weight:900; }
+
+  /* ---------- TYPO ---------- */
+  h1,h2,h3{ margin:0; }
+  p{ margin:0; color:var(--muted); line-height:1.45; }
+  a{ color:inherit; }
+
+  .kicker{
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    width:fit-content;
+    border: 2px solid var(--border);
+    padding: 6px 10px;
+    text-transform:uppercase;
+    letter-spacing:.12em;
+    font-weight:900;
+    font-size:12px;
+    background:#fff;
+  }
+  .kicker .dot{
+    width:10px;height:10px;background:var(--accent);
+    border:2px solid var(--border);
+  }
+
+  /* ---------- HERO / LANDING ---------- */
+  main{
+    width:100%;
+    display:grid;
+    gap: var(--frame-gap);
+  }
+
+  .landing{
+    background: var(--surface);
+    border: 3px solid var(--border);
+    box-shadow: var(--shadow);
+    padding: clamp(18px, 3vw, 34px);
+    display:grid;
+    gap: clamp(16px, 2vw, 22px);
+  }
+
+  .hero-top{
+    display:grid;
+    gap: 14px;
+    grid-template-columns: 1.2fr .8fr;
+    align-items:start;
+  }
+  @media (max-width: 980px){
+    .hero-top{ grid-template-columns: 1fr; }
+  }
+
+  .hero-title{
+    font-size: clamp(28px, 4vw, 44px);
+    line-height: 1.05;
+    letter-spacing: -.02em;
+    text-transform: uppercase;
+  }
+  .hero-lead{
+    max-width: 56ch;
+    font-size: 14px;
+  }
+
+  .hero-actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap: 10px;
+    margin-top: 6px;
+  }
+
+  .hero-proof{
+    border: 3px solid var(--border);
+    padding: 16px;
+    background:
+      linear-gradient(0deg, rgba(254,127,45,.12), rgba(254,127,45,.12)),
+      #fff;
+    box-shadow: 6px 6px 0 var(--ink);
+    display:grid;
+    gap: 10px;
+    align-content:start;
+  }
+  .hero-proof strong{
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    font-weight:900;
+    color:var(--ink);
+  }
+  .hero-proof ul{
+    margin:0;
+    padding:0;
+    list-style:none;
+    display:grid;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--ink);
+  }
+  .hero-proof li{
+    padding-left: 18px;
+    position:relative;
+  }
+  .hero-proof li::before{
+    content:"■";
+    position:absolute; left:0; top:0;
+    color: var(--ink);
+  }
+
+  /* ---------- SECTIONS ---------- */
+  .section{
+    display:grid;
+    gap: 12px;
+    padding-top: 10px;
+  }
+  .section-head{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap: 14px;
+    flex-wrap:wrap;
+    border-top: 3px solid var(--border);
+    padding-top: 14px;
+  }
+  .section-title{
+    font-size: clamp(18px, 2.6vw, 28px);
+    text-transform: uppercase;
+    letter-spacing:.06em;
+  }
+  .section-subtitle{
+    max-width: 72ch;
+    font-size: 13px;
+  }
+
+  .grid{
+    display:grid;
+    gap: 12px;
+    grid-template-columns: repeat(12, 1fr);
+  }
+
+  .card{
+    border: 3px solid var(--border);
+    background:#fff;
+    padding: 14px;
+    box-shadow: 6px 6px 0 var(--ink);
+    display:grid;
+    gap: 10px;
+    min-height: 130px;
+  }
+  .card strong{
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    font-weight: 900;
+    color: var(--ink);
+  }
+  .card p{ color: var(--muted); font-size: 13px; }
+
+  .span-4{ grid-column: span 4; }
+  .span-6{ grid-column: span 6; }
+  .span-12{ grid-column: span 12; }
+
+  @media (max-width: 980px){
+    .span-4,.span-6{ grid-column: span 12; }
+  }
+
+  /* ---------- STEPS ---------- */
+  .steps{
+    display:grid;
+    gap: 12px;
+  }
+  .step{
+    border: 3px solid var(--border);
+    background:#fff;
+    box-shadow: 6px 6px 0 var(--ink);
+    padding: 16px;
+    display:grid;
+    grid-template-columns: auto 1fr;
+    gap: 14px;
+    align-items:start;
+  }
+  .step .n{
+    width: 52px; height: 52px;
+    display:grid; place-items:center;
+    background: var(--ink);
+    color:#fff;
+    font-weight: 900;
+    font-size: 22px;
+    border: 3px solid var(--border);
+  }
+  .step .t strong{ display:block; margin-bottom: 6px; }
+
+  /* ---------- CTA ---------- */
+  .cta{
+    border: 3px solid var(--border);
+    background: #fff;
+    box-shadow: 6px 6px 0 var(--ink);
+    padding: 18px;
+    display:grid;
+    gap: 12px;
+    margin-top: 6px;
+  }
+
+  /* ---------- AUTH PANEL ---------- */
+  .panel{
+    display:none;
+    width: min(980px, 96vw);
+    background: var(--surface);
+    border: 3px solid var(--border);
+    box-shadow: var(--shadow);
+    padding: var(--modal-padding);
+    gap: 14px;
+  }
+  .panel.active{ display:grid; }
+
+  .auth-head{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap: 10px;
+    flex-wrap:wrap;
+    border-bottom: 3px solid var(--border);
+    padding-bottom: 10px;
+  }
+  .auth-head h2{
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    font-size: 18px;
+  }
+
+  .auth-tabs{
+    display:inline-flex;
+    gap: 8px;
+    flex-wrap:wrap;
+  }
+  .tab{
+    border: 3px solid var(--border);
+    background:#fff;
+    padding: 10px 12px;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    font-weight:900;
+    cursor:pointer;
+    box-shadow: 6px 6px 0 var(--ink);
+  }
+  .tab.active{
+    background: var(--ink);
+    color:#fff;
+  }
+
+  .auth-form{
+    display:grid;
+    gap: 12px;
+    padding: 14px;
+    border: 3px solid var(--border);
+    background:#fff;
+    box-shadow: 6px 6px 0 var(--ink);
+  }
+
+  .fields{
+    display:grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 12px;
+    align-items:start;
+  }
+  .field{ grid-column: span 6; display:grid; gap: 8px; }
+  @media (max-width: 980px){ .field{ grid-column: span 12; } }
+
+  label{
+    font-size: 12px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    font-weight:900;
+    color: var(--ink);
+  }
+
+  .input{
+    border: 3px solid var(--border);
+    background:#fff;
+    padding: 12px 12px;
+    display:flex;
+    align-items:center;
+    gap: 10px;
+    box-shadow: 6px 6px 0 var(--ink);
+  }
+  .input .material-symbols-outlined{
+    color: var(--accent);
+    font-size: 20px;
+  }
+  .input input{
+    width:100%;
+    border:0;
+    outline:none;
+    font-size: 14px;
+    background:transparent;
+    color: var(--ink);
+    font-family: inherit;
+    font-weight: 600;
+  }
+  ::placeholder{ color:#9aa1aa; font-weight:600; }
+
+  .helper{
+    color: var(--muted);
+    font-size: 12px;
+    line-height:1.35;
+  }
+
+  /* ---------- APP SHELL ---------- */
+  .app-shell{
+    display:none;
+    width:100%;
+    gap: var(--frame-gap);
+    grid-template-columns: var(--nav-width) 1fr;
+    align-items:start;
+  }
+  .app-shell.active{ display:grid; }
+
+  .sidebar{
+    background:#fff;
+    border: 3px solid var(--border);
+    box-shadow: var(--shadow);
+    padding: 12px 10px;
+    position: sticky;
+    top: calc(var(--frame-gap));
+    height: var(--shell-height);
+    display:grid;
+    align-content:start;
+    gap: 12px;
+  }
+  .nav-group{
+    border-top: 3px solid var(--border);
+    padding-top: 12px;
+    display:grid;
+    gap: 10px;
+    justify-items:center;
+  }
+  .nav-group:first-of-type{ border-top:0; padding-top:0; }
+  .nav-btn{
+    width: 60px; height: 60px;
+    border: 3px solid var(--border);
+    background:#fff;
+    display:grid; place-items:center;
+    cursor:pointer;
+    box-shadow: 6px 6px 0 var(--ink);
+    transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
+  }
+  .nav-btn:hover{ transform: translate(-1px,-1px); box-shadow: 8px 8px 0 var(--ink); }
+  .nav-btn:active{ transform: translate(1px,1px); box-shadow: 4px 4px 0 var(--ink); }
+  .nav-btn.active{
+    background: rgba(254,127,45,.18);
+  }
+  .nav-btn .material-symbols-outlined{ color: var(--ink); font-size: 26px; }
+
+  .content{
+    display:grid;
+    align-content:start;
+    gap: var(--frame-gap);
+  }
+  .content-card{
+    background:#fff;
+    border: 3px solid var(--border);
+    box-shadow: var(--shadow);
+    padding: 16px;
+    min-height: var(--shell-height);
+  }
+
+  /* ---------- MODAL ---------- */
+  .modal-backdrop{
+    position:fixed;
+    inset:0;
+    background: rgba(0,0,0,.55);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding: 24px;
+    z-index: 1000;
+  }
+  .modal-backdrop.active{ display:flex; }
+  .modal-sheet{
+    width: min(720px, 94vw);
+    background:#fff;
+    border: 3px solid var(--border);
+    box-shadow: 12px 12px 0 var(--ink);
+    padding: 16px;
+    display:grid;
+    gap: 12px;
+  }
+  .modal-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap: 10px;
+    border-bottom: 3px solid var(--border);
+    padding-bottom: 10px;
+  }
+  .modal-title{
+    font-size: 16px;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    font-weight: 900;
+  }
+  .modal-section{
+    border: 3px solid var(--border);
+    padding: 12px;
+    box-shadow: 6px 6px 0 var(--ink);
+    background:#fff;
+    display:grid;
+    gap: 8px;
+  }
+  .topup-list{
+    list-style:none;
+    margin:0;
+    padding:0;
+    display:grid;
+    gap: 8px;
+  }
+  .topup-item{
+    display:flex;
+    justify-content:space-between;
+    gap: 10px;
+    border: 2px solid var(--border);
+    padding: 8px 10px;
+    background:#fff;
+  }
+
+  .hidden{ display:none !important; }
+
+  body.app-active #hero,
+  body.app-active #authPanel{
+    display:none !important;
+  }
+  body.app-active{ overflow:hidden; }
+</style>
 </head>
 <body>
   <div class="page-frame">
-  <header>
-    <button class="buttonAA" data-text="Awesome">
-    <span class="actual-text">&nbsp;RIVA_Development&nbsp;</span>
-    <span aria-hidden="true" class="hover-text">&nbsp;RIVA_Development&nbsp;</span>
-    </button>
-    <div class="header-actions">
-      <button id="balanceTrigger" class="balance-pill hidden compact-button" type="button" aria-haspopup="dialog" aria-controls="balanceModal" style="--btn-height: 36px; --btn-padding: 0 14px; --btn-radius: 999px; --btn-bg: #ffffff; --btn-color: var(--text); --btn-border: 1px solid var(--border); --btn-shadow: 0 8px 20px rgba(0,0,0,0.06); --btn-hover-shadow: 0 12px 24px rgba(0,0,0,0.1); --btn-gap: 10px; --btn-font-weight: 600;">
-        <span class="material-symbols-outlined" aria-hidden="true">account_balance_wallet</span>
-        Баланс: <span class="amount" id="balanceAmount">0 ₽</span>
+    <header>
+      <!-- Brand (оставил твою кнопку, чтобы не ломать визуал/анимацию) -->
+      <button class="buttonAA" data-text="Awesome" type="button" aria-label="RIVA Development">
+        <span class="actual-text">&nbsp;RIVA_Development&nbsp;</span>
+        <span aria-hidden="true" class="hover-text">&nbsp;RIVA_Development&nbsp;</span>
       </button>
-      <button id="openAuth" class="card">Вход</button>
-    </div>
-  </header>
 
-  <main>
-    <section id="hero" class="hero">
-     <div class="hero-content">
-        <span class="hero-eyebrow">Сервис учета для малого производства</span>
-        <h1>Производство, склад и деньги — в одном простом окне управления.</h1>
-        <p>Вы видите весь цикл: закупка → склад → производство → реализация → cashflow. Никаких разрозненных таблиц, ручных пересчетов и слепых зон по материалам.</p>
-        <div class="hero-actions">
-          <button class="hero-button" type="button">Попробовать бесплатно</button>
-          <button class="hero-button secondary" type="button">Посмотреть демо</button>
-        </div>
-        <ul class="hero-bullets">
-          <li>Автосписание материалов по рецепту без ручных калькуляций.</li>
-          <li>Один товар — разные цены и каналы продаж.</li>
-          <li>Инвентаризация и списание потерь в один клик.</li>
-          <li>Cashflow с регулярными платежами: аренда, ФОТ, сервисы.</li>
-        </ul>
+      <div class="header-actions">
+        <button
+          id="balanceTrigger"
+          class="balance-pill hidden compact-button"
+          type="button"
+          aria-haspopup="dialog"
+          aria-controls="balanceModal"
+          style="--btn-height: 36px; --btn-padding: 0 14px; --btn-radius: 999px; --btn-bg: #ffffff; --btn-color: var(--text); --btn-border: 1px solid var(--border); --btn-shadow: 0 8px 20px rgba(0,0,0,0.06); --btn-hover-shadow: 0 12px 24px rgba(0,0,0,0.1); --btn-gap: 10px; --btn-font-weight: 600;"
+        >
+          <span class="material-symbols-outlined" aria-hidden="true">account_balance_wallet</span>
+          Баланс: <span class="amount" id="balanceAmount">0 ₽</span>
+        </button>
+
+        <button id="openAuth" class="card" type="button">Вход</button>
       </div>
+    </header>
 
-      <section>
-        <h2 class="section-title">Что мы закрываем</h2>
-        <p class="section-subtitle">Главные боли малого производства превращаем в понятные и управляемые процессы.</p>
-        <div class="problem-grid">
-          <div class="block-card">
-            <strong>Себестоимость</strong>
-            <p>Показываем, сколько материала ушло по рецепту и где был перерасход.</p>
+    <main>
+      <!-- ===================== LANDING / HERO ===================== -->
+      <section id="hero" class="hero">
+        <div class="hero-content">
+          <span class="hero-eyebrow">Сервис учета для малого производства</span>
+
+          <h1>Производство, склад и деньги — в одном простом окне управления.</h1>
+          <p>
+            Вы видите весь цикл: закупка → склад → производство → реализация → cashflow.
+            Никаких разрозненных таблиц, ручных пересчетов и слепых зон по материалам.
+          </p>
+
+          <div class="hero-actions">
+            <button class="hero-button" type="button" id="ctaTryTop">Попробовать бесплатно</button>
+            <button class="hero-button secondary" type="button" id="ctaDemoTop">Посмотреть демо</button>
           </div>
-          <div class="block-card">
-            <strong>Остатки</strong>
-            <p>Сразу видно дефицит для выпуска по рецептам и можно планировать закупки заранее.</p>
-          </div>
-          <div class="block-card">
-            <strong>Разрозненный учет</strong>
-            <p>Заказ → оприходование → списание в производство → реализация — всё в одном месте.</p>
-          </div>
-          <div class="block-card">
-            <strong>Продажи по каналам</strong>
-            <p>Фиксируйте цены и каналы, чтобы видеть реальную маржинальность.</p>
-          </div>
-          <div class="block-card">
-            <strong>Деньги</strong>
-            <p>Cashflow показывает, почему прибыль есть, а денег нет.</p>
-          </div>
+
+          <ul class="hero-bullets">
+            <li>Автосписание материалов по рецепту без ручных калькуляций.</li>
+            <li>Один товар — разные цены и каналы продаж.</li>
+            <li>Инвентаризация и списание потерь в один клик.</li>
+            <li>Cashflow с регулярными платежами: аренда, ФОТ, сервисы.</li>
+          </ul>
         </div>
-      </section>
 
-      <section>
-        <h2 class="section-title">Как это работает</h2>
-        <p class="section-subtitle">Три простых шага — и учет начинает жить.</p>
-        <div class="steps">
-          <div class="step-card">
-            <div class="step-number">1</div>
-            <div>
-              <strong>Закупка и склад</strong>
-              <p>Создайте заказ поставщику, оприходуйте товар и держите остатки под контролем.</p>
+        <section>
+          <h2 class="section-title">Что мы закрываем</h2>
+          <p class="section-subtitle">Главные боли малого производства превращаем в понятные и управляемые процессы.</p>
+
+          <div class="problem-grid">
+            <div class="block-card">
+              <strong>Себестоимость</strong>
+              <p>Показываем, сколько материала ушло по рецепту и где был перерасход.</p>
+            </div>
+            <div class="block-card">
+              <strong>Остатки</strong>
+              <p>Сразу видно дефицит для выпуска по рецептам и можно планировать закупки заранее.</p>
+            </div>
+            <div class="block-card">
+              <strong>Разрозненный учет</strong>
+              <p>Заказ → оприходование → списание в производство → реализация — всё в одном месте.</p>
+            </div>
+            <div class="block-card">
+              <strong>Продажи по каналам</strong>
+              <p>Фиксируйте цены и каналы, чтобы видеть реальную маржинальность.</p>
+            </div>
+            <div class="block-card">
+              <strong>Деньги</strong>
+              <p>Cashflow показывает, почему прибыль есть, а денег нет.</p>
             </div>
           </div>
-          <div class="step-card">
-            <div class="step-number">2</div>
-            <div>
-              <strong>Производство по рецептам</strong>
-              <p>Задайте нормы, запустите задачу и получите автосписание материалов. Потери фиксируются отдельно.</p>
+        </section>
+
+        <section>
+          <h2 class="section-title">Как это работает</h2>
+          <p class="section-subtitle">Три простых шага — и учет начинает жить.</p>
+
+          <div class="steps">
+            <div class="step-card">
+              <div class="step-number">1</div>
+              <div>
+                <strong>Закупка и склад</strong>
+                <p>Создайте заказ поставщику, оприходуйте товар и держите остатки под контролем.</p>
+              </div>
+            </div>
+
+            <div class="step-card">
+              <div class="step-number">2</div>
+              <div>
+                <strong>Производство по рецептам</strong>
+                <p>Задайте нормы, запустите задачу и получите автосписание материалов. Потери фиксируются отдельно.</p>
+              </div>
+            </div>
+
+            <div class="step-card">
+              <div class="step-number">3</div>
+              <div>
+                <strong>Реализация и деньги</strong>
+                <p>Продажи по разным ценам и каналам + cashflow с регулярными платежами.</p>
+              </div>
             </div>
           </div>
-          <div class="step-card">
-            <div class="step-number">3</div>
-            <div>
-              <strong>Реализация и деньги</strong>
-              <p>Продажи по разным ценам и каналам + cashflow с регулярными платежами.</p>
+        </section>
+
+        <section>
+          <h2 class="section-title">Функционал</h2>
+          <div class="feature-grid">
+            <div class="block-card">
+              <strong>Склад и закупки</strong>
+              <p>Заказ → оприходование, контроль остатков, инвентаризация и история движений.</p>
+            </div>
+            <div class="block-card">
+              <strong>Производство</strong>
+              <p>Рецепты, планирование по дефициту, автосписание, фиксация перерасхода.</p>
+            </div>
+            <div class="block-card">
+              <strong>Реализация и cashflow</strong>
+              <p>Продажи по каналам, списания при реализации, доходы/расходы и регулярные платежи.</p>
             </div>
           </div>
+        </section>
+
+        <section>
+          <h2 class="section-title">Преимущества</h2>
+          <div class="benefit-grid">
+            <div class="block-card">
+              <strong>Единая логика</strong>
+              <p>Вся цепочка учета в одном интерфейсе.</p>
+            </div>
+            <div class="block-card">
+              <strong>Меньше потерь</strong>
+              <p>Видно дефицит и источник перерасхода.</p>
+            </div>
+            <div class="block-card">
+              <strong>Честный склад</strong>
+              <p>Инвентаризация и списания без ручных танцев.</p>
+            </div>
+            <div class="block-card">
+              <strong>Без тяжелого ERP</strong>
+              <p>Просто, быстро, понятно владельцу.</p>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h2 class="section-title">Для кого</h2>
+          <div class="audience-grid">
+            <div class="block-card">Кондитерки, пекарни, полуфабрикаты.</div>
+            <div class="block-card">Свечи, мыло, косметика ручной работы.</div>
+            <div class="block-card">Мебель, столярка, декор.</div>
+            <div class="block-card">Типография, упаковка, сувенирка.</div>
+            <div class="block-card">Одежда, аксессуары, мастерские.</div>
+          </div>
+        </section>
+
+        <section>
+          <h2 class="section-title">Что даем уже сейчас</h2>
+          <div class="proof-grid">
+            <div class="block-card">Сокращение времени учета за счет автосписаний.</div>
+            <div class="block-card">Прозрачный cashflow с регулярными расходами.</div>
+            <div class="block-card">Меньше срывов производства благодаря видимому дефициту.</div>
+          </div>
+        </section>
+
+        <section class="cta-panel">
+          <h2 class="section-title">Наведем порядок вместе?</h2>
+          <p class="section-subtitle">
+            Подключитесь, внесите рецепты и остатки — и ведите производство, продажи и деньги в одном окне.
+          </p>
+          <div class="hero-actions">
+            <button class="hero-button" type="button" id="ctaTryBottom">Попробовать бесплатно</button>
+            <button class="hero-button secondary" type="button" id="ctaDemoBottom">Запросить демо</button>
+          </div>
+        </section>
+
+        <section>
+          <h2 class="section-title">Микротексты</h2>
+          <ul class="microtext-list">
+            <li>Автосписание материалов по рецепту — без ручных расчетов.</li>
+            <li>Инвентаризация: списание недостачи и потерь в один клик.</li>
+            <li>Один товар — разные цены в разных каналах продаж.</li>
+            <li>Cashflow: доходы/расходы + регулярные платежи (аренда, ФОТ).</li>
+          </ul>
+        </section>
+      </section>
+
+      <!-- ===================== AUTH PANEL (обязателен для твоего JS) ===================== -->
+      <section id="authPanel" class="panel" aria-labelledby="authTitle">
+        <div class="auth-head">
+          <h2 id="authTitle">Вход</h2>
+          <div class="auth-tabs" role="tablist" aria-label="Авторизация">
+            <button id="tabLogin" class="tab active" type="button" role="tab" aria-selected="true">Вход</button>
+            <button id="tabRegister" class="tab" type="button" role="tab" aria-selected="false">Регистрация</button>
+          </div>
         </div>
-      </section>
 
-      <section>
-        <h2 class="section-title">Функционал</h2>
-        <div class="feature-grid">
-          <div class="block-card">
-            <strong>Склад и закупки</strong>
-            <p>Заказ → оприходование, контроль остатков, инвентаризация и история движений.</p>
-          </div>
-          <div class="block-card">
-            <strong>Производство</strong>
-            <p>Рецепты, планирование по дефициту, автосписание, фиксация перерасхода.</p>
-          </div>
-          <div class="block-card">
-            <strong>Реализация и cashflow</strong>
-            <p>Продажи по каналам, списания при реализации, доходы/расходы и регулярные платежи.</p>
-          </div>
-        </div>
-      </section>
+        <!-- LOGIN -->
+        <form id="loginForm" class="auth-form" autocomplete="on">
+          <div class="fields">
+            <div class="field">
+              <label for="loginUsername">Логин / Email</label>
+              <div class="input">
+                <span class="material-symbols-outlined" aria-hidden="true">person</span>
+                <input id="loginUsername" name="username" autocomplete="username" placeholder="admin@example.com" required>
+              </div>
+            </div>
 
-      <section>
-        <h2 class="section-title">Преимущества</h2>
-        <div class="benefit-grid">
-          <div class="block-card">
-            <strong>Единая логика</strong>
-            <p>Вся цепочка учета в одном интерфейсе.</p>
-          </div>
-          <div class="block-card">
-            <strong>Меньше потерь</strong>
-            <p>Видно дефицит и источник перерасхода.</p>
-          </div>
-          <div class="block-card">
-            <strong>Честный склад</strong>
-            <p>Инвентаризация и списания без ручных танцев.</p>
-          </div>
-          <div class="block-card">
-            <strong>Без тяжелого ERP</strong>
-            <p>Просто, быстро, понятно владельцу.</p>
-          </div>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="section-title">Для кого</h2>
-        <div class="audience-grid">
-          <div class="block-card">Кондитерки, пекарни, полуфабрикаты.</div>
-          <div class="block-card">Свечи, мыло, косметика ручной работы.</div>
-          <div class="block-card">Мебель, столярка, декор.</div>
-          <div class="block-card">Типография, упаковка, сувенирка.</div>
-          <div class="block-card">Одежда, аксессуары, мастерские.</div>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="section-title">Что даем уже сейчас</h2>
-        <div class="proof-grid">
-          <div class="block-card">Сокращение времени учета за счет автосписаний.</div>
-          <div class="block-card">Прозрачный cashflow с регулярными расходами.</div>
-          <div class="block-card">Меньше срывов производства благодаря видимому дефициту.</div>
-        </div>
-      </section>
-
-      <section class="cta-panel">
-        <h2 class="section-title">Наведем порядок вместе?</h2>
-        <p class="section-subtitle">Подключитесь, внесите рецепты и остатки — и ведите производство, продажи и деньги в одном окне.</p>
-        <div class="hero-actions">
-          <button class="hero-button" type="button">Попробовать бесплатно</button>
-          <button class="hero-button secondary" type="button">Запросить демо</button>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="section-title">Микротексты</h2>
-        <ul class="microtext-list">
-          <li>Автосписание материалов по рецепту — без ручных расчетов.</li>
-          <li>Инвентаризация: списание недостачи и потерь в один клик.</li>
-          <li>Один товар — разные цены в разных каналах продаж.</li>
-          <li>Cashflow: доходы/расходы + регулярные платежи (аренда, ФОТ).</li>
-        </ul>
-      </section>
-
-          <div>
-            <div class="flex-column">
+            <div class="field">
               <label for="loginPassword">Пароль</label>
-            </div>
-            <div class="inputForm compact-field">
-              <span class="inputIcon material-symbols-outlined" aria-hidden="true">lock</span>
-              <input id="loginPassword" class="input" name="password" type="password" autocomplete="current-password" placeholder="••••••••" required>
+              <div class="input">
+                <span class="material-symbols-outlined" aria-hidden="true">lock</span>
+                <input id="loginPassword" name="password" type="password" autocomplete="current-password" placeholder="••••••••" required>
+              </div>
             </div>
           </div>
-        </div>
-        <p class="helper" style="margin-top: -10px;">В этой форме авторизуются и администраторы, и пользователи их рабочих пространств.</p>
-        <button class="button-submit card" type="submit" style="margin-top: -20px;">Войти</button>
-      </form>
 
-     <form id="registerForm" class="auth-form hidden">
-        <div class="auth-fields">
-          <div>
-            <div class="flex-column">
+          <p class="helper">
+            В этой форме авторизуются и администраторы, и пользователи их рабочих пространств.
+          </p>
+
+          <button class="btn primary" type="submit">
+            <span class="material-symbols-outlined" aria-hidden="true">login</span>
+            Войти
+          </button>
+        </form>
+
+        <!-- REGISTER -->
+        <form id="registerForm" class="auth-form hidden" autocomplete="on">
+          <div class="fields">
+            <div class="field">
               <label for="registerUsername">Логин администратора</label>
+              <div class="input">
+                <span class="material-symbols-outlined" aria-hidden="true">person</span>
+                <input id="registerUsername" name="username" autocomplete="username" placeholder="new-admin@example.com" required>
+              </div>
             </div>
-            <div class="inputForm compact-field">
-              <span class="inputIcon material-symbols-outlined" aria-hidden="true">person</span>
-              <input id="registerUsername" class="input" name="username" autocomplete="username" placeholder="new-admin@example.com" required>
-            </div>
-          </div>
-          <div>
-            <div class="flex-column">
+
+            <div class="field">
               <label for="registerPassword">Пароль</label>
+              <div class="input">
+                <span class="material-symbols-outlined" aria-hidden="true">lock</span>
+                <input id="registerPassword" name="password" type="password" autocomplete="new-password" placeholder="Минимум 8 символов" required>
+              </div>
             </div>
-            <div class="inputForm compact-field">
-              <span class="inputIcon material-symbols-outlined" aria-hidden="true">lock</span>
-              <input id="registerPassword" class="input" name="password" type="password" autocomplete="new-password" placeholder="Минимум 8 символов" required>
-            </div>
-          </div>
-          <div>
-            <div class="flex-column">
+
+            <div class="field" style="grid-column: span 12;">
               <label for="registerBalance">Начальный баланс</label>
+              <div class="input">
+                <span class="material-symbols-outlined" aria-hidden="true">payments</span>
+                <input id="registerBalance" name="balance" type="number" min="0" step="0.01" placeholder="1000.00">
+              </div>
+              <p class="helper" style="margin-top:8px;">
+                Баланс хранится только у администраторов (платный доступ).
+              </p>
             </div>
-            <div class="inputForm compact-field">
-              <span class="inputIcon material-symbols-outlined" aria-hidden="true">payments</span>
-              <input id="registerBalance" class="input" name="balance" type="number" min="0" step="0.01" placeholder="1000.00">
-            </div>
-            <p class="helper">Баланс хранится только у администраторов (платный доступ).</p>
+          </div>
+
+          <p class="helper">
+            Регистрация создаёт только учётную запись администратора.
+            Обычных пользователей добавляет администратор в своём рабочем пространстве.
+          </p>
+
+          <button class="btn primary" type="submit">
+            <span class="material-symbols-outlined" aria-hidden="true">person_add</span>
+            Зарегистрировать администратора
+          </button>
+        </form>
+      </section>
+
+      <!-- ===================== APP SHELL ===================== -->
+      <section id="appShell" class="app-shell" aria-live="polite">
+        <nav class="sidebar" aria-label="Навигация по микросервисам">
+          <div class="nav-group">
+            <div class="nav-title">RIVA Development</div>
+
+            <button class="nav-btn compact-button active" data-file="modal1.html" data-group="primary" aria-label="Modal 1" type="button">
+              <span class="material-symbols-outlined">dashboard</span>
+            </button>
+
+            <button class="nav-btn compact-button" data-file="modal2.html" data-group="primary" aria-label="Modal 2" type="button">
+              <span class="material-symbols-outlined">view_quilt</span>
+            </button>
+
+            <button class="nav-btn compact-button" data-file="modal3.html" data-group="primary" aria-label="Modal 3" type="button">
+              <span class="material-symbols-outlined">widgets</span>
+            </button>
+
+            <button class="nav-btn compact-button" data-file="modal4.html" data-group="primary" aria-label="Modal 4" type="button">
+              <span class="material-symbols-outlined">account_tree</span>
+            </button>
+          </div>
+
+          <div class="nav-group">
+            <div class="nav-title">Рабочие процессы</div>
+
+            <button class="nav-btn compact-button" data-file="apps/automation.html" data-group="secondary" aria-label="Автоматизация" type="button">
+              <span class="material-symbols-outlined">auto_awesome</span>
+            </button>
+
+            <button class="nav-btn compact-button" data-file="apps/monitoring.html" data-group="secondary" aria-label="Мониторинг" type="button">
+              <span class="material-symbols-outlined">monitoring</span>
+            </button>
+          </div>
+
+          <div class="nav-group">
+            <div class="nav-title">Настройки</div>
+
+            <button class="nav-btn compact-button" data-file="apps/settings.html" data-group="secondary" aria-label="Настройки" type="button">
+              <span class="material-symbols-outlined">tune</span>
+            </button>
+
+            <button class="nav-btn compact-button" data-file="apps/users.html" data-group="secondary" aria-label="Пользователи" type="button">
+              <span class="material-symbols-outlined">group</span>
+            </button>
+          </div>
+        </nav>
+
+        <div class="content">
+          <div id="contentCard" class="content-card" role="region" aria-live="polite">
+            <h3>Контент микросервиса</h3>
+            <p class="helper">Нажмите на иконки слева — соответствующий HTML-файл будет загружен и показан здесь.</p>
+            <p class="helper" id="statusText">Готово к загрузке HTML-файлов из репозитория.</p>
           </div>
         </div>
-        <p class="helper">Регистрация создаёт только учётную запись администратора. Обычных пользователей добавляет администратор в своём рабочем пространстве.</p>
-        <button class="button-submit card" type="submit" style="margin: 20px 0 10px;">Зарегистрировать администратора</button>
-      </form>
-    </section>
+      </section>
+    </main>
+  </div>
 
-    <section id="appShell" class="app-shell" aria-live="polite">
-      <nav class="sidebar" aria-label="Навигация по микросервисам">
-        <div class="nav-group">
-          <div class="nav-title">RIVA Development</div>
-          <button class="nav-btn compact-button active" data-file="modal1.html" data-group="primary" aria-label="Modal 1" style="--btn-width: 63px; --btn-height: 63px; --btn-padding: 0; --btn-radius: 14px; --btn-bg: #ffffff; --btn-color: var(--text); --btn-border: 1.5px solid #ecedec; --btn-shadow: 0 6px 16px rgba(0,0,0,0.04); --btn-hover-shadow: 0 6px 16px rgba(0,0,0,0.04);">
-            <span class="material-symbols-outlined">dashboard</span>
-          </button>
-          <button class="nav-btn compact-button" data-file="modal2.html" data-group="primary" aria-label="Modal 2" style="--btn-width: 63px; --btn-height: 63px; --btn-padding: 0; --btn-radius: 14px; --btn-bg: #ffffff; --btn-color: var(--text); --btn-border: 1.5px solid #ecedec; --btn-shadow: 0 6px 16px rgba(0,0,0,0.04); --btn-hover-shadow: 0 6px 16px rgba(0,0,0,0.04);">
-            <span class="material-symbols-outlined">view_quilt</span>
-          </button>
-          <button class="nav-btn compact-button" data-file="modal3.html" data-group="primary" aria-label="Modal 3" style="--btn-width: 63px; --btn-height: 63px; --btn-padding: 0; --btn-radius: 14px; --btn-bg: #ffffff; --btn-color: var(--text); --btn-border: 1.5px solid #ecedec; --btn-shadow: 0 6px 16px rgba(0,0,0,0.04); --btn-hover-shadow: 0 6px 16px rgba(0,0,0,0.04);">
-            <span class="material-symbols-outlined">widgets</span>
-          </button>
-          <button class="nav-btn compact-button" data-file="modal4.html" data-group="primary" aria-label="Modal 4" style="--btn-width: 63px; --btn-height: 63px; --btn-padding: 0; --btn-radius: 14px; --btn-bg: #ffffff; --btn-color: var(--text); --btn-border: 1.5px solid #ecedec; --btn-shadow: 0 6px 16px rgba(0,0,0,0.04); --btn-hover-shadow: 0 6px 16px rgba(0,0,0,0.04);">
-            <span class="material-symbols-outlined">account_tree</span>
-          </button>
-        </div>
-        <div class="nav-group">
-          <div class="nav-title">Рабочие процессы</div>
-          <button class="nav-btn compact-button" data-file="apps/automation.html" data-group="secondary" aria-label="Автоматизация" style="--btn-width: 63px; --btn-height: 63px; --btn-padding: 0; --btn-radius: 14px; --btn-bg: #ffffff; --btn-color: var(--text); --btn-border: 1.5px solid #ecedec; --btn-shadow: 0 6px 16px rgba(0,0,0,0.04); --btn-hover-shadow: 0 6px 16px rgba(0,0,0,0.04);">
-            <span class="material-symbols-outlined">auto_awesome</span>
-          </button>
-          <button class="nav-btn compact-button" data-file="apps/monitoring.html" data-group="secondary" aria-label="Мониторинг" style="--btn-width: 63px; --btn-height: 63px; --btn-padding: 0; --btn-radius: 14px; --btn-bg: #ffffff; --btn-color: var(--text); --btn-border: 1.5px solid #ecedec; --btn-shadow: 0 6px 16px rgba(0,0,0,0.04); --btn-hover-shadow: 0 6px 16px rgba(0,0,0,0.04);">
-            <span class="material-symbols-outlined">monitoring</span>
-          </button>
-        </div>
-        <div class="nav-group">
-          <div class="nav-title">Настройки</div>
-          <button class="nav-btn compact-button" data-file="apps/settings.html" data-group="secondary" aria-label="Настройки" style="--btn-width: 63px; --btn-height: 63px; --btn-padding: 0; --btn-radius: 14px; --btn-bg: #ffffff; --btn-color: var(--text); --btn-border: 1.5px solid #ecedec; --btn-shadow: 0 6px 16px rgba(0,0,0,0.04); --btn-hover-shadow: 0 6px 16px rgba(0,0,0,0.04);">
-            <span class="material-symbols-outlined">tune</span>
-          </button>
-          <button class="nav-btn compact-button" data-file="apps/users.html" data-group="secondary" aria-label="Пользователи" style="--btn-width: 63px; --btn-height: 63px; --btn-padding: 0; --btn-radius: 14px; --btn-bg: #ffffff; --btn-color: var(--text); --btn-border: 1.5px solid #ecedec; --btn-shadow: 0 6px 16px rgba(0,0,0,0.04); --btn-hover-shadow: 0 6px 16px rgba(0,0,0,0.04);">
-            <span class="material-symbols-outlined">group</span>
-          </button>
-        </div>
-      </nav>
-      <div class="content">
-        <div id="contentCard" class="content-card" role="region" aria-live="polite">
-        <h3>Контент микросервиса</h3>
-        <p class="helper">Нажмите на иконки слева — соответствующий HTML-файл будет загружен и показан здесь.</p>
-        <p class="helper" id="statusText">Готово к загрузке HTML-файлов из репозитория.</p>
-      </div>
-      </div>
-    </section>
-  </main>
-    </div>
-
+  <!-- ===================== BALANCE MODAL ===================== -->
   <div id="balanceModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="balanceTitle" aria-hidden="true">
     <div class="modal-sheet">
       <div class="modal-header">
         <h2 class="modal-title" id="balanceTitle">Баланс личного кабинета</h2>
-        <button class="modal-close card" id="balanceClose" type="button">Закрыть</button>
+        <button class="modal-close btn ghost" id="balanceClose" type="button">Закрыть</button>
       </div>
+
       <div class="modal-section">
         <strong>Текущий баланс: <span id="balanceModalAmount"></span></strong>
         <p class="helper">Нажмите «Пополнить», чтобы увеличить баланс. История обновится сразу.</p>
       </div>
+
       <div class="modal-section">
-        <h3 style="margin:0;">Последние пополнения</h3>
+        <h3 style="margin:0; text-transform:uppercase; letter-spacing:.06em;">Последние пополнения</h3>
         <ul class="topup-list" id="topupList"></ul>
       </div>
+
       <div class="modal-section">
-        <h3 style="margin:0;">Пополнить баланс</h3>
+        <h3 style="margin:0; text-transform:uppercase; letter-spacing:.06em;">Пополнить баланс</h3>
         <form id="topupForm" class="topup-form">
           <div class="inputForm compact-field">
             <span class="inputIcon material-symbols-outlined" aria-hidden="true">payments</span>
             <input id="topupAmount" class="input" type="number" min="1" step="0.01" placeholder="Сумма пополнения">
           </div>
-          <button class="button-submit card" type="submit">Пополнить</button>
+          <button class="btn primary" type="submit">Пополнить</button>
         </form>
       </div>
     </div>
   </div>
 
   <script>
-    const hero = document.getElementById("hero");
-    const authPanel = document.getElementById("authPanel");
-    const appShell = document.getElementById("appShell");
-    const openAuth = document.getElementById("openAuth");
-    const balanceTrigger = document.getElementById("balanceTrigger");
-    const balanceAmount = document.getElementById("balanceAmount");
-    const tabLogin = document.getElementById("tabLogin");
-    const tabRegister = document.getElementById("tabRegister");
-    const loginForm = document.getElementById("loginForm");
-    const registerForm = document.getElementById("registerForm");
-    const statusText = document.getElementById("statusText");
-    const contentCard = document.getElementById("contentCard");
-    const authTitle = document.getElementById("authTitle");
+  // ---- DOM ----
+  const hero = document.getElementById("hero");
+  const authPanel = document.getElementById("authPanel");
+  const appShell = document.getElementById("appShell");
+  const openAuth = document.getElementById("openAuth");
 
-    const navButtons = Array.from(document.querySelectorAll(".nav-btn"));
-    const balanceState = {
-      isAuthenticated: false,
-      balance: 0,
-      topups: []
-    };
-    const ACCENTS = {
-      primary: { main: "#fe7f2d", soft: "rgba(254, 127, 45, 0.12)" },
-      secondary: { main: "#212121", soft: "rgba(33, 33, 33, 0.12)" }
-    };
-    const ASSET_VERSION = "2025-03-08-11";
+  const balanceTrigger = document.getElementById("balanceTrigger");
+  const balanceAmount = document.getElementById("balanceAmount");
 
-    function updateAccent(group = "primary") {
-      const palette = ACCENTS[group] || ACCENTS.secondary;
-      document.documentElement.style.setProperty("--accent", palette.main);
-      document.documentElement.style.setProperty("--accent-bg", palette.soft);
+  const tabLogin = document.getElementById("tabLogin");
+  const tabRegister = document.getElementById("tabRegister");
+  const loginForm = document.getElementById("loginForm");
+  const registerForm = document.getElementById("registerForm");
+
+  const statusText = document.getElementById("statusText");
+  const contentCard = document.getElementById("contentCard");
+  const authTitle = document.getElementById("authTitle");
+
+  const navButtons = Array.from(document.querySelectorAll(".nav-btn"));
+
+  // ---- STATE ----
+  const balanceState = {
+    isAuthenticated: false,
+    balance: 0,
+    topups: []
+  };
+
+  // Accent is used mainly for icons/chips; brutalism keeps most ink black.
+  const ACCENTS = {
+    primary: { main: "#fe7f2d" },
+    secondary: { main: "#111111" }
+  };
+  const ASSET_VERSION = "2026-02-06-landing-brutal";
+
+  function updateAccent(group = "primary") {
+    const palette = ACCENTS[group] || ACCENTS.primary;
+    document.documentElement.style.setProperty("--accent", palette.main);
+  }
+
+  // ---- SUPABASE ----
+  const SUPABASE_URL = "https://ncdwlmgwljjwpuawlssr.supabase.co";
+  const SUPABASE_ANON_KEY =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jZHdsbWd3bGpqd3B1YXdsc3NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0NTQxNDksImV4cCI6MjA4MzAzMDE0OX0.rrIznUflWydylTnUZvOxOkeF9eMp91qNN4Bjq2gXRL8";
+  const { createClient } = supabase;
+  const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // ---- UI HELPERS ----
+  function withVersion(file) {
+    const separator = file.includes("?") ? "&" : "?";
+    return `${file}${separator}v=${ASSET_VERSION}`;
+  }
+
+  function formatCurrency(value) {
+    return new Intl.NumberFormat("ru-RU", {
+      style: "currency",
+      currency: "RUB",
+      maximumFractionDigits: 2
+    }).format(value);
+  }
+
+  function updateBalanceDisplay() {
+    balanceAmount.textContent = formatCurrency(balanceState.balance || 0);
+    const modalAmount = document.getElementById("balanceModalAmount");
+    if (modalAmount) modalAmount.textContent = formatCurrency(balanceState.balance || 0);
+  }
+
+  function renderTopups() {
+    const list = document.getElementById("topupList");
+    list.innerHTML = "";
+    if (balanceState.topups.length === 0) {
+      const empty = document.createElement("li");
+      empty.className = "helper";
+      empty.textContent = "Пока нет пополнений. Добавьте первое — и увидите историю.";
+      list.appendChild(empty);
+      return;
     }
-    const SUPABASE_URL = "https://ncdwlmgwljjwpuawlssr.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jZHdsbWd3bGpqd3B1YXdsc3NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0NTQxNDksImV4cCI6MjA4MzAzMDE0OX0.rrIznUflWydylTnUZvOxOkeF9eMp91qNN4Bjq2gXRL8";
-    const { createClient } = supabase;
-    const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    balanceState.topups.slice(0, 5).forEach((topup) => {
+      const item = document.createElement("li");
+      item.className = "topup-item";
+      item.innerHTML = `<div>${topup.label}</div><strong>${formatCurrency(topup.amount)}</strong>`;
+      list.appendChild(item);
+    });
+  }
 
-    function showAuth() {
-      hero.classList.add("hidden");
-      authPanel.classList.add("active");
-      appShell.classList.remove("active");
-      document.body.classList.remove("app-active");
-      authTitle.textContent = tabLogin.classList.contains("active") ? "Вход в панель" : "Регистрация администратора";
-      openAuth.textContent = "Вход";
-      balanceTrigger.classList.add("hidden");
-      balanceState.isAuthenticated = false;
-      closeBalanceModal();
+  function openBalanceModal() {
+    const modal = document.getElementById("balanceModal");
+    modal.classList.add("active");
+    modal.setAttribute("aria-hidden", "false");
+    updateBalanceDisplay();
+    renderTopups();
+  }
+
+  function closeBalanceModal() {
+    const modal = document.getElementById("balanceModal");
+    modal.classList.remove("active");
+    modal.setAttribute("aria-hidden", "true");
+  }
+
+  function showAuth() {
+    hero.classList.remove("hidden");
+    authPanel.classList.add("active");
+    appShell.classList.remove("active");
+    document.body.classList.remove("app-active");
+
+    authTitle.textContent = tabLogin.classList.contains("active")
+      ? "Вход"
+      : "Регистрация администратора";
+
+    openAuth.textContent = "Вход";
+    balanceTrigger.classList.add("hidden");
+    balanceState.isAuthenticated = false;
+    closeBalanceModal();
+  }
+
+  function showApp(username) {
+    authPanel.classList.remove("active");
+    appShell.classList.add("active");
+    document.body.classList.add("app-active");
+
+    statusText.textContent =
+      `Авторизация успешна. Привет, ${username}! Выберите микросервис слева.`;
+
+    const activeButton = document.querySelector(".nav-btn.active");
+    updateAccent(activeButton?.dataset.group);
+
+    loadFragment(activeButton?.dataset.file, activeButton?.dataset.group);
+
+    openAuth.textContent = "Выйти";
+    balanceTrigger.classList.remove("hidden");
+    balanceState.isAuthenticated = true;
+    updateBalanceDisplay();
+  }
+
+  function switchTab(tab) {
+    if (tab === "login") {
+      tabLogin.classList.add("active");
+      tabRegister.classList.remove("active");
+      loginForm.classList.remove("hidden");
+      registerForm.classList.add("hidden");
+      authTitle.textContent = "Вход";
+    } else {
+      tabLogin.classList.remove("active");
+      tabRegister.classList.add("active");
+      loginForm.classList.add("hidden");
+      registerForm.classList.remove("hidden");
+      authTitle.textContent = "Регистрация администратора";
     }
+  }
 
-    function showApp(username) {
-      authPanel.classList.remove("active");
-      appShell.classList.add("active");
-      document.body.classList.add("app-active");
-      statusText.textContent = `Авторизация успешна. Здравствуйте, ${username}! Выберите микросервис слева.`;
-      const activeButton = document.querySelector(".nav-btn.active");
-      updateAccent(activeButton?.dataset.group);
-      loadFragment(activeButton?.dataset.file, activeButton?.dataset.group);
-      openAuth.textContent = "Выйти";
-      balanceTrigger.classList.remove("hidden");
-      balanceState.isAuthenticated = true;
-      updateBalanceDisplay();
-    }
+  // ---- CONTENT LOADER ----
+  async function loadFragment(file, group) {
+    if (!file) return;
 
-    function switchTab(tab) {
-      if (tab === "login") {
-        tabLogin.classList.add("active");
-        tabRegister.classList.remove("active");
-        loginForm.classList.remove("hidden");
-        registerForm.classList.add("hidden");
-        authTitle.textContent = "Вход в панель";
-      } else {
-        tabLogin.classList.remove("active");
-        tabRegister.classList.add("active");
-        loginForm.classList.add("hidden");
-        registerForm.classList.remove("hidden");
-        authTitle.textContent = "Регистрация администратора";
-      }
-    }
+    navButtons.forEach(btn => btn.classList.toggle("active", btn.dataset.file === file));
+    const activeGroup = group || navButtons.find(btn => btn.dataset.file === file)?.dataset.group;
+    updateAccent(activeGroup);
 
-    function withVersion(file) {
-      const separator = file.includes("?") ? "&" : "?";
-      return `${file}${separator}v=${ASSET_VERSION}`;
-    }
+    contentCard.innerHTML = `
+      <div class="kicker"><span class="dot"></span> загрузка</div>
+      <h3 style="margin-top:10px; text-transform:uppercase; letter-spacing:.06em;">Открываем модуль…</h3>
+      <p class="helper" style="margin-top:8px;">Если модуль не загрузится — попробуйте другой раздел.</p>
+    `;
 
-    async function loadFragment(file, group) {
-      if (!file) return;
-      navButtons.forEach(btn => btn.classList.toggle("active", btn.dataset.file === file));
-      const activeGroup = group || navButtons.find(btn => btn.dataset.file === file)?.dataset.group;
-      updateAccent(activeGroup);
-      contentCard.innerHTML = "<p class='helper'>Загружаем HTML...</p>";
-      try {
-        const res = await fetch(withVersion(file));
-        if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
-        const html = await res.text();
-        if (!html) {
-          contentCard.innerHTML = "<p class='helper'>Файл пустой, добавьте контент.</p>";
-          return;
-        }
+    try {
+      const res = await fetch(withVersion(file));
+      if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+      const html = await res.text();
 
-        const parsed = new DOMParser().parseFromString(html, "text/html");
-        contentCard.innerHTML = "";
-        const fragment = document.createDocumentFragment();
-        Array.from(parsed.body.childNodes).forEach(node => fragment.appendChild(node));
-        contentCard.appendChild(fragment);
-
-        const scripts = Array.from(contentCard.querySelectorAll("script"));
-        scripts.forEach((oldScript) => {
-          const newScript = document.createElement("script");
-          Array.from(oldScript.attributes).forEach((attr) => {
-            newScript.setAttribute(attr.name, attr.value);
-          });
-          if (oldScript.src) {
-            newScript.src = oldScript.src;
-          } else {
-            newScript.textContent = oldScript.textContent;
-          }
-          oldScript.replaceWith(newScript);
-        });
-        statusText.textContent = `Загружен фрагмент: ${file}`;
-      } catch (err) {
-        contentCard.innerHTML = `<p class='helper'>Контент раздела будет доступен позже.</p>`;
-        statusText.textContent = "Контент временно недоступен, попробуйте другой раздел.";
-      }
-    }
-
-    function formatCurrency(value) {
-      return new Intl.NumberFormat("ru-RU", {
-        style: "currency",
-        currency: "RUB",
-        maximumFractionDigits: 2
-      }).format(value);
-    }
-
-    function updateBalanceDisplay() {
-      balanceAmount.textContent = formatCurrency(balanceState.balance || 0);
-      const modalAmount = document.getElementById("balanceModalAmount");
-      if (modalAmount) {
-        modalAmount.textContent = formatCurrency(balanceState.balance || 0);
-      }
-    }
-
-    function renderTopups() {
-      const list = document.getElementById("topupList");
-      list.innerHTML = "";
-      if (balanceState.topups.length === 0) {
-        const empty = document.createElement("li");
-        empty.className = "helper";
-        empty.textContent = "Пополнений пока нет. Добавьте первое, чтобы увидеть историю.";
-        list.appendChild(empty);
+      if (!html) {
+        contentCard.innerHTML = `<p class="helper">Файл пустой — добавьте контент в репозитории.</p>`;
         return;
       }
-      balanceState.topups.slice(0, 5).forEach((topup) => {
-        const item = document.createElement("li");
-        item.className = "topup-item";
-        item.innerHTML = `<div>${topup.label}</div><span>${formatCurrency(topup.amount)}</span>`;
-        list.appendChild(item);
+
+      const parsed = new DOMParser().parseFromString(html, "text/html");
+      contentCard.innerHTML = "";
+      const fragment = document.createDocumentFragment();
+      Array.from(parsed.body.childNodes).forEach(node => fragment.appendChild(node));
+      contentCard.appendChild(fragment);
+
+      // Re-execute scripts
+      const scripts = Array.from(contentCard.querySelectorAll("script"));
+      scripts.forEach((oldScript) => {
+        const newScript = document.createElement("script");
+        Array.from(oldScript.attributes).forEach((attr) => newScript.setAttribute(attr.name, attr.value));
+        if (oldScript.src) newScript.src = oldScript.src;
+        else newScript.textContent = oldScript.textContent;
+        oldScript.replaceWith(newScript);
       });
-    }
 
-    function openBalanceModal() {
-      const modal = document.getElementById("balanceModal");
-      modal.classList.add("active");
-      modal.setAttribute("aria-hidden", "false");
-      updateBalanceDisplay();
-      renderTopups();
+      statusText.textContent = `Загружен фрагмент: ${file}`;
+    } catch (err) {
+      contentCard.innerHTML = `
+        <div class="kicker"><span class="dot"></span> временно недоступно</div>
+        <h3 style="margin-top:10px; text-transform:uppercase; letter-spacing:.06em;">Контент раздела будет доступен позже</h3>
+        <p class="helper" style="margin-top:8px;">Проверьте доступность файла или выберите другой модуль.</p>
+      `;
+      statusText.textContent = "Контент недоступен. Попробуйте другой раздел.";
     }
+  }
 
-    function closeBalanceModal() {
-      const modal = document.getElementById("balanceModal");
-      modal.classList.remove("active");
-      modal.setAttribute("aria-hidden", "true");
-    }
-
-    openAuth.addEventListener("click", async () => {
-      if (!balanceState.isAuthenticated) {
-        showAuth();
-        return;
-      }
-      await sb.auth.signOut();
+  // ---- EVENTS ----
+  openAuth.addEventListener("click", async () => {
+    if (!balanceState.isAuthenticated) {
       showAuth();
-    });
-    tabLogin.addEventListener("click", () => switchTab("login"));
-    tabRegister.addEventListener("click", () => switchTab("register"));
-    balanceTrigger.addEventListener("click", openBalanceModal);
+      return;
+    }
+    await sb.auth.signOut();
+    showAuth();
+  });
 
-    loginForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const username = e.target.username.value.trim();
-      const password = e.target.password.value.trim();
-      if (!username || !password) return;
-      const { data, error } = await sb.auth.signInWithPassword({
-        email: username,
-        password
-      });
+  tabLogin?.addEventListener("click", () => switchTab("login"));
+  tabRegister?.addEventListener("click", () => switchTab("register"));
 
-      if (error) {
-        alert("Ошибка входа: " + error.message);
-        return;
-      }
+  balanceTrigger.addEventListener("click", openBalanceModal);
 
-      const uid = data.user.id;
-      const { data: profile, error: pErr } = await sb
-        .from("app_users")
-        .select("username, role, group_key, admin_balance")
-        .eq("user_id", uid)
-        .single();
+  loginForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const username = e.target.username.value.trim();
+    const password = e.target.password.value.trim();
+    if (!username || !password) return;
 
-      if (pErr) {
-        alert("Вход выполнен, но профиль не найден в app_users: " + pErr.message);
-        return;
-      }
+    const { data, error } = await sb.auth.signInWithPassword({ email: username, password });
+    if (error) {
+      alert("Ошибка входа: " + error.message);
+      return;
+    }
 
-      await sb.from("app_users").update({ last_login: new Date().toISOString() }).eq("user_id", uid);
-      balanceState.balance = Number(profile.admin_balance || 0);
-      balanceState.topups = [];
+    const uid = data.user.id;
+    const { data: profile, error: pErr } = await sb
+      .from("app_users")
+      .select("username, role, group_key, admin_balance")
+      .eq("user_id", uid)
+      .single();
 
-      showApp(profile.username || username);;
-      e.target.reset();
-    });
+    if (pErr) {
+      alert("Вход выполнен, но профиль не найден в app_users: " + pErr.message);
+      return;
+    }
 
-    registerForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const username = e.target.username.value.trim();
-      const password = e.target.password.value.trim();
-      const balance = Number(e.target.balance.value || 0);
-      if (!username || !password) return;
-      const { data, error } = await sb.auth.signUp({
-        email: username,
-        password
-      });
+    await sb.from("app_users").update({ last_login: new Date().toISOString() }).eq("user_id", uid);
 
-      if (error) {
-        alert("Ошибка регистрации: " + error.message);
-        return;
-      }
+    balanceState.balance = Number(profile.admin_balance || 0);
+    balanceState.topups = [];
 
-      const user = data.user;
-      if (!user) {
-        alert("Аккаунт создан. Подтверди email (если включено подтверждение), затем войди.");
-        switchTab("login");
-        showAuth();
-        e.target.reset();
-        return;
-      }
+    showApp(profile.username || username);
+    e.target.reset();
+  });
 
-      const { error: insErr } = await sb.from("app_users").insert([{
-        user_id: user.id,
-        role: "admin",
-        username,
-        admin_balance: balance || 0
-      }]);
+  registerForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const username = e.target.username.value.trim();
+    const password = e.target.password.value.trim();
+    const balance = Number(e.target.balance.value || 0);
+    if (!username || !password) return;
 
-      if (insErr) {
-        alert("Auth ok, но не удалось создать профиль app_users: " + insErr.message);
-        return;
-      }
+    const { data, error } = await sb.auth.signUp({ email: username, password });
+    if (error) {
+      alert("Ошибка регистрации: " + error.message);
+      return;
+    }
 
-      alert("Администратор зарегистрирован. Теперь можно войти.");
+    const user = data.user;
+    if (!user) {
+      alert("Аккаунт создан. Подтверди email (если включено подтверждение), затем войди.");
       switchTab("login");
       showAuth();
       e.target.reset();
+      return;
+    }
+
+    const { error: insErr } = await sb.from("app_users").insert([{
+      user_id: user.id,
+      role: "admin",
+      username,
+      admin_balance: balance || 0
+    }]);
+
+    if (insErr) {
+      alert("Auth ok, но не удалось создать профиль app_users: " + insErr.message);
+      return;
+    }
+
+    alert("Администратор зарегистрирован. Теперь можно войти.");
+    switchTab("login");
+    showAuth();
+    e.target.reset();
+  });
+
+  navButtons.forEach(btn =>
+    btn.addEventListener("click", () => loadFragment(btn.dataset.file, btn.dataset.group))
+  );
+
+  // Modal controls
+  document.getElementById("balanceClose")?.addEventListener("click", closeBalanceModal);
+  document.getElementById("balanceModal")?.addEventListener("click", (event) => {
+    if (event.target.id === "balanceModal") closeBalanceModal();
+  });
+
+  document.getElementById("topupForm")?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const amountField = document.getElementById("topupAmount");
+    const amount = Number(amountField.value || 0);
+    if (amount <= 0) return;
+
+    balanceState.balance += amount;
+    balanceState.topups.unshift({
+      label: `Пополнение ${new Date().toLocaleString("ru-RU")}`,
+      amount
     });
 
-    navButtons.forEach(btn =>
-      btn.addEventListener("click", () => loadFragment(btn.dataset.file, btn.dataset.group))
-    );
-    updateAccent(document.querySelector(".nav-btn.active")?.dataset.group);
+    updateBalanceDisplay();
+    renderTopups();
+    amountField.value = "";
+  });
 
-    document.getElementById("balanceClose").addEventListener("click", closeBalanceModal);
-    document.getElementById("balanceModal").addEventListener("click", (event) => {
-      if (event.target.id === "balanceModal") {
-        closeBalanceModal();
-      }
-    });
-    document.getElementById("topupForm").addEventListener("submit", (event) => {
-      event.preventDefault();
-      const amountField = document.getElementById("topupAmount");
-      const amount = Number(amountField.value || 0);
-      if (amount <= 0) return;
-      balanceState.balance += amount;
-      balanceState.topups.unshift({
-        label: `Пополнение ${new Date().toLocaleString("ru-RU")}`,
-        amount
-      });
-      updateBalanceDisplay();
-      renderTopups();
-      amountField.value = "";
-    });
-  </script>
+  // Init
+  updateAccent(document.querySelector(".nav-btn.active")?.dataset.group || "primary");
+</script>
 </body>
 </html>
