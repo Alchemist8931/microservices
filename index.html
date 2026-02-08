@@ -29,7 +29,7 @@
     }
     * { box-sizing: border-box; }
     html, body {
-      overflow: auto;
+      overflow: hidden;
     }
     body {
       margin: 0;
@@ -529,138 +529,6 @@
     body.app-active #authPanel {
       display: none !important;
     }
-    body.app-active {
-      overflow: hidden;
-    }
-    .hero {
-      height: auto;
-      padding: clamp(32px, 4vw, 56px);
-    }
-    .hero-content {
-      display: grid;
-      gap: 22px;
-    }
-    .hero-eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 13px;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      padding: 6px 12px;
-      border: 2px solid #111;
-      background: #fff;
-      width: fit-content;
-    }
-    .hero-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 6px;
-    }
-    .hero-button {
-      border: 2px solid #111;
-      background: #111;
-      color: #fff;
-      padding: 12px 22px;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      font-weight: 700;
-      cursor: pointer;
-    }
-    .hero-button.secondary {
-      background: #fff;
-      color: #111;
-    }
-    .hero-bullets {
-      display: grid;
-      gap: 8px;
-      margin: 0;
-      padding: 0;
-      list-style: none;
-      font-size: 14px;
-    }
-    .hero-bullets li {
-      padding-left: 18px;
-      position: relative;
-    }
-    .hero-bullets li::before {
-      content: "■";
-      position: absolute;
-      left: 0;
-      top: 0;
-      color: #111;
-    }
-    .section-title {
-      margin: 0;
-      font-size: clamp(20px, 3vw, 30px);
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-    }
-    .section-subtitle {
-      margin: 0;
-      color: var(--muted);
-      max-width: 740px;
-    }
-    .problem-grid,
-    .feature-grid,
-    .benefit-grid,
-    .audience-grid,
-    .proof-grid {
-      display: grid;
-      gap: 14px;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    }
-    .block-card {
-      border: 2px solid #111;
-      padding: 16px;
-      background: #fff;
-      display: grid;
-      gap: 10px;
-      min-height: 140px;
-    }
-    .block-card strong {
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-    .steps {
-      display: grid;
-      gap: 16px;
-    }
-    .step-card {
-      display: grid;
-      grid-template-columns: auto 1fr;
-      gap: 16px;
-      border: 3px solid #111;
-      padding: 18px;
-      background: #fdfdfd;
-    }
-    .step-number {
-      font-size: 28px;
-      font-weight: 800;
-      background: #111;
-      color: #fff;
-      width: 48px;
-      height: 48px;
-      display: grid;
-      place-items: center;
-    }
-    .cta-panel {
-      border: 3px solid #111;
-      padding: 22px;
-      display: grid;
-      gap: 12px;
-      background: #fff;
-    }
-    .microtext-list {
-      display: grid;
-      gap: 8px;
-      margin: 0;
-      padding: 0;
-      list-style: none;
-      font-size: 13px;
-      color: var(--muted);
-    }
   </style>
 </head>
 <body>
@@ -681,156 +549,42 @@
 
   <main>
     <section id="hero" class="hero">
-     <div class="hero-content">
-        <span class="hero-eyebrow">Сервис учета для малого производства</span>
-        <h1>Производство, склад и деньги — в одном простом окне управления.</h1>
-        <p>Вы видите весь цикл: закупка → склад → производство → реализация → cashflow. Никаких разрозненных таблиц, ручных пересчетов и слепых зон по материалам.</p>
-        <div class="hero-actions">
-          <button class="hero-button" type="button">Попробовать бесплатно</button>
-          <button class="hero-button secondary" type="button">Посмотреть демо</button>
+      <div>
+        <p class="chip"><span class="material-symbols-outlined">spark</span> Минимальный стартовый экран</p>
+        <h1>Управляйте своими микросервисами и рабочими пространствами</h1>
+        <p>Одностраничное приложение с динамической подгрузкой HTML-контента. Авторизуйтесь, чтобы увидеть панель с иконками и переключаться между приложениями без перезагрузки.</p>
+      </div>
+      <div class="highlights">
+        <div class="chip"><span class="material-symbols-outlined">admin_panel_settings</span> Создание администраторов при регистрации</div>
+        <div class="chip"><span class="material-symbols-outlined">group</span> Пользователи привязаны к группе администратора</div>
+        <div class="chip"><span class="material-symbols-outlined">bolt</span> Динамическая загрузка HTML из репозитория</div>
+      </div>
+    </section>
+
+    <section id="authPanel" class="panel" aria-live="polite">
+      <div style="display:flex; justify-content: space-between; align-items:center; gap:14px;">
+        <div>
+          <p class="chip"><span class="material-symbols-outlined">lock</span> Авторизация и регистрация</p>
+          <h2 id="authTitle">Вход в панель</h2>
+          <p class="helper">После успешной авторизации основная страница будет скрыта и появится навигация по микросервисам.</p>
         </div>
-        <ul class="hero-bullets">
-          <li>Автосписание материалов по рецепту без ручных калькуляций.</li>
-          <li>Один товар — разные цены и каналы продаж.</li>
-          <li>Инвентаризация и списание потерь в один клик.</li>
-          <li>Cashflow с регулярными платежами: аренда, ФОТ, сервисы.</li>
-        </ul>
+        <div class="auth-tabs" role="tablist">
+          <button class="card-mini" id="tabLogin" role="tab" aria-controls="loginForm" style="--btn-bg: transparent; --btn-color: var(--muted); --btn-border: 1px solid transparent; --btn-shadow: none; --btn-hover-shadow: none; --btn-height: 32px; --btn-padding: 0 12px; --btn-font-weight: 600; --btn-font-size: 12px;">Вход</button>
+          <button class="card-mini" id="tabRegister" role="tab" aria-controls="registerForm" style="--btn-bg: transparent; --btn-color: var(--muted); --btn-border: 1px solid transparent; --btn-shadow: none; --btn-hover-shadow: none; --btn-height: 32px; --btn-padding: 0 12px; --btn-font-weight: 600; --btn-font-size: 12px;">Регистрация</button>
+        </div>
       </div>
 
-      <section>
-        <h2 class="section-title">Что мы закрываем</h2>
-        <p class="section-subtitle">Главные боли малого производства превращаем в понятные и управляемые процессы.</p>
-        <div class="problem-grid">
-          <div class="block-card">
-            <strong>Себестоимость</strong>
-            <p>Показываем, сколько материала ушло по рецепту и где был перерасход.</p>
-          </div>
-          <div class="block-card">
-            <strong>Остатки</strong>
-            <p>Сразу видно дефицит для выпуска по рецептам и можно планировать закупки заранее.</p>
-          </div>
-          <div class="block-card">
-            <strong>Разрозненный учет</strong>
-            <p>Заказ → оприходование → списание в производство → реализация — всё в одном месте.</p>
-          </div>
-          <div class="block-card">
-            <strong>Продажи по каналам</strong>
-            <p>Фиксируйте цены и каналы, чтобы видеть реальную маржинальность.</p>
-          </div>
-          <div class="block-card">
-            <strong>Деньги</strong>
-            <p>Cashflow показывает, почему прибыль есть, а денег нет.</p>
-          </div>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="section-title">Как это работает</h2>
-        <p class="section-subtitle">Три простых шага — и учет начинает жить.</p>
-        <div class="steps">
-          <div class="step-card">
-            <div class="step-number">1</div>
-            <div>
-              <strong>Закупка и склад</strong>
-              <p>Создайте заказ поставщику, оприходуйте товар и держите остатки под контролем.</p>
+      <form id="loginForm" class="auth-form">
+        <div class="auth-fields">
+          <div>
+            <div class="flex-column">
+              <label for="loginUsername">Логин</label>
+            </div>
+            <div class="inputForm compact-field">
+              <span class="inputIcon material-symbols-outlined" aria-hidden="true">mail</span>
+              <input id="loginUsername" class="input" name="username" autocomplete="username" placeholder="admin@example.com" required>
             </div>
           </div>
-          <div class="step-card">
-            <div class="step-number">2</div>
-            <div>
-              <strong>Производство по рецептам</strong>
-              <p>Задайте нормы, запустите задачу и получите автосписание материалов. Потери фиксируются отдельно.</p>
-            </div>
-          </div>
-          <div class="step-card">
-            <div class="step-number">3</div>
-            <div>
-              <strong>Реализация и деньги</strong>
-              <p>Продажи по разным ценам и каналам + cashflow с регулярными платежами.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="section-title">Функционал</h2>
-        <div class="feature-grid">
-          <div class="block-card">
-            <strong>Склад и закупки</strong>
-            <p>Заказ → оприходование, контроль остатков, инвентаризация и история движений.</p>
-          </div>
-          <div class="block-card">
-            <strong>Производство</strong>
-            <p>Рецепты, планирование по дефициту, автосписание, фиксация перерасхода.</p>
-          </div>
-          <div class="block-card">
-            <strong>Реализация и cashflow</strong>
-            <p>Продажи по каналам, списания при реализации, доходы/расходы и регулярные платежи.</p>
-          </div>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="section-title">Преимущества</h2>
-        <div class="benefit-grid">
-          <div class="block-card">
-            <strong>Единая логика</strong>
-            <p>Вся цепочка учета в одном интерфейсе.</p>
-          </div>
-          <div class="block-card">
-            <strong>Меньше потерь</strong>
-            <p>Видно дефицит и источник перерасхода.</p>
-          </div>
-          <div class="block-card">
-            <strong>Честный склад</strong>
-            <p>Инвентаризация и списания без ручных танцев.</p>
-          </div>
-          <div class="block-card">
-            <strong>Без тяжелого ERP</strong>
-            <p>Просто, быстро, понятно владельцу.</p>
-          </div>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="section-title">Для кого</h2>
-        <div class="audience-grid">
-          <div class="block-card">Кондитерки, пекарни, полуфабрикаты.</div>
-          <div class="block-card">Свечи, мыло, косметика ручной работы.</div>
-          <div class="block-card">Мебель, столярка, декор.</div>
-          <div class="block-card">Типография, упаковка, сувенирка.</div>
-          <div class="block-card">Одежда, аксессуары, мастерские.</div>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="section-title">Что даем уже сейчас</h2>
-        <div class="proof-grid">
-          <div class="block-card">Сокращение времени учета за счет автосписаний.</div>
-          <div class="block-card">Прозрачный cashflow с регулярными расходами.</div>
-          <div class="block-card">Меньше срывов производства благодаря видимому дефициту.</div>
-        </div>
-      </section>
-
-      <section class="cta-panel">
-        <h2 class="section-title">Наведем порядок вместе?</h2>
-        <p class="section-subtitle">Подключитесь, внесите рецепты и остатки — и ведите производство, продажи и деньги в одном окне.</p>
-        <div class="hero-actions">
-          <button class="hero-button" type="button">Попробовать бесплатно</button>
-          <button class="hero-button secondary" type="button">Запросить демо</button>
-        </div>
-      </section>
-
-      <section>
-        <h2 class="section-title">Микротексты</h2>
-        <ul class="microtext-list">
-          <li>Автосписание материалов по рецепту — без ручных расчетов.</li>
-          <li>Инвентаризация: списание недостачи и потерь в один клик.</li>
-          <li>Один товар — разные цены в разных каналах продаж.</li>
-          <li>Cashflow: доходы/расходы + регулярные платежи (аренда, ФОТ).</li>
-        </ul>
-      </section>
-
           <div>
             <div class="flex-column">
               <label for="loginPassword">Пароль</label>
