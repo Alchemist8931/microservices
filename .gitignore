@@ -1,37 +1,4 @@
-# HTML-specific temporary files (if any)
-*.tmp
-*.temp
-
-# Local configuration and environment
-.env
-.env.local
-.env.*
-
-# Editor/IDE files
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# System files
-.DS_Store
-Thumbs.db
-
-# Logs
-*.log
-
-# Build artifacts (if any)
-dist/
-build/
-target/
-
-# Dependencies (if any)
-node_modules/
-venv/
-.venv/
-__pycache__/
-.mypy_cache/
-.pytest_cache/
-.coverage
-htmlcov/
-coverage/
+```
+# Backup files
+*.backup
+```
