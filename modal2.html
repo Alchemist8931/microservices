@@ -293,7 +293,7 @@
         const reader = new FileReader();
 
         reader.onload = function(e) {
-          preview.innerHTML = \`<img src="${e.target.result}" alt="Предпросмотр изображения">\`;
+          preview.innerHTML = `<img src="${e.target.result}" alt="Предпросмотр изображения">`;
         }
 
         reader.readAsDataURL(file);
@@ -326,13 +326,13 @@
         // Создаем элемент для отображения выбранного материала
         const materialItem = document.createElement('div');
         materialItem.className = 'material-item';
-        materialItem.innerHTML = \`
+        materialItem.innerHTML = `
           <div class="material-info">
             <div class="material-name">${materialData.item_name}</div>
             <div class="material-details">Артикул: ${materialData.sku}, Категория: ${materialData.category}, Цена: ${materialData.unit_price} руб.</div>
           </div>
           <button onclick="removeMaterialFromRecipeNew('${materialsListId}', '${materialData.id}')" style="background: #f44336; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px;">Убрать</button>
-        \`;
+        `;
 
         materialsList.appendChild(materialItem);
       }
