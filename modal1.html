@@ -1173,7 +1173,8 @@
       const SUPABASE_URL = "https://ncdwlmgwljjwpuawlssr.supabase.co";
       const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jZHdsbWd3bGpqd3B1YXdsc3NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0NTQxNDksImV4cCI6MjA4MzAzMDE0OX0.rrIznUflWydylTnUZvOxOkeF9eMp91qNN4Bjq2gXRL8";
 
-      const sb = (function () {
+      // Используем глобальный экземпляр Supabase клиента из основного index.html
+      const sb = window.supabaseClient || (function () {
         try {
           const supa = window.supabase;
           if (!supa || typeof supa.createClient !== "function") return null;
