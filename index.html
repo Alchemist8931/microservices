@@ -744,10 +744,15 @@
       document.documentElement.style.setProperty("--accent", palette.main);
       document.documentElement.style.setProperty("--accent-bg", palette.soft);
     }
-    const SUPABASE_URL = "https://ncdwlmgwljjwpuawlssr.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jZHdsbWd3bGpqd3B1YXdsc3NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0NTQxNDksImV4cCI6MjA4MzAzMDE0OX0.rrIznUflWydylTnUZvOxOkeF9eMp91qNN4Bjq2gXRL8";
-    const { createClient } = supabase;
-    const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Проверяем, существует ли уже глобальный экземпляр Supabase клиента
+    if (typeof window.supabaseClient === 'undefined') {
+      const SUPABASE_URL = "https://ncdwlmgwljjwpuawlssr.supabase.co";
+      const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jZHdsbWd3bGpqd3B1YXdsc3NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0NTQxNDksImV4cCI6MjA4MzAzMDE0OX0.rrIznUflWydylTnUZvOxOkeF9eMp91qNN4Bjq2gXRL8";
+      const { createClient } = supabase;
+      window.supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
+    const sb = window.supabaseClient;
 
     function showAuth() {
       hero.classList.add("hidden");
