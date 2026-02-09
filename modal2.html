@@ -23,15 +23,20 @@
       padding: 14px;
       box-shadow: 0 10px 24px rgba(0,0,0,0.06);
       margin-bottom: 15px;
+      position: relative;
     }
 
     .recipe-header {
       display: flex;
       justify-content: space-between;
-      align-items: center;
+      align-items: flex-start;
       margin-bottom: 15px;
       padding-bottom: 10px;
       border-bottom: 1px solid #eee;
+    }
+
+    .recipe-header > div {
+      flex-grow: 1;
     }
 
     .recipe-title {
@@ -40,21 +45,46 @@
       color: var(--text);
     }
 
-    .recipe-image-preview {
-      width: 100px;
-      height: 100px;
+    .wh-field {
+      margin-bottom: 10px;
+    }
+
+    .wh-field label {
+      display: block;
+      margin-bottom: 4px;
+      font-weight: bold;
+    }
+
+    .wh-row-input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    textarea.wh-row-input {
+      resize: vertical;
+    }
+
+    .recipe-image-upload {
+      position: absolute;
+      right: 10px;
+      top: 50px;
+      width: 300px;
+      height: 400px;
       border: 1px dashed #ccc;
       border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
       overflow: hidden;
-      margin-bottom: 15px;
+      background-color: #f9f9f9;
     }
 
-    .recipe-image-preview img {
-      max-width: 100%;
-      max-height: 100%;
+    .recipe-image-upload img {
+      width: 100%;
+      height: 100%;
       object-fit: cover;
     }
 
@@ -76,6 +106,8 @@
       border-radius: 5px;
       cursor: pointer;
       font-size: 12px;
+      align-self: flex-start;
+      margin-top: 15px;
     }
 
     .material-item {
@@ -101,6 +133,33 @@
       font-size: 12px;
       color: #666;
     }
+
+    .recipe-materials-section {
+      margin-top: 15px;
+    }
+
+    .material-controls {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+      align-items: center;
+    }
+
+    .material-select {
+      flex-grow: 1;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+
+    .add-material-btn {
+      background: #2196F3;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
   </style>
 
   <div class="wh-head">
@@ -117,7 +176,7 @@
   <div id="recipesContainer">
     <!-- Контейнеры для рецептов будут добавлены здесь -->
   </div>
-  
+
   <script>
     // Пример данных из таблицы warehouse
     const warehouseData = [
@@ -129,9 +188,6 @@
       {"idx":5,"id":"859cac98-7ca7-47de-b887-f02f66ba05b5","user_id":"c2f0ffac-c8ce-4034-96f5-8d8c605269a7","created_at":"2026-01-30 12:02:48.94368+00","event_at":"2026-02-03 09:52:18.714+00","sku":"app-8713","item_name":"Фитиль","category":"материалы","status":"поступление","unit":"шт","quantity":"536","unit_price":"3","amount":"0","supplier":null,"supplier_contacts":null,"planned_delivery_date":null,"comment":null},
       {"idx":6,"id":"af4e4f73-f801-4382-93f2-84270dfd6a4d","user_id":"c2f0ffac-c8ce-4034-96f5-8d8c605269a7","created_at":"2026-01-22 14:47:35.554906+00","event_at":"2026-01-22 14:47:22.822+00","sku":"app-0893","item_name":"Наполнитель","category":"заказ","status":"заказано","unit":"кг","quantity":"3","unit_price":"600","amount":"0","supplier":"Торгулах Мусаев","supplier_contacts":"+7 896 600 23 52","planned_delivery_date":null,"comment":"-"}
     ];
-
-    // Фильтруем только материалы со статусом "поступление"
-    const availableMaterials = warehouseData.filter(item => item.status === 'поступление');
 
     let recipeCounter = 0;
 
@@ -148,7 +204,7 @@
         t.checked = on;
         t.setAttribute("aria-selected", on ? "true" : "false");
       });
-      
+
       Object.entries(panels).forEach(([k, el]) => {
         if (!el) return;
         el.classList.toggle("active", k === key);
@@ -166,59 +222,59 @@
     function addRecipeContainer() {
       recipeCounter++;
       const containerId = `recipe_${recipeCounter}`;
-      
+
       const container = document.createElement('div');
       container.className = 'recipe-container';
       container.id = containerId;
-      
+
       container.innerHTML = `
         <div class="recipe-header">
-          <div class="recipe-title">Рецепт ${recipeCounter}</div>
+          <div>
+            <div class="wh-field">
+              <label>Артикул продукта</label>
+              <input type="text" class="wh-row-input" placeholder="Введите артикул...">
+            </div>
+            <div class="wh-field">
+              <label>Название продукта</label>
+              <input type="text" class="wh-row-input" placeholder="Введите название...">
+            </div>
+          </div>
           <button class="remove-recipe-btn" onclick="removeRecipe('${containerId}')">Удалить</button>
         </div>
-        
-        <div class="recipe-image-section">
-          <label>Изображение рецепта:</label>
-          <input type="file" id="imageUpload_${recipeCounter}" accept="image/*" onchange="previewImage(this, 'imagePreview_${recipeCounter}')">
-          <div class="recipe-image-preview" id="imagePreview_${recipeCounter}">
-            <span>+</span>
-          </div>
-        </div>
-        
+
         <div class="recipe-form">
           <div class="wh-field">
-            <label>Название продукта</label>
-            <input type="text" class="wh-row-input" placeholder="Введите название...">
-          </div>
-          
-          <div class="wh-field">
             <label>Описание продукта</label>
-            <textarea class="wh-row-input" rows="2" placeholder="Введите описание..."></textarea>
+            <textarea class="wh-row-input" rows="4" placeholder="Введите описание..."></textarea>
           </div>
-          
-          <div class="wh-field">
-            <label>Выберите материалы для рецепта:</label>
-            <select id="materialSelect_${recipeCounter}" class="wh-row-input" multiple size="5" style="height: auto;">
-              \${availableMaterials.map(material => 
-                \`<option value="\${material.id}">\${material.item_name} (\${material.quantity} \${material.unit}) - \${material.supplier}\</option>
-              ).join('')}
-            </select>
-            <small>Удерживайте Ctrl для выбора нескольких материалов</small>
+
+          <div class="recipe-materials-section">
+            <label>Материалы:</label>
+            <div class="material-controls">
+              <select class="material-select" onchange="filterMaterials(this)">
+                <option value="">Поиск материала...</option>
+                \${warehouseData.map(material =>
+                  \`<option value="\${material.id}">\${material.sku} - \${material.item_name} (\${material.category}) - \${material.unit_price} руб.</option>\`
+                ).join('')}
+              </select>
+              <button class="add-material-btn" onclick="addMaterialToRecipe('${containerId}')">Добавить материал</button>
+            </div>
+            <div class="selected-materials" id="selectedMaterials_${recipeCounter}">
+              <div id="materialsList_${recipeCounter}"></div>
+            </div>
           </div>
-          
-          <div class="selected-materials" id="selectedMaterials_${recipeCounter}">
-            <h4>Выбранные материалы:</h4>
-            <div id="materialsList_${recipeCounter}"></div>
+        </div>
+
+        <div class="recipe-image-upload" id="imageUpload_${recipeCounter}_container">
+          <input type="file" id="imageUpload_${recipeCounter}" accept="image/*" onchange="previewImage(this, 'imageUpload_${recipeCounter}_container')" style="display: none;">
+          <div onclick="document.getElementById('imageUpload_${recipeCounter}').click()" style="cursor: pointer; text-align: center;">
+            <span>+</span>
+            <p>Загрузить изображение</p>
           </div>
         </div>
       `;
-      
+
       document.getElementById('recipesContainer').appendChild(container);
-      
-      // Добавляем обработчик изменения для списка материалов
-      document.getElementById(`materialSelect_${recipeCounter}`).addEventListener('change', function() {
-        updateSelectedMaterials(recipeCounter);
-      });
     }
 
     function removeRecipe(containerId) {
@@ -231,56 +287,66 @@
     function previewImage(input, previewId) {
       const preview = document.getElementById(previewId);
       const file = input.files[0];
-      
+
       if(file) {
         const reader = new FileReader();
-        
+
         reader.onload = function(e) {
           preview.innerHTML = \`<img src="\${e.target.result}" alt="Предпросмотр изображения">\`;
         }
-        
+
         reader.readAsDataURL(file);
       } else {
-        preview.innerHTML = '<span>+</span>';
+        preview.innerHTML = '<span>+</span><p>Загрузить изображение</p>';
       }
     }
 
-    function updateSelectedMaterials(recipeId) {
-      const selectElement = document.getElementById(`materialSelect_${recipeId}`);
-      const selectedOptions = Array.from(selectElement.selectedOptions);
-      const materialsListDiv = document.getElementById(`materialsList_${recipeId}`);
-      
-      materialsListDiv.innerHTML = '';
-      
-      if(selectedOptions.length === 0) {
-        materialsListDiv.innerHTML = '<p>Материалы не выбраны</p>';
+    // Функции для работы с материалами
+    function filterMaterials(selectElement) {
+      // Функция для фильтрации материалов (пока что просто заглушка, можно расширить)
+    }
+
+    function addMaterialToRecipe(containerId) {
+      const container = document.getElementById(containerId);
+      const selectElement = container.querySelector('.material-select');
+      const selectedValue = selectElement.value;
+
+      if(!selectedValue) {
+        alert('Пожалуйста, выберите материал для добавления');
         return;
       }
-      
-      selectedOptions.forEach(option => {
-        const material = availableMaterials.find(m => m.id === option.value);
-        if(material) {
-          const materialItem = document.createElement('div');
-          materialItem.className = 'material-item';
-          materialItem.innerHTML = \`
-            <div class="material-info">
-              <div class="material-name">\${material.item_name}</div>
-              <div class="material-details">Артикул: \${material.sku}, Кол-во: \${material.quantity} \${material.unit}, Поставщик: \${material.supplier}</div>
-            </div>
-            <button onclick="removeMaterialFromRecipe(\${recipeId}, '\${material.id}')" style="background: #f44336; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px;">Убрать</button>
-          \`;
-          materialsListDiv.appendChild(materialItem);
-        }
-      });
+
+      const materialData = warehouseData.find(item => item.id === selectedValue);
+
+      if(materialData) {
+        const materialsListId = container.querySelector('[id*="materialsList_"]').id;
+        const materialsList = document.getElementById(materialsListId);
+
+        // Создаем элемент для отображения выбранного материала
+        const materialItem = document.createElement('div');
+        materialItem.className = 'material-item';
+        materialItem.innerHTML = \`
+          <div class="material-info">
+            <div class="material-name">\${materialData.item_name}</div>
+            <div class="material-details">Артикул: \${materialData.sku}, Категория: \${materialData.category}, Цена: \${materialData.unit_price} руб.</div>
+          </div>
+          <button onclick="removeMaterialFromRecipeNew('\${materialsListId}', '\${materialData.id}')" style="background: #f44336; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px;">Убрать</button>
+        \`;
+
+        materialsList.appendChild(materialItem);
+      }
     }
 
-    function removeMaterialFromRecipe(recipeId, materialId) {
-      const selectElement = document.getElementById(`materialSelect_${recipeId}`);
-      const option = selectElement.querySelector(\`option[value="\${materialId}"]\`);
-      
-      if(option) {
-        option.selected = false;
-        updateSelectedMaterials(recipeId);
+    function removeMaterialFromRecipeNew(materialsListId, materialId) {
+      const materialsList = document.getElementById(materialsListId);
+      const materialItems = materialsList.querySelectorAll('.material-item');
+
+      for (let i = 0; i < materialItems.length; i++) {
+        const item = materialItems[i];
+        if (item.innerHTML.includes(materialId)) {
+          item.remove();
+          break;
+        }
       }
     }
 
