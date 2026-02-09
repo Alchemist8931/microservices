@@ -135,6 +135,30 @@
 
     let recipeCounter = 0;
 
+    // Логика переключения вкладок
+    const tabs = document.querySelectorAll('.wh-tab');
+    const panels = {
+      recipes: document.getElementById('panel-recipes'),
+      'production-tasks': document.getElementById('panel-production-tasks')
+    };
+
+    function setActiveTab(key) {
+      tabs.forEach(t => {
+        const on = t.dataset.tab === key;
+        t.checked = on;
+        t.setAttribute("aria-selected", on ? "true" : "false");
+      });
+      
+      Object.entries(panels).forEach(([k, el]) => {
+        if (!el) return;
+        el.classList.toggle("active", k === key);
+      });
+    }
+
+    tabs.forEach(btn => {
+      btn.addEventListener("change", () => setActiveTab(btn.dataset.tab));
+    });
+
     document.getElementById('addRecipeBtn').addEventListener('click', function() {
       addRecipeContainer();
     });
@@ -212,7 +236,7 @@
         const reader = new FileReader();
         
         reader.onload = function(e) {
-          preview.innerHTML = `<img src="\${e.target.result}" alt="Предпросмотр изображения">`;
+          preview.innerHTML = \`<img src="\${e.target.result}" alt="Предпросмотр изображения">\`;
         }
         
         reader.readAsDataURL(file);
@@ -238,13 +262,13 @@
         if(material) {
           const materialItem = document.createElement('div');
           materialItem.className = 'material-item';
-          materialItem.innerHTML = `
+          materialItem.innerHTML = \`
             <div class="material-info">
               <div class="material-name">\${material.item_name}</div>
               <div class="material-details">Артикул: \${material.sku}, Кол-во: \${material.quantity} \${material.unit}, Поставщик: \${material.supplier}</div>
             </div>
             <button onclick="removeMaterialFromRecipe(\${recipeId}, '\${material.id}')" style="background: #f44336; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px;">Убрать</button>
-          `;
+          \`;
           materialsListDiv.appendChild(materialItem);
         }
       });
@@ -252,7 +276,7 @@
 
     function removeMaterialFromRecipe(recipeId, materialId) {
       const selectElement = document.getElementById(`materialSelect_${recipeId}`);
-      const option = selectElement.querySelector(`option[value="\${materialId}"]`);
+      const option = selectElement.querySelector(\`option[value="\${materialId}"]\`);
       
       if(option) {
         option.selected = false;
