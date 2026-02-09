@@ -1,2 +1,268 @@
-<div class="helper" style="color: var(--text); font-weight: 600;">Раздел 2</div>
-<p class="helper" style="color: var(--text); margin-top: 6px;">Здесь появится содержимое второй вкладки. Пока используется заглушка.</p>
+<div id="productionApp" class="wh-app">
+  <style>
+    /* Стили для модального окна */
+    .wh-app {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .wh-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 14px;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.06);
+    }
+
+    .recipe-container {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 14px;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.06);
+      margin-bottom: 15px;
+    }
+
+    .recipe-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .recipe-title {
+      font-size: 16px;
+      font-weight: bold;
+      color: var(--text);
+    }
+
+    .recipe-image-preview {
+      width: 100px;
+      height: 100px;
+      border: 1px dashed #ccc;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      margin-bottom: 15px;
+    }
+
+    .recipe-image-preview img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: cover;
+    }
+
+    .add-recipe-btn {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .remove-recipe-btn {
+      background: #f44336;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .material-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      background-color: #f9f9f9;
+    }
+
+    .material-info {
+      flex-grow: 1;
+    }
+
+    .material-name {
+      font-weight: bold;
+    }
+
+    .material-details {
+      font-size: 12px;
+      color: #666;
+    }
+  </style>
+
+  <div class="wh-head">
+    <h2 class="wh-title">
+      <span class="material-symbols-outlined">inventory</span>
+      Управление производством
+    </h2>
+  </div>
+
+  <div class="wh-card">
+    <button id="addRecipeBtn" class="add-recipe-btn">Добавить рецепт</button>
+  </div>
+
+  <div id="recipesContainer">
+    <!-- Контейнеры для рецептов будут добавлены здесь -->
+  </div>
+  
+  <script>
+    // Пример данных из таблицы warehouse
+    const warehouseData = [
+      {"idx":0,"id":"0003a5fc-bf1d-4d85-9cbb-09daa48beb87","user_id":"c2f0ffac-c8ce-4034-96f5-8d8c605269a7","created_at":"2026-01-30 12:00:51.507491+00","event_at":"2026-01-30 12:00:51.213+00","sku":"RIV-2113","item_name":"Коробка","category":"материалы","status":"списание","unit":"шт","quantity":"-21","unit_price":"100","amount":"-2100","supplier":"КоробкаРУ","supplier_contacts":null,"planned_delivery_date":null,"comment":"-"},
+      {"idx":1,"id":"00532671-5cc0-4f1e-8f5a-8f70316e455e","user_id":"c2f0ffac-c8ce-4034-96f5-8d8c605269a7","created_at":"2026-01-12 16:03:23.812807+00","event_at":"2026-01-12 16:25:34.144+00","sku":"RIV-2113","item_name":"Коробка","category":"материалы","status":"поступление","unit":"шт","quantity":"21","unit_price":"100","amount":"0","supplier":"КоробкаРУ","supplier_contacts":"+79634414530, Игорь Петров","planned_delivery_date":"2026-01-16","comment":"-"},
+      {"idx":2,"id":"318ac47f-84e0-4447-95f7-7ca7c723da65","user_id":"c2f0ffac-c8ce-4034-96f5-8d8c605269a7","created_at":"2026-02-01 11:26:21.128446+00","event_at":"2026-02-03 09:51:20.619+00","sku":"app-8713","item_name":"Фитиль хлопок","category":"заказ","status":"заказано","unit":"шт","quantity":"536","unit_price":"3","amount":"0","supplier":null,"supplier_contacts":null,"planned_delivery_date":null,"comment":null},
+      {"idx":3,"id":"3dcea193-c58c-4e22-94ae-d4990fd027df","user_id":"c2f0ffac-c8ce-4034-96f5-8d8c605269a7","created_at":"2026-01-22 14:23:56.478903+00","event_at":"2026-02-03 08:03:28.34+00","sku":"app-0892","item_name":"Коробка","category":"заказ","status":"заказано","unit":"шт","quantity":"253","unit_price":"200","amount":"0","supplier":"Петр Ивановhh","supplier_contacts":"+7 856 215 22 45","planned_delivery_date":"2026-01-24","comment":"-"},
+      {"idx":4,"id":"76166ef5-92e4-44a2-86b0-2b62b923a42b","user_id":"c2f0ffac-c8ce-4034-96f5-8d8c605269a7","created_at":"2026-02-01 13:35:50.059305+00","event_at":"2026-02-01 13:36:04.31+00","sku":"app-8713","item_name":"Фитиль","category":"материалы","status":"поступление","unit":"шт","quantity":"536","unit_price":"3","amount":"0","supplier":null,"supplier_contacts":null,"planned_delivery_date":null,"comment":null},
+      {"idx":5,"id":"859cac98-7ca7-47de-b887-f02f66ba05b5","user_id":"c2f0ffac-c8ce-4034-96f5-8d8c605269a7","created_at":"2026-01-30 12:02:48.94368+00","event_at":"2026-02-03 09:52:18.714+00","sku":"app-8713","item_name":"Фитиль","category":"материалы","status":"поступление","unit":"шт","quantity":"536","unit_price":"3","amount":"0","supplier":null,"supplier_contacts":null,"planned_delivery_date":null,"comment":null},
+      {"idx":6,"id":"af4e4f73-f801-4382-93f2-84270dfd6a4d","user_id":"c2f0ffac-c8ce-4034-96f5-8d8c605269a7","created_at":"2026-01-22 14:47:35.554906+00","event_at":"2026-01-22 14:47:22.822+00","sku":"app-0893","item_name":"Наполнитель","category":"заказ","status":"заказано","unit":"кг","quantity":"3","unit_price":"600","amount":"0","supplier":"Торгулах Мусаев","supplier_contacts":"+7 896 600 23 52","planned_delivery_date":null,"comment":"-"}
+    ];
+
+    // Фильтруем только материалы со статусом "поступление"
+    const availableMaterials = warehouseData.filter(item => item.status === 'поступление');
+
+    let recipeCounter = 0;
+
+    document.getElementById('addRecipeBtn').addEventListener('click', function() {
+      addRecipeContainer();
+    });
+
+    function addRecipeContainer() {
+      recipeCounter++;
+      const containerId = `recipe_${recipeCounter}`;
+      
+      const container = document.createElement('div');
+      container.className = 'recipe-container';
+      container.id = containerId;
+      
+      container.innerHTML = `
+        <div class="recipe-header">
+          <div class="recipe-title">Рецепт ${recipeCounter}</div>
+          <button class="remove-recipe-btn" onclick="removeRecipe('${containerId}')">Удалить</button>
+        </div>
+        
+        <div class="recipe-image-section">
+          <label>Изображение рецепта:</label>
+          <input type="file" id="imageUpload_${recipeCounter}" accept="image/*" onchange="previewImage(this, 'imagePreview_${recipeCounter}')">
+          <div class="recipe-image-preview" id="imagePreview_${recipeCounter}">
+            <span>+</span>
+          </div>
+        </div>
+        
+        <div class="recipe-form">
+          <div class="wh-field">
+            <label>Название продукта</label>
+            <input type="text" class="wh-row-input" placeholder="Введите название...">
+          </div>
+          
+          <div class="wh-field">
+            <label>Описание продукта</label>
+            <textarea class="wh-row-input" rows="2" placeholder="Введите описание..."></textarea>
+          </div>
+          
+          <div class="wh-field">
+            <label>Выберите материалы для рецепта:</label>
+            <select id="materialSelect_${recipeCounter}" class="wh-row-input" multiple size="5" style="height: auto;">
+              \${availableMaterials.map(material => 
+                \`<option value="\${material.id}">\${material.item_name} (\${material.quantity} \${material.unit}) - \${material.supplier}\</option>
+              ).join('')}
+            </select>
+            <small>Удерживайте Ctrl для выбора нескольких материалов</small>
+          </div>
+          
+          <div class="selected-materials" id="selectedMaterials_${recipeCounter}">
+            <h4>Выбранные материалы:</h4>
+            <div id="materialsList_${recipeCounter}"></div>
+          </div>
+        </div>
+      `;
+      
+      document.getElementById('recipesContainer').appendChild(container);
+      
+      // Добавляем обработчик изменения для списка материалов
+      document.getElementById(`materialSelect_${recipeCounter}`).addEventListener('change', function() {
+        updateSelectedMaterials(recipeCounter);
+      });
+    }
+
+    function removeRecipe(containerId) {
+      const element = document.getElementById(containerId);
+      if(element) {
+        element.remove();
+      }
+    }
+
+    function previewImage(input, previewId) {
+      const preview = document.getElementById(previewId);
+      const file = input.files[0];
+      
+      if(file) {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+          preview.innerHTML = `<img src="\${e.target.result}" alt="Предпросмотр изображения">`;
+        }
+        
+        reader.readAsDataURL(file);
+      } else {
+        preview.innerHTML = '<span>+</span>';
+      }
+    }
+
+    function updateSelectedMaterials(recipeId) {
+      const selectElement = document.getElementById(`materialSelect_${recipeId}`);
+      const selectedOptions = Array.from(selectElement.selectedOptions);
+      const materialsListDiv = document.getElementById(`materialsList_${recipeId}`);
+      
+      materialsListDiv.innerHTML = '';
+      
+      if(selectedOptions.length === 0) {
+        materialsListDiv.innerHTML = '<p>Материалы не выбраны</p>';
+        return;
+      }
+      
+      selectedOptions.forEach(option => {
+        const material = availableMaterials.find(m => m.id === option.value);
+        if(material) {
+          const materialItem = document.createElement('div');
+          materialItem.className = 'material-item';
+          materialItem.innerHTML = `
+            <div class="material-info">
+              <div class="material-name">\${material.item_name}</div>
+              <div class="material-details">Артикул: \${material.sku}, Кол-во: \${material.quantity} \${material.unit}, Поставщик: \${material.supplier}</div>
+            </div>
+            <button onclick="removeMaterialFromRecipe(\${recipeId}, '\${material.id}')" style="background: #f44336; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px;">Убрать</button>
+          `;
+          materialsListDiv.appendChild(materialItem);
+        }
+      });
+    }
+
+    function removeMaterialFromRecipe(recipeId, materialId) {
+      const selectElement = document.getElementById(`materialSelect_${recipeId}`);
+      const option = selectElement.querySelector(`option[value="\${materialId}"]`);
+      
+      if(option) {
+        option.selected = false;
+        updateSelectedMaterials(recipeId);
+      }
+    }
+
+    // Инициализация: добавляем первый контейнер
+    window.addEventListener('DOMContentLoaded', function() {
+      addRecipeContainer();
+    });
+  </script>
+</div>
