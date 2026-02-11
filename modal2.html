@@ -335,9 +335,20 @@
 
     let recipeCounter = 0;
 
-    document.getElementById('addRecipeBtn').addEventListener('click', function() {
-      addRecipeContainer();
-    });
+    function initializeRecipeButton() {
+      const addRecipeBtn = document.getElementById('addRecipeBtn');
+      if(addRecipeBtn) {
+        // Удаляем предыдущий обработчик, если он есть
+        addRecipeBtn.replaceWith(addRecipeBtn.cloneNode(true));
+        const newAddRecipeBtn = document.getElementById('addRecipeBtn');
+        newAddRecipeBtn.addEventListener('click', function() {
+          addRecipeContainer();
+        });
+      }
+    }
+
+    // Инициализируем кнопку при загрузке
+    initializeRecipeButton();
 
     function addRecipeContainer() {
       recipeCounter++;
