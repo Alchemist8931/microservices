@@ -9,6 +9,107 @@
       gap: 14px;
     }
 
+    .wh-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .wh-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0;
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      color: var(--text);
+    }
+
+    .wh-title .material-symbols-outlined {
+      color: var(--accent);
+      font-size: 22px;
+    }
+
+    .tab-container {
+      position: relative;
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      padding: 2px;
+      background-color: #dadadb;
+      border-radius: 9px;
+    }
+
+    .indicator {
+      content: "";
+      width: 200px;
+      height: 28px;
+      background: #ffffff;
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      z-index: 9;
+      border: 0.5px solid rgba(0, 0, 0, 0.04);
+      box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.12), 0px 3px 1px rgba(0, 0, 0, 0.04);
+      border-radius: 7px;
+      transition: all 0.2s ease-out;
+    }
+
+    .tab {
+      width: 200px;
+      height: 28px;
+      position: absolute;
+      z-index: 99;
+      outline: none;
+      opacity: 0;
+    }
+
+    .tab_label {
+      width: 200px;
+      height: 28px;
+      position: relative;
+      z-index: 999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 0;
+      font-size: 0.75rem;
+      opacity: 0.6;
+      cursor: pointer;
+      text-align: center;
+      user-select: none;
+    }
+
+    .tab:checked + .tab_label {
+      opacity: 1;
+      color: #151717;
+      font-weight: 700;
+    }
+
+    .tab--1:checked ~ .indicator {
+      left: 2px;
+    }
+
+    .tab--2:checked ~ .indicator {
+      left: calc(200px + 2px);
+    }
+
+    .wh-panel {
+      display: none;
+      flex: 1;
+      min-height: 0;
+    }
+    .wh-panel.active {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      min-height: 0;
+      flex: 1;
+    }
+
     .wh-card {
       background: #fff;
       border: 1px solid var(--border);
@@ -165,20 +266,62 @@
 
   <div class="wh-head">
     <h2 class="wh-title">
-      <span class="material-symbols-outlined">inventory</span>
+      <span class="material-symbols-outlined">inventory_2</span>
       Управление производством
     </h2>
+
+    <div class="tab-container" role="tablist" aria-label="Подстраницы управления производством">
+      <input type="radio" name="tab" id="tab1" class="tab tab--1 wh-tab" data-tab="recipes" role="tab" aria-selected="true" checked />
+      <label class="tab_label" for="tab1">рецепты</label>
+
+      <input type="radio" name="tab" id="tab2" class="tab tab--2 wh-tab" data-tab="production-tasks" role="tab" aria-selected="false" />
+      <label class="tab_label" for="tab2">задачи производства</label>
+
+      <div class="indicator"></div>
+    </div>
   </div>
 
-  <div class="wh-card">
-    <button id="addRecipeBtn" class="add-recipe-btn">Добавить рецепт</button>
-  </div>
+  <!-- ====== RECIPES PANEL ====== -->
+  <section class="wh-panel active" id="panel-recipes" role="tabpanel">
+    <div class="wh-card">
+      <button id="addRecipeBtn" class="add-recipe-btn">Добавить рецепт</button>
+    </div>
 
-  <div id="recipesContainer">
-    <!-- Контейнеры для рецептов будут добавлены здесь -->
-  </div>
+    <div id="recipesContainer">
+      <!-- Контейнеры для рецептов будут добавлены здесь -->
+    </div>
+  </section>
+
+  <!-- ====== PRODUCTION TASKS PANEL ====== -->
+  <section class="wh-panel" id="panel-production-tasks" role="tabpanel">
+    <!-- Содержимое для задач производства будет добавлено позже -->
+  </section>
 
   <script>
+    // Логика переключения вкладок
+    const tabs = document.querySelectorAll('.wh-tab');
+    const panels = {
+      recipes: document.getElementById('panel-recipes'),
+      'production-tasks': document.getElementById('panel-production-tasks')
+    };
+
+    function setActiveTab(key) {
+      tabs.forEach(t => {
+        const on = t.dataset.tab === key;
+        t.checked = on;
+        t.setAttribute("aria-selected", on ? "true" : "false");
+      });
+
+      Object.entries(panels).forEach(([k, el]) => {
+        if (!el) return;
+        el.classList.toggle("active", k === key);
+      });
+    }
+
+    tabs.forEach(btn => {
+      btn.addEventListener("change", () => setActiveTab(btn.dataset.tab));
+    });
+
     // Пример данных из таблицы warehouse
     const warehouseData = [
       {"idx":0,"id":"0003a5fc-bf1d-4d85-9cbb-09daa48beb87","user_id":"c2f0ffac-c8ce-4034-96f5-8d8c605269a7","created_at":"2026-01-30 12:00:51.507491+00","event_at":"2026-01-30 12:00:51.213+00","sku":"RIV-2113","item_name":"Коробка","category":"материалы","status":"списание","unit":"шт","quantity":"-21","unit_price":"100","amount":"-2100","supplier":"КоробкаРУ","supplier_contacts":null,"planned_delivery_date":null,"comment":"-"},
