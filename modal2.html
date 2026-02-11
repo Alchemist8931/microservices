@@ -137,8 +137,18 @@
       border-bottom: 1px solid #eee;
     }
 
-    .recipe-header > div {
+    .recipe-header-fields {
+      display: flex;
+      gap: 10px;
       flex-grow: 1;
+    }
+
+    .recipe-header-fields .wh-field:first-child {
+      width: 150px;
+    }
+
+    .recipe-header-fields .wh-field:last-child {
+      width: 450px;
     }
 
     .recipe-title {
@@ -149,6 +159,7 @@
 
     .wh-field {
       margin-bottom: 10px;
+      margin-right: 235px; /* 225px (ширина изображения) + 10px (отступ) */
     }
 
     .wh-field label {
@@ -173,8 +184,8 @@
       position: absolute;
       right: 10px;
       top: 50px;
-      width: 300px;
-      height: 400px;
+      width: 225px; /* уменьшено на 25% от 300px */
+      height: 300px; /* уменьшено на 25% от 400px */
       border: 1px dashed #ccc;
       border-radius: 8px;
       display: flex;
@@ -221,6 +232,7 @@
       border-radius: 8px;
       margin-bottom: 8px;
       background-color: #f9f9f9;
+      margin-right: 235px; /* 225px (ширина изображения) + 10px (отступ) */
     }
 
     .material-info {
@@ -363,7 +375,7 @@
 
       container.innerHTML = `
         <div class="recipe-header">
-          <div>
+          <div class="recipe-header-fields">
             <div class="wh-field">
               <label>Артикул продукта</label>
               <input type="text" class="wh-row-input" placeholder="Введите артикул...">
