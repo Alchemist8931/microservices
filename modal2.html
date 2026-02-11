@@ -335,30 +335,6 @@
 
     let recipeCounter = 0;
 
-    // Логика переключения вкладок
-    const tabs = document.querySelectorAll('.wh-tab');
-    const panels = {
-      recipes: document.getElementById('panel-recipes'),
-      'production-tasks': document.getElementById('panel-production-tasks')
-    };
-
-    function setActiveTab(key) {
-      tabs.forEach(t => {
-        const on = t.dataset.tab === key;
-        t.checked = on;
-        t.setAttribute("aria-selected", on ? "true" : "false");
-      });
-
-      Object.entries(panels).forEach(([k, el]) => {
-        if (!el) return;
-        el.classList.toggle("active", k === key);
-      });
-    }
-
-    tabs.forEach(btn => {
-      btn.addEventListener("change", () => setActiveTab(btn.dataset.tab));
-    });
-
     document.getElementById('addRecipeBtn').addEventListener('click', function() {
       addRecipeContainer();
     });
@@ -494,9 +470,6 @@
       }
     }
 
-    // Инициализация: добавляем первый контейнер
-    window.addEventListener('DOMContentLoaded', function() {
-      addRecipeContainer();
-    });
+    
   </script>
 </div>
