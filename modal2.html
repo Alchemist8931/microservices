@@ -578,15 +578,13 @@
       container.innerHTML = `
         <div class="recipe-header">
           <div class="recipe-header-fields">
-            <div class="wh-field" style="--field-width: 120px;">
-              <label>артикул</label>
+            <div class="wh-field" style="--field-width: 150px;">
               <div class="inputForm compact-field">
                 <span class="inputIcon material-symbols-outlined" aria-hidden="true">qr_code</span>
                 <input type="text" class="input" placeholder="Введите артикул...">
               </div>
             </div>
-            <div class="wh-field" style="--field-width: 550px;">
-              <label>название продукта</label>
+            <div class="wh-field" style="--field-width: 600px;">
               <div class="inputForm compact-field">
                 <span class="inputIcon material-symbols-outlined" aria-hidden="true">inventory</span>
                 <input type="text" class="input" placeholder="Введите название...">
@@ -598,15 +596,14 @@
 
         <div class="recipe-form">
           <div class="wh-field" style="--field-width: 800px;">
-            <label>описание продукта</label>
-            <textarea class="compact-field" rows="4" placeholder="Введите описание..." style="--field-min-height: 80px;"></textarea>
+            <textarea class="compact-field" rows="4" placeholder="Введите описание продукта..." style="--field-min-height: 80px;"></textarea>
           </div>
 
           <div class="recipe-materials-section">
             <label>Материалы:</label>
             <div class="material-controls">
-              <select class="material-select inputForm compact-field" onchange="filterMaterials(this)" style="min-width: 300px;">
-                <option value="">Поиск материала...</option>
+              <select class="material-select inputForm compact-field" onchange="filterMaterials(this)" style="width: 600px;">
+                <option value="">Выберите расходный материал...</option>
                 ${warehouseData.map(material =>
                   `<option value="${material.id}">${material.sku} - ${material.item_name} (${material.category}) - ${material.unit_price} руб.</option>`
                 ).join('')}
