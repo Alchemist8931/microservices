@@ -337,12 +337,14 @@
       margin-bottom: 15px;
       padding-bottom: 10px;
       border-bottom: 1px solid #eee;
+      position: relative;
     }
 
     .recipe-header-fields {
       display: flex;
       gap: 10px;
       flex-grow: 1;
+      margin-right: 160px; /* Space for delete button */
     }
 
     .recipe-header-fields .wh-field:first-child {
@@ -350,7 +352,27 @@
     }
 
     .recipe-header-fields .wh-field:last-child {
-      width: 450px;
+      width: calc(100% - 160px); /* Adjusted to account for the space needed */
+    }
+
+    .recipe-header-buttons {
+      position: absolute;
+      right: 10px;
+      top: 10px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .recipe-changed-buttons {
+      display: none;
+      gap: 10px;
+      position: absolute;
+      left: 170px; /* Position between the input fields and the delete button */
+      top: 0;
+    }
+
+    .recipe-changed-buttons.visible {
+      display: flex;
     }
 
     .recipe-title {
@@ -404,25 +426,27 @@
     }
 
     .add-recipe-btn {
-      background: #4CAF50;
+      background: #fe7f2d;
       color: white;
       border: none;
       padding: 10px 15px;
       border-radius: 8px;
       cursor: pointer;
       font-weight: bold;
+      box-shadow: 0 12px 24px rgba(254,127,45,0.35);
     }
 
     .remove-recipe-btn {
-      background: #f44336;
+      background: #fe7f2d;
       color: white;
       border: none;
-      padding: 5px 10px;
-      border-radius: 5px;
+      padding: 10px 15px;
+      border-radius: 8px;
       cursor: pointer;
-      font-size: 12px;
-      align-self: flex-start;
-      margin-top: 15px;
+      font-weight: bold;
+      box-shadow: 0 12px 24px rgba(254,127,45,0.35);
+      width: 140px;
+      height: 42px;
     }
 
     .material-item {
@@ -581,17 +605,29 @@
             <div class="wh-field" style="--field-width: 150px;">
               <div class="inputForm compact-field">
                 <span class="inputIcon material-symbols-outlined" aria-hidden="true">qr_code</span>
-                <input type="text" class="input" placeholder="Введите артикул...">
+                <input type="text" class="input" placeholder="Введите артикул..." oninput="onRecipeInputChange('${containerId}')">
               </div>
             </div>
             <div class="wh-field" style="--field-width: 600px;">
               <div class="inputForm compact-field">
                 <span class="inputIcon material-symbols-outlined" aria-hidden="true">inventory</span>
-                <input type="text" class="input" placeholder="Введите название...">
+                <input type="text" class="input" placeholder="Введите название..." oninput="onRecipeInputChange('${containerId}')">
               </div>
             </div>
           </div>
-          <button class="remove-recipe-btn card" onclick="removeRecipe('${containerId}')">Удалить</button>
+          <div class="recipe-changed-buttons" id="changedButtons_${recipeCounter}">
+            <button class="card-mini" style="--btn-height: 36px; --btn-padding: 0 16px; --btn-font-size: 12px; --btn-font-weight: 700; --btn-bg: #ffffff; --btn-color: #151717; --btn-border: 1px solid var(--border); --btn-shadow: 0 8px 20px rgba(0,0,0,0.06); --btn-hover-bg: #f8fafc; --btn-hover-shadow: 0 8px 20px rgba(0,0,0,0.06); --btn-gap: 8px;" onclick="cancelRecipeChanges('${containerId}')">
+              <span class="material-symbols-outlined" aria-hidden="true">close</span>
+              Отменить
+            </button>
+            <button class="card-mini" style="--btn-height: 36px; --btn-padding: 0 16px; --btn-font-size: 12px; --btn-font-weight: 700; --btn-gap: 8px;" onclick="saveRecipeChanges('${containerId}')">
+              <span class="material-symbols-outlined" aria-hidden="true">save</span>
+              Сохранить
+            </button>
+          </div>
+          <div class="recipe-header-buttons">
+            <button class="remove-recipe-btn card" onclick="removeRecipe('${containerId}')">Удалить</button>
+          </div>
         </div>
 
         <div class="recipe-form">
@@ -713,6 +749,83 @@
           break;
         }
       }
+    }
+
+     // Track initial values for each recipe container
+    let recipeInitialValues = {};
+
+    // Function to track initial values when a recipe is created
+    function trackRecipeInitialValues(containerId) {
+      const container = document.getElementById(containerId);
+      const articleInput = container.querySelector('.recipe-header-fields .wh-field:first-child .input');
+      const nameInput = container.querySelector('.recipe-header-fields .wh-field:last-child .input');
+
+      recipeInitialValues[containerId] = {
+        article: articleInput.value,
+        name: nameInput.value
+      };
+    }
+
+    // Function to check if recipe has changed
+    function isRecipeChanged(containerId) {
+      const container = document.getElementById(containerId);
+      const articleInput = container.querySelector('.recipe-header-fields .wh-field:first-child .input');
+      const nameInput = container.querySelector('.recipe-header-fields .wh-field:last-child .input');
+
+      const initialValues = recipeInitialValues[containerId];
+      if (!initialValues) return false;
+
+      return articleInput.value !== initialValues.article || nameInput.value !== initialValues.name;
+    }
+
+    // Function to show/hide change buttons based on input changes
+    function onRecipeInputChange(containerId) {
+      const changedButtons = document.getElementById(`changedButtons_${containerId.replace('recipe_', '')}`);
+      if (isRecipeChanged(containerId)) {
+        changedButtons.classList.add('visible');
+      } else {
+        changedButtons.classList.remove('visible');
+      }
+    }
+
+    // Function to cancel recipe changes
+    function cancelRecipeChanges(containerId) {
+      const container = document.getElementById(containerId);
+      const articleInput = container.querySelector('.recipe-header-fields .wh-field:first-child .input');
+      const nameInput = container.querySelector('.recipe-header-fields .wh-field:last-child .input');
+
+      const initialValues = recipeInitialValues[containerId];
+      if (initialValues) {
+        articleInput.value = initialValues.article;
+        nameInput.value = initialValues.name;
+      }
+
+      // Hide the change buttons
+      const changedButtons = document.getElementById(`changedButtons_${containerId.replace('recipe_', '')}`);
+      changedButtons.classList.remove('visible');
+    }
+
+    // Function to save recipe changes
+    function saveRecipeChanges(containerId) {
+      // In a real application, you would save the changes to a database here
+      console.log(`Saving recipe changes for ${containerId}`);
+
+      // Update initial values to current values
+      const container = document.getElementById(containerId);
+      const articleInput = container.querySelector('.recipe-header-fields .wh-field:first-child .input');
+      const nameInput = container.querySelector('.recipe-header-fields .wh-field:last-child .input');
+
+      recipeInitialValues[containerId] = {
+        article: articleInput.value,
+        name: nameInput.value
+      };
+
+      // Hide the change buttons
+      const changedButtons = document.getElementById(`changedButtons_${containerId.replace('recipe_', '')}`);
+      changedButtons.classList.remove('visible');
+
+      // Show a confirmation message
+      alert('Рецепт успешно сохранен!');
     }
 
     
