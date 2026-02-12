@@ -128,6 +128,208 @@
       position: relative;
     }
 
+    .wh-form {
+      display: grid;
+      gap: 12px;
+    }
+
+    .wh-form.compact {
+      gap: 10px;
+    }
+
+    .wh-form.compact .wh-form-row,
+    .wh-form.compact .wh-form-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 12px;
+      align-items: flex-end;
+    }
+
+    .wh-form.compact .wh-field {
+      width: min(var(--field-width, 100%), 100%);
+      flex: 0 0 auto;
+    }
+
+    .wh-form.compact .inputIcon {
+      font-size: 18px;
+    }
+
+    .wh-form.compact .wh-field label {
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      margin-left: 4px;
+    }
+
+    .wh-form.compact .wh-field .inputForm,
+    .wh-form.compact .wh-field textarea.compact-field {
+      width: 100%;
+    }
+
+    .wh-field {
+      display: grid;
+      gap: 6px;
+    }
+    .wh-field label {
+      font-weight: 700;
+      color: var(--text);
+      font-size: 9px;
+      letter-spacing: 0.02em;
+    }
+
+    .wh-row-input {
+      width: 100%;
+      height: 32px;
+      padding: 0 10px;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+      background: #f8fafc;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text);
+      outline: none;
+    }
+
+    .wh-row-input[readonly] {
+      cursor: default;
+    }
+
+    .wh-row-input::placeholder {
+      color: rgba(21,23,23,0.45);
+      font-weight: 600;
+    }
+
+    .wh-row-input.is-datetime {
+      font-weight: 700;
+      background: #ffffff;
+    }
+
+    .inputForm {
+      position: relative;
+      display: flex;
+      align-items: stretch;
+      min-height: 32px;
+      background: #f8fafc;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #e5e7eb;
+    }
+
+    .inputForm.compact-field {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 10px;
+      font-weight: 700;
+      color: var(--text);
+      width: 100%;
+    }
+
+    .inputIcon {
+      color: #6b7280;
+      font-size: 18px;
+    }
+
+    .input {
+      flex: 1;
+      border: none;
+      outline: none;
+      background: transparent;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text);
+      min-width: 0;
+    }
+
+    .input::placeholder {
+      color: rgba(21,23,23,0.45);
+      font-weight: 600;
+    }
+
+    textarea.compact-field {
+      width: 100%;
+      min-height: var(--field-min-height, 100px);
+      padding: 10px;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      background: #f8fafc;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text);
+      resize: vertical;
+      outline: none;
+    }
+
+    .card {
+      box-sizing: border-box;
+      width: 120px;
+      height: 28px;
+      background: rgba(226, 226, 226, 0.80);
+      border: 1px solid #676662;
+      box-shadow: 12px 17px 51px rgba(0, 0, 0, 0.22);
+      backdrop-filter: blur(6px);
+      border-radius: 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.5s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      font-weight: bolder;
+      color: black;
+    }
+    .card:hover {
+      border: 1px solid #454845;
+      transform: scale(1.02);
+      background: black;
+      color: rgba(226, 226, 226, 0.80);
+    }
+    .card:active {
+      transform: scale(0.98) rotateZ(1.7deg);
+    }
+
+    .card-mini {
+      --btn-height: 42px;
+      --btn-padding: 0 20px;
+      --btn-font-size: 14px;
+      --btn-font-weight: 700;
+      --btn-gap: 10px;
+      --btn-bg: #fe7f2d;
+      --btn-color: #ffffff;
+      --btn-border: none;
+      --btn-shadow: 0 12px 24px rgba(254,127,45,0.35);
+      --btn-hover-bg: #e67229;
+      --btn-hover-shadow: 0 16px 32px rgba(254,127,45,0.45);
+
+      height: var(--btn-height);
+      padding: var(--btn-padding);
+      font-size: var(--btn-font-size);
+      font-weight: var(--btn-font-weight);
+      gap: var(--btn-gap);
+      background: var(--btn-bg);
+      color: var(--btn-color);
+      border: var(--btn-border);
+      box-shadow: var(--btn-shadow);
+      border-radius: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      outline: none;
+      position: relative;
+    }
+    .card-mini:hover {
+      background: var(--btn-hover-bg);
+      box-shadow: var(--btn-hover-shadow);
+      transform: translateY(-1px);
+    }
+    .card-mini:active {
+      transform: translateY(0);
+    }
+
     .recipe-header {
       display: flex;
       justify-content: space-between;
@@ -376,34 +578,43 @@
       container.innerHTML = `
         <div class="recipe-header">
           <div class="recipe-header-fields">
-            <div class="wh-field">
-              <label>Артикул продукта</label>
-              <input type="text" class="wh-row-input" placeholder="Введите артикул...">
+            <div class="wh-field" style="--field-width: 120px;">
+              <label>артикул</label>
+              <div class="inputForm compact-field">
+                <span class="inputIcon material-symbols-outlined" aria-hidden="true">qr_code</span>
+                <input type="text" class="input" placeholder="Введите артикул...">
+              </div>
             </div>
-            <div class="wh-field">
-              <label>Название продукта</label>
-              <input type="text" class="wh-row-input" placeholder="Введите название...">
+            <div class="wh-field" style="--field-width: 550px;">
+              <label>название продукта</label>
+              <div class="inputForm compact-field">
+                <span class="inputIcon material-symbols-outlined" aria-hidden="true">inventory</span>
+                <input type="text" class="input" placeholder="Введите название...">
+              </div>
             </div>
           </div>
-          <button class="remove-recipe-btn" onclick="removeRecipe('${containerId}')">Удалить</button>
+          <button class="remove-recipe-btn card" onclick="removeRecipe('${containerId}')">Удалить</button>
         </div>
 
         <div class="recipe-form">
-          <div class="wh-field">
-            <label>Описание продукта</label>
-            <textarea class="wh-row-input" rows="4" placeholder="Введите описание..."></textarea>
+          <div class="wh-field" style="--field-width: 800px;">
+            <label>описание продукта</label>
+            <textarea class="compact-field" rows="4" placeholder="Введите описание..." style="--field-min-height: 80px;"></textarea>
           </div>
 
           <div class="recipe-materials-section">
             <label>Материалы:</label>
             <div class="material-controls">
-              <select class="material-select" onchange="filterMaterials(this)">
+              <select class="material-select inputForm compact-field" onchange="filterMaterials(this)" style="min-width: 300px;">
                 <option value="">Поиск материала...</option>
                 ${warehouseData.map(material =>
                   `<option value="${material.id}">${material.sku} - ${material.item_name} (${material.category}) - ${material.unit_price} руб.</option>`
                 ).join('')}
               </select>
-              <button class="add-material-btn" onclick="addMaterialToRecipe('${containerId}')">Добавить материал</button>
+              <button class="add-material-btn card-mini" onclick="addMaterialToRecipe('${containerId}')" style="--btn-height: 32px; --btn-padding: 0 16px; --btn-font-size: 12px; --btn-font-weight: 700; --btn-gap: 8px;">
+                <span class="material-symbols-outlined" aria-hidden="true">add</span>
+                Добавить материал
+              </button>
             </div>
             <div class="selected-materials" id="selectedMaterials_${recipeCounter}">
               <div id="materialsList_${recipeCounter}"></div>
@@ -417,6 +628,17 @@
             <span>+</span>
             <p>Загрузить изображение</p>
           </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px;">
+          <button class="card-mini" style="--btn-height: 36px; --btn-padding: 0 16px; --btn-font-size: 12px; --btn-font-weight: 700; --btn-gap: 8px; --btn-bg: #ffffff; --btn-color: #151717; --btn-border: 1px solid var(--border); --btn-shadow: 0 8px 20px rgba(0,0,0,0.06); --btn-hover-bg: #f8fafc; --btn-hover-shadow: 0 8px 20px rgba(0,0,0,0.06);">
+            <span class="material-symbols-outlined" aria-hidden="true">close</span>
+            Отменить
+          </button>
+          <button class="card-mini" style="--btn-height: 36px; --btn-padding: 0 16px; --btn-font-size: 12px; --btn-font-weight: 700; --btn-gap: 8px;">
+            <span class="material-symbols-outlined" aria-hidden="true">save</span>
+            Сохранить
+          </button>
         </div>
       `;
 
