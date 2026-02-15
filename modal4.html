@@ -96,14 +96,19 @@
                         }
                     ])
                     .select()
-                    .single();
+                    .limit(1);
 
                 if (insertError) {
                     console.error("Insert error:", insertError);
                     throw insertError;
                 }
 
-                console.log("Database record created:", uploadRecord);
+                if (!uploadRecord || uploadRecord.length === 0) {
+                    throw new Error("Failed to create upload record");
+                }
+
+                const recordId = uploadRecord[0].id;
+                console.log("Database record created:", uploadRecord[0]);
 
                 // Загружаем файл в Supabase Storage
                 const { data: storageData, error: storageError } = await supabaseClient
@@ -120,7 +125,7 @@
                     await supabaseClient
                         .from('PDF_Uploads')
                         .update({ upload_status: 'ошибка загрузки' })
-                        .eq('id', uploadRecord.id);
+                        .eq('id', recordId);
 
                     throw storageError;
                 }
@@ -134,7 +139,7 @@
                         upload_status: 'файл сохранен',
                         file_path: storageData.path // сохраняем путь к файлу
                     })
-                    .eq('id', uploadRecord.id);
+                    .eq('id', recordId);
 
                 console.log("Database record updated with file path");
                 statusDiv.innerHTML = '<p style="color: green;">Файл успешно загружен!</p>';
