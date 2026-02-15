@@ -1,6 +1,9 @@
 <div class="helper" style="color: var(--text); font-weight: 600;">Раздел 4 - Загрузка PDF файлов</div>
 <p class="helper" style="color: var(--text); margin-top: 6px;">Загрузите PDF файлы для обработки</p>
 
+<!-- Подключение библиотеки Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <div class="upload-container">
     <div class="file-input-wrapper">
             <input type="file" id="pdf-file" name="pdf-file" accept=".pdf" />
@@ -34,8 +37,7 @@
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jZHdsbWd3bGpqd3B1YXdsc3NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0NTQxNDksImV4cCI6MjA4MzAzMDE0OX0.rrIznUflWydylTnUZvOxOkeF9eMp91qNN4Bjq2gXRL8";
 
     // Инициализация Supabase
-    const { createClient } = supabase;
-    const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     document.addEventListener('DOMContentLoaded', function() {
         const fileInput = document.getElementById('pdf-file');
@@ -83,7 +85,7 @@
                             file_name: file.name,
                             file_size_mb: parseFloat(fileSizeMB),
                             upload_status: 'сохранение файла',
-                            processing_status: 'ожидание'
+                            processing_status: 'задача в работе'
                         }
                     ])
                     .select()
