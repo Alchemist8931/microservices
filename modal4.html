@@ -49,14 +49,18 @@
 
         // Обработка события выбора файла
         fileInput.addEventListener('change', async function(e) {
+            console.log("File input changed:", fileInput.files);
             if (!fileInput.files.length) {
+                console.log("No files selected");
                 return;
             }
 
             const file = fileInput.files[0];
+            console.log("Selected file:", file);
 
             // Проверка формата файла
             if (file.type !== 'application/pdf') {
+                console.log("Invalid file type:", file.type);
                 statusDiv.innerHTML = '<p style="color: red;">Можно загружать только PDF файлы</p>';
                 fileInput.value = ''; // Очищаем выбор файла
                 return;
@@ -67,13 +71,16 @@
             try {
                 // Получаем информацию о пользователе (в реальном приложении это будет текущий пользователь)
                 const username = 'test_user'; // В реальном приложении замените на реальный логин
+                console.log("Username:", username);
 
                 // Формируем имя файла с уникальным префиксом
                 const fileName = `${Date.now()}_${username}_${file.name}`;
+                console.log("Generated filename:", fileName);
 
                 // Обновляем статус в БД до начала загрузки
                 const uploadTime = new Date().toISOString();
                 const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+                console.log("File size:", fileSizeMB, "MB");
 
                 // Создаем запись в таблице с начальным статусом
                 const { data: uploadRecord, error: insertError } = await supabaseClient
@@ -91,7 +98,12 @@
                     .select()
                     .single();
 
-                if (insertError) throw insertError;
+                if (insertError) {
+                    console.error("Insert error:", insertError);
+                    throw insertError;
+                }
+
+                console.log("Database record created:", uploadRecord);
 
                 // Загружаем файл в Supabase Storage
                 const { data: storageData, error: storageError } = await supabaseClient
@@ -103,6 +115,7 @@
                     });
 
                 if (storageError) {
+                    console.error("Storage error:", storageError);
                     // Обновляем статус на ошибку
                     await supabaseClient
                         .from('PDF_Uploads')
@@ -111,6 +124,8 @@
 
                     throw storageError;
                 }
+
+                console.log("File uploaded to storage:", storageData);
 
                 // Обновляем статус на "файл сохранен" после успешной загрузки
                 await supabaseClient
@@ -121,6 +136,7 @@
                     })
                     .eq('id', uploadRecord.id);
 
+                console.log("Database record updated with file path");
                 statusDiv.innerHTML = '<p style="color: green;">Файл успешно загружен!</p>';
 
                 // Очищаем выбор файла
