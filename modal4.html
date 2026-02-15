@@ -81,7 +81,10 @@
 
             const username = user ? user.email : 'anonymous_user';
 
-            const fileName = `${Date.now()}_${username}_${file.name}`;
+            // Create a safe filename for storage by replacing problematic characters
+const safeUsername = username.replace(/[^a-zA-Z0-9._-]/g, '_');
+const safeFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+const fileName = `${Date.now()}_${safeUsername}_${safeFileName}`;
             const uploadTime = new Date().toISOString();
             const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
 
