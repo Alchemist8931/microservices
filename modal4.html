@@ -2,13 +2,10 @@
 <p class="helper" style="color: var(--text); margin-top: 6px;">Загрузите PDF файлы для обработки</p>
 
 <div class="upload-container">
-    <form id="pdf-upload-form">
-        <div class="file-input-wrapper">
+    <div class="file-input-wrapper">
             <input type="file" id="pdf-file" name="pdf-file" accept=".pdf" />
             <label for="pdf-file">Выберите PDF файл</label>
         </div>
-        <button type="submit" id="upload-btn">Загрузить файл</button>
-    </form>
 
     <div id="upload-status"></div>
 
@@ -41,20 +38,16 @@
     const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     document.addEventListener('DOMContentLoaded', function() {
-        const uploadForm = document.getElementById('pdf-upload-form');
         const fileInput = document.getElementById('pdf-file');
-        const uploadBtn = document.getElementById('upload-btn');
         const statusDiv = document.getElementById('upload-status');
         const tableBody = document.getElementById('files-table-body');
 
         // Загрузка существующих файлов при загрузке страницы
         loadExistingFiles();
 
-        uploadForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-
+        // Обработка события выбора файла
+        fileInput.addEventListener('change', async function(e) {
             if (!fileInput.files.length) {
-                statusDiv.innerHTML = '<p style="color: red;">Пожалуйста, выберите PDF файл</p>';
                 return;
             }
 
@@ -63,6 +56,7 @@
             // Проверка формата файла
             if (file.type !== 'application/pdf') {
                 statusDiv.innerHTML = '<p style="color: red;">Можно загружать только PDF файлы</p>';
+                fileInput.value = ''; // Очищаем выбор файла
                 return;
             }
 
@@ -127,7 +121,7 @@
 
                 statusDiv.innerHTML = '<p style="color: green;">Файл успешно загружен!</p>';
 
-                // Очищаем форму
+                // Очищаем выбор файла
                 fileInput.value = '';
 
                 // Перезагружаем таблицу
@@ -249,7 +243,7 @@
     }
 
     .file-input-wrapper {
-        margin-bottom: 20px;
+        margin-bottom: 10px;
     }
 
     .file-input-wrapper input[type="file"] {
