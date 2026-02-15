@@ -32,230 +32,199 @@
 </div>
 
 <script>
-    // Конфигурация Supabase (замените на реальные значения)
+    // Конфигурация Supabase
     const SUPABASE_URL = "https://ncdwlmgwljjwpuawlssr.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jZHdsbWd3bGpqd3B1YXdsc3NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0NTQxNDksImV4cCI6MjA4MzAzMDE0OX0.rrIznUflWydylTnUZvOxOkeF9eMp91qNN4Bjq2gXRL8";
 
     // Инициализация Supabase
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    document.addEventListener('DOMContentLoaded', function() {
-        const fileInput = document.getElementById('pdf-file');
-        const statusDiv = document.getElementById('upload-status');
-        const tableBody = document.getElementById('files-table-body');
+    // Получаем элементы (они уже есть на странице, так как скрипт идет после HTML)
+    const fileInput = document.getElementById('pdf-file');
+    const statusDiv = document.getElementById('upload-status');
+    const tableBody = document.getElementById('files-table-body');
 
-        // Загрузка существующих файлов при загрузке страницы
-        loadExistingFiles();
+    // Сразу загружаем список файлов
+    loadExistingFiles();
 
-        // Обработка события выбора файла
-        fileInput.addEventListener('change', async function(e) {
-            console.log("File input changed:", fileInput.files);
-            if (!fileInput.files.length) {
-                console.log("No files selected");
-                return;
-            }
-
-            const file = fileInput.files[0];
-            console.log("Selected file:", file);
-
-            // Проверка формата файла
-            if (file.type !== 'application/pdf') {
-                console.log("Invalid file type:", file.type);
-                statusDiv.innerHTML = '<p style="color: red;">Можно загружать только PDF файлы</p>';
-                fileInput.value = ''; // Очищаем выбор файла
-                return;
-            }
-
-            statusDiv.innerHTML = '<p style="color: blue;">Загрузка файла...</p>';
-
-            try {
-                // Получаем информацию о пользователе (в реальном приложении это будет текущий пользователь)
-                const username = 'test_user'; // В реальном приложении замените на реальный логин
-                console.log("Username:", username);
-
-                // Формируем имя файла с уникальным префиксом
-                const fileName = `${Date.now()}_${username}_${file.name}`;
-                console.log("Generated filename:", fileName);
-
-                // Обновляем статус в БД до начала загрузки
-                const uploadTime = new Date().toISOString();
-                const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
-                console.log("File size:", fileSizeMB, "MB");
-
-                // Создаем запись в таблице с начальным статусом
-                const { data: uploadRecord, error: insertError } = await supabaseClient
-                    .from('PDF_Uploads')
-                    .insert([
-                        {
-                            upload_time: uploadTime,
-                            user_login: username,
-                            file_name: file.name,
-                            file_size_mb: parseFloat(fileSizeMB),
-                            upload_status: 'сохранение файла',
-                            processing_status: 'задача в работе'
-                        }
-                    ])
-                    .select()
-                    .limit(1);
-
-                if (insertError) {
-                    console.error("Insert error:", insertError);
-                    throw insertError;
-                }
-
-                if (!uploadRecord || uploadRecord.length === 0) {
-                    throw new Error("Failed to create upload record");
-                }
-
-                const recordId = uploadRecord[0].id;
-                console.log("Database record created:", uploadRecord[0]);
-
-                // Загружаем файл в Supabase Storage
-                const { data: storageData, error: storageError } = await supabaseClient
-                    .storage
-                    .from('pdf_files') // имя bucket'а
-                    .upload(fileName, file, {
-                        cacheControl: '3600',
-                        upsert: false
-                    });
-
-                if (storageError) {
-                    console.error("Storage error:", storageError);
-                    // Обновляем статус на ошибку
-                    await supabaseClient
-                        .from('PDF_Uploads')
-                        .update({ upload_status: 'ошибка загрузки' })
-                        .eq('id', recordId);
-
-                    throw storageError;
-                }
-
-                console.log("File uploaded to storage:", storageData);
-
-                // Обновляем статус на "файл сохранен" после успешной загрузки
-                await supabaseClient
-                    .from('PDF_Uploads')
-                    .update({
-                        upload_status: 'файл сохранен',
-                        file_path: storageData.path // сохраняем путь к файлу
-                    })
-                    .eq('id', recordId);
-
-                console.log("Database record updated with file path");
-                statusDiv.innerHTML = '<p style="color: green;">Файл успешно загружен!</p>';
-
-                // Очищаем выбор файла
-                fileInput.value = '';
-
-                // Перезагружаем таблицу
-                loadExistingFiles();
-
-            } catch (error) {
-                console.error('Ошибка при загрузке:', error);
-                statusDiv.innerHTML = `<p style="color: red;">Ошибка: ${error.message}</p>`;
-            }
-        });
-
-        // Функция для загрузки существующих файлов
-        async function loadExistingFiles() {
-            try {
-                const { data: files, error } = await supabaseClient
-                    .from('PDF_Uploads')
-                    .select('*')
-                    .order('upload_time', { ascending: false });
-
-                if (error) throw error;
-
-                tableBody.innerHTML = '';
-
-                files.forEach(file => {
-                    const row = document.createElement('tr');
-
-                    // Формируем кнопки действий
-                    let downloadButton = '';
-                    if (file.file_path && file.upload_status === 'файл сохранен') {
-                        downloadButton = `
-                            <button onclick="downloadFile('${file.file_path}', '${file.file_name}')">Скачать PDF</button>
-                        `;
-                    } else {
-                        downloadButton = '-';
-                    }
-
-                    let excelDownloadButton = '';
-                    if (file.processing_status === 'парсинг выполнен' && file.excel_path) {
-                        excelDownloadButton = `
-                            <button onclick="downloadExcel('${file.excel_path}', '${file.file_name.replace('.pdf', '.xlsx')}')">Скачать Excel</button>
-                        `;
-                    } else {
-                        excelDownloadButton = '-';
-                    }
-
-                    row.innerHTML = `
-                        <td>${new Date(file.upload_time).toLocaleString()}</td>
-                        <td>${file.user_login}</td>
-                        <td>${file.file_name}</td>
-                        <td>${file.file_size_mb} МБ</td>
-                        <td>${file.upload_status}</td>
-                        <td>${downloadButton}</td>
-                        <td>${file.processing_status}</td>
-                        <td>${excelDownloadButton}</td>
-                    `;
-
-                    tableBody.appendChild(row);
-                });
-
-            } catch (error) {
-                console.error('Ошибка при загрузке файлов:', error);
-            }
+    // Обработка выбора файла
+    fileInput.addEventListener('change', async function(e) {
+        console.log("File input changed:", fileInput.files);
+        if (!fileInput.files.length) {
+            console.log("No files selected");
+            return;
         }
 
-        // Глобальные функции для скачивания файлов
-        window.downloadFile = async function(filePath, fileName) {
-            try {
-                const { data, error } = await supabaseClient
-                    .storage
-                    .from('pdf_files')
-                    .download(filePath);
+        const file = fileInput.files[0];
+        console.log("Selected file:", file);
 
-                if (error) throw error;
+        if (file.type !== 'application/pdf') {
+            statusDiv.innerHTML = '<p style="color: red;">Можно загружать только PDF файлы</p>';
+            fileInput.value = '';
+            return;
+        }
 
-                const url = URL.createObjectURL(data);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = fileName;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            } catch (error) {
-                console.error('Ошибка при скачивании файла:', error);
-                alert('Ошибка при скачивании файла');
+        statusDiv.innerHTML = '<p style="color: blue;">Проверка авторизации и загрузка...</p>';
+
+        try {
+            // ВАЖНО: Проверяем, авторизован ли пользователь
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            
+            // Если пользователя нет, политика 'authenticated' не сработает.
+            // Нужно либо требовать логин, либо менять политики в Supabase.
+            if (!user) {
+                // Для теста можно использовать 'test_user', но в Storage Policy это не пройдет, 
+                // если там указано 'TO authenticated'.
+                // Временное решение для отладки:
+                console.warn("Пользователь не авторизован! Загрузка может не сработать с текущими политиками Storage.");
             }
-        };
 
-        window.downloadExcel = async function(excelPath, fileName) {
-            try {
-                const { data, error } = await supabaseClient
-                    .storage
-                    .from('excel_outputs')
-                    .download(excelPath);
+            const username = user ? user.email : 'anonymous_user';
 
-                if (error) throw error;
+            const fileName = `${Date.now()}_${username}_${file.name}`;
+            const uploadTime = new Date().toISOString();
+            const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
 
-                const url = URL.createObjectURL(data);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = fileName;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            } catch (error) {
-                console.error('Ошибка при скачивании Excel:', error);
-                alert('Ошибка при скачивании Excel файла');
+            statusDiv.innerHTML = '<p style="color: blue;">Создание записи в БД...</p>';
+
+            // 1. Создаем запись в таблице
+            const { data: uploadRecord, error: insertError } = await supabaseClient
+                .from('PDF_Uploads')
+                .insert([
+                    {
+                        upload_time: uploadTime,
+                        user_login: username,
+                        file_name: file.name,
+                        file_size_mb: parseFloat(fileSizeMB),
+                        upload_status: 'сохранение файла',
+                        processing_status: 'задача в работе'
+                    }
+                ])
+                .select()
+                .single(); // Используем single, чтобы получить объект, а не массив
+
+            if (insertError) {
+                console.error("Insert error:", insertError);
+                throw new Error(`Ошибка БД: ${insertError.message}`);
             }
-        };
+
+            const recordId = uploadRecord.id;
+            console.log("Database record created:", recordId);
+
+            statusDiv.innerHTML = '<p style="color: blue;">Загрузка файла в хранилище...</p>';
+
+            // 2. Загружаем файл в Storage
+            const { data: storageData, error: storageError } = await supabaseClient
+                .storage
+                .from('pdf_files')
+                .upload(fileName, file, {
+                    cacheControl: '3600',
+                    upsert: false
+                });
+
+            if (storageError) {
+                console.error("Storage error:", storageError);
+                // Откатываем статус в БД, если не удалось загрузить файл
+                await supabaseClient
+                    .from('PDF_Uploads')
+                    .update({ upload_status: 'ошибка хранения', processing_status: 'ошибка' })
+                    .eq('id', recordId);
+                throw new Error(`Ошибка Storage: ${storageError.message}`);
+            }
+
+            console.log("File uploaded to storage:", storageData);
+
+            // 3. Обновляем запись в БД
+            await supabaseClient
+                .from('PDF_Uploads')
+                .update({
+                    upload_status: 'файл сохранен',
+                    file_path: storageData.path
+                })
+                .eq('id', recordId);
+
+            statusDiv.innerHTML = '<p style="color: green;">Файл успешно загружен!</p>';
+            fileInput.value = '';
+            loadExistingFiles();
+
+        } catch (error) {
+            console.error('Полная ошибка:', error);
+            statusDiv.innerHTML = `<p style="color: red;">Ошибка: ${error.message}</p>`;
+        }
     });
+
+    // Функция загрузки списка файлов
+    async function loadExistingFiles() {
+        try {
+            const { data: files, error } = await supabaseClient
+                .from('PDF_Uploads')
+                .select('*')
+                .order('upload_time', { ascending: false });
+
+            if (error) throw error;
+
+            tableBody.innerHTML = '';
+
+            if (!files || files.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center">Нет загруженных файлов</td></tr>';
+                return;
+            }
+
+            files.forEach(file => {
+                const row = document.createElement('tr');
+                let downloadButton = file.file_path 
+                    ? `<button onclick="downloadFile('${file.file_path}', '${file.file_name}')">Скачать PDF</button>` 
+                    : '-';
+                
+                let excelButton = (file.processing_status === 'парсинг выполнен' && file.excel_path) 
+                    ? `<button onclick="downloadExcel('${file.excel_path}', '${file.file_name.replace('.pdf', '.xlsx')}')">Скачать Excel</button>` 
+                    : '-';
+
+                row.innerHTML = `
+                    <td>${new Date(file.upload_time).toLocaleString()}</td>
+                    <td>${file.user_login}</td>
+                    <td>${file.file_name}</td>
+                    <td>${file.file_size_mb} МБ</td>
+                    <td>${file.upload_status}</td>
+                    <td>${downloadButton}</td>
+                    <td>${file.processing_status}</td>
+                    <td>${excelButton}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        } catch (error) {
+            console.error('Ошибка при загрузке списка:', error);
+        }
+    }
+
+    // Глобальные функции для скачивания
+    window.downloadFile = async function(filePath, fileName) {
+        try {
+            const { data, error } = await supabaseClient.storage.from('pdf_files').download(filePath);
+            if (error) throw error;
+            const url = URL.createObjectURL(data);
+            const a = document.createElement('a');
+            a.href = url; a.download = fileName; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Ошибка скачивания:', error);
+            alert('Ошибка при скачивании файла: ' + error.message);
+        }
+    };
+
+    window.downloadExcel = async function(excelPath, fileName) {
+        try {
+            const { data, error } = await supabaseClient.storage.from('excel_outputs').download(excelPath);
+            if (error) throw error;
+            const url = URL.createObjectURL(data);
+            const a = document.createElement('a');
+            a.href = url; a.download = fileName; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Ошибка скачивания Excel:', error);
+            alert('Ошибка при скачивании Excel: ' + error.message);
+        }
+    };
 </script>
 
 <style>
