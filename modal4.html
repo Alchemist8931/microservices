@@ -89,7 +89,7 @@
 
             // 1. Создаем запись в таблице
             const { data: uploadRecord, error: insertError } = await supabaseClient
-                .from('PDF_Uploads')
+                .from('pdf_uploads')
                 .insert([
                     {
                         upload_time: uploadTime,
@@ -126,7 +126,7 @@
                 console.error("Storage error:", storageError);
                 // Откатываем статус в БД, если не удалось загрузить файл
                 await supabaseClient
-                    .from('PDF_Uploads')
+                    .from('pdf_uploads')
                     .update({ upload_status: 'ошибка хранения', processing_status: 'ошибка' })
                     .eq('id', recordId);
                 throw new Error(`Ошибка Storage: ${storageError.message}`);
@@ -136,7 +136,7 @@
 
             // 3. Обновляем запись в БД
             await supabaseClient
-                .from('PDF_Uploads')
+                .from('pdf_uploads')
                 .update({
                     upload_status: 'файл сохранен',
                     file_path: storageData.path
@@ -157,7 +157,7 @@
     async function loadExistingFiles() {
         try {
             const { data: files, error } = await supabaseClient
-                .from('PDF_Uploads')
+                .from('pdf_uploads')
                 .select('*')
                 .order('upload_time', { ascending: false });
 
