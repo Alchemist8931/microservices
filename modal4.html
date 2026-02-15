@@ -1,2 +1,320 @@
-<div class="helper" style="color: var(--text); font-weight: 600;">Раздел 4</div>
-<p class="helper" style="color: var(--text); margin-top: 6px;">Четвёртая вкладка пока содержит только этот текст-заглушку.</p>
+<div class="helper" style="color: var(--text); font-weight: 600;">Раздел 4 - Загрузка PDF файлов</div>
+<p class="helper" style="color: var(--text); margin-top: 6px;">Загрузите PDF файлы для обработки</p>
+
+<div class="upload-container">
+    <form id="pdf-upload-form">
+        <div class="file-input-wrapper">
+            <input type="file" id="pdf-file" name="pdf-file" accept=".pdf" />
+            <label for="pdf-file">Выберите PDF файл</label>
+        </div>
+        <button type="submit" id="upload-btn">Загрузить файл</button>
+    </form>
+
+    <div id="upload-status"></div>
+
+    <table id="files-table" class="files-table">
+        <thead>
+            <tr>
+                <th>Дата и время загрузки</th>
+                <th>Логин пользователя</th>
+                <th>Имя файла</th>
+                <th>Размер (МБ)</th>
+                <th>Статус загрузки</th>
+                <th>Скачать</th>
+                <th>Статус обработки</th>
+                <th>Скачать Excel</th>
+            </tr>
+        </thead>
+        <tbody id="files-table-body">
+            <!-- Записи будут добавляться динамически -->
+        </tbody>
+    </table>
+</div>
+
+<script>
+    // Конфигурация Supabase (замените на реальные значения)
+    const SUPABASE_URL = 'your_supabase_url';
+    const SUPABASE_ANON_KEY = 'your_supabase_anon_key';
+
+    // Инициализация Supabase
+    const { createClient } = supabase;
+    const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const uploadForm = document.getElementById('pdf-upload-form');
+        const fileInput = document.getElementById('pdf-file');
+        const uploadBtn = document.getElementById('upload-btn');
+        const statusDiv = document.getElementById('upload-status');
+        const tableBody = document.getElementById('files-table-body');
+
+        // Загрузка существующих файлов при загрузке страницы
+        loadExistingFiles();
+
+        uploadForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            if (!fileInput.files.length) {
+                statusDiv.innerHTML = '<p style="color: red;">Пожалуйста, выберите PDF файл</p>';
+                return;
+            }
+
+            const file = fileInput.files[0];
+
+            // Проверка формата файла
+            if (file.type !== 'application/pdf') {
+                statusDiv.innerHTML = '<p style="color: red;">Можно загружать только PDF файлы</p>';
+                return;
+            }
+
+            statusDiv.innerHTML = '<p style="color: blue;">Загрузка файла...</p>';
+
+            try {
+                // Получаем информацию о пользователе (в реальном приложении это будет текущий пользователь)
+                const username = 'test_user'; // В реальном приложении замените на реальный логин
+
+                // Формируем имя файла с уникальным префиксом
+                const fileName = `${Date.now()}_${username}_${file.name}`;
+
+                // Обновляем статус в БД до начала загрузки
+                const uploadTime = new Date().toISOString();
+                const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+
+                // Создаем запись в таблице с начальным статусом
+                const { data: uploadRecord, error: insertError } = await supabaseClient
+                    .from('PDF_Uploads')
+                    .insert([
+                        {
+                            upload_time: uploadTime,
+                            user_login: username,
+                            file_name: file.name,
+                            file_size_mb: parseFloat(fileSizeMB),
+                            upload_status: 'сохранение файла',
+                            processing_status: 'ожидание'
+                        }
+                    ])
+                    .select()
+                    .single();
+
+                if (insertError) throw insertError;
+
+                // Загружаем файл в Supabase Storage
+                const { data: storageData, error: storageError } = await supabaseClient
+                    .storage
+                    .from('pdf_files') // имя bucket'а
+                    .upload(fileName, file, {
+                        cacheControl: '3600',
+                        upsert: false
+                    });
+
+                if (storageError) {
+                    // Обновляем статус на ошибку
+                    await supabaseClient
+                        .from('PDF_Uploads')
+                        .update({ upload_status: 'ошибка загрузки' })
+                        .eq('id', uploadRecord.id);
+
+                    throw storageError;
+                }
+
+                // Обновляем статус на "файл сохранен" после успешной загрузки
+                await supabaseClient
+                    .from('PDF_Uploads')
+                    .update({
+                        upload_status: 'файл сохранен',
+                        file_path: storageData.path // сохраняем путь к файлу
+                    })
+                    .eq('id', uploadRecord.id);
+
+                statusDiv.innerHTML = '<p style="color: green;">Файл успешно загружен!</p>';
+
+                // Очищаем форму
+                fileInput.value = '';
+
+                // Перезагружаем таблицу
+                loadExistingFiles();
+
+            } catch (error) {
+                console.error('Ошибка при загрузке:', error);
+                statusDiv.innerHTML = `<p style="color: red;">Ошибка: ${error.message}</p>`;
+            }
+        });
+
+        // Функция для загрузки существующих файлов
+        async function loadExistingFiles() {
+            try {
+                const { data: files, error } = await supabaseClient
+                    .from('PDF_Uploads')
+                    .select('*')
+                    .order('upload_time', { ascending: false });
+
+                if (error) throw error;
+
+                tableBody.innerHTML = '';
+
+                files.forEach(file => {
+                    const row = document.createElement('tr');
+
+                    // Формируем кнопки действий
+                    let downloadButton = '';
+                    if (file.file_path && file.upload_status === 'файл сохранен') {
+                        downloadButton = `
+                            <button onclick="downloadFile('${file.file_path}', '${file.file_name}')">Скачать PDF</button>
+                        `;
+                    } else {
+                        downloadButton = '-';
+                    }
+
+                    let excelDownloadButton = '';
+                    if (file.processing_status === 'парсинг выполнен' && file.excel_path) {
+                        excelDownloadButton = `
+                            <button onclick="downloadExcel('${file.excel_path}', '${file.file_name.replace('.pdf', '.xlsx')}')">Скачать Excel</button>
+                        `;
+                    } else {
+                        excelDownloadButton = '-';
+                    }
+
+                    row.innerHTML = `
+                        <td>${new Date(file.upload_time).toLocaleString()}</td>
+                        <td>${file.user_login}</td>
+                        <td>${file.file_name}</td>
+                        <td>${file.file_size_mb} МБ</td>
+                        <td>${file.upload_status}</td>
+                        <td>${downloadButton}</td>
+                        <td>${file.processing_status}</td>
+                        <td>${excelDownloadButton}</td>
+                    `;
+
+                    tableBody.appendChild(row);
+                });
+
+            } catch (error) {
+                console.error('Ошибка при загрузке файлов:', error);
+            }
+        }
+
+        // Глобальные функции для скачивания файлов
+        window.downloadFile = async function(filePath, fileName) {
+            try {
+                const { data, error } = await supabaseClient
+                    .storage
+                    .from('pdf_files')
+                    .download(filePath);
+
+                if (error) throw error;
+
+                const url = URL.createObjectURL(data);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            } catch (error) {
+                console.error('Ошибка при скачивании файла:', error);
+                alert('Ошибка при скачивании файла');
+            }
+        };
+
+        window.downloadExcel = async function(excelPath, fileName) {
+            try {
+                const { data, error } = await supabaseClient
+                    .storage
+                    .from('excel_outputs')
+                    .download(excelPath);
+
+                if (error) throw error;
+
+                const url = URL.createObjectURL(data);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            } catch (error) {
+                console.error('Ошибка при скачивании Excel:', error);
+                alert('Ошибка при скачивании Excel файла');
+            }
+        };
+    });
+</script>
+
+<style>
+    .upload-container {
+        padding: 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .file-input-wrapper {
+        margin-bottom: 20px;
+    }
+
+    .file-input-wrapper input[type="file"] {
+        display: none;
+    }
+
+    .file-input-wrapper label {
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: white;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .file-input-wrapper label:hover {
+        background-color: #0056b3;
+    }
+
+    #upload-btn {
+        padding: 10px 20px;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-left: 10px;
+    }
+
+    #upload-btn:hover {
+        background-color: #218838;
+    }
+
+    #upload-status {
+        margin: 15px 0;
+    }
+
+    .files-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+
+    .files-table th,
+    .files-table td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+    }
+
+    .files-table th {
+        background-color: #f2f2f2;
+    }
+
+    button {
+        padding: 5px 10px;
+        background-color: #17a2b8;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+    }
+
+    button:hover {
+        background-color: #138496;
+    }
+</style>
