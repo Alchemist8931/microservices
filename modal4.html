@@ -22,7 +22,7 @@
                 <th>Дата и время</th>
                 <th>Пользователь</th>
                 <th>Имя файла</th>
-                <th>Страниц</th>
+                <th>Размер (МБ)</th>
                 <th>Статус</th>
                 <th>Excel</th>
             </tr>
@@ -52,10 +52,9 @@
     (function() {
         const STATUS_DIV = document.getElementById('upload-status');
         
-        // Функция загрузки скрипта
         function loadScript(url) {
             return new Promise((resolve, reject) => {
-                if (window.pdfjsLib) return resolve(); // Уже загружен
+                if (window.pdfjsLib) return resolve();
                 const script = document.createElement('script');
                 script.src = url;
                 script.onload = () => resolve();
@@ -64,21 +63,16 @@
             });
         }
 
-        // ИНИЦИАЛИЗАЦИЯ
         loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js')
             .then(() => {
                 console.log("PDF.js loaded successfully");
-                // Устанавливаем Worker
                 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-                
-                // Запускаем основной код
                 initUploader();
             })
             .catch(err => {
                 STATUS_DIV.innerHTML = '<p style="color: red;">Ошибка загрузки библиотеки PDF.js: ' + err.message + '</p>';
             });
 
-        // === ОСНОВНОЙ КОД (выполняется после загрузки библиотеки) ===
         function initUploader() {
             const SUPABASE_URL = "https://ncdwlmgwljjwpuawlssr.supabase.co";
             const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jZHdsbWd3bGpqd3B1YXdsc3NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0NTQxNDksImV4cCI6MjA4MzAzMDE0OX0.rrIznUflWydylTnUZvOxOkeF9eMp91qNN4Bjq2gXRL8";
@@ -114,12 +108,16 @@
                 fileInput.disabled = true;
 
                 try {
-                    // 1. Создаем запись в БД
+                    // 1. Подсчет размера файла (ОБЯЗАТЕЛЬНО)
+                    const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+
+                    // 2. Создаем запись в БД (с размером файла)
                     const { data: record, error: dbErr } = await supabaseClient
                         .from('pdf_uploads')
                         .insert([{
                             user_login: user.email,
                             file_name: file.name,
+                            file_size_mb: parseFloat(fileSizeMB), // ДОБАВЛЕНО
                             upload_status: 'конвертация',
                             processing_status: 'загрузка изображений'
                         }])
@@ -128,7 +126,7 @@
                     if (dbErr) throw dbErr;
                     const recordId = record.id;
 
-                    // 2. Конвертация
+                    // 3. Конвертация
                     const imagePaths = await convertPdfToImages(file, recordId, user.email, (progress, text) => {
                         progressBar.style.width = `${progress}%`;
                         progressText.innerText = text;
@@ -137,7 +135,7 @@
                     progressText.innerText = 'Отправка задачи в AI...';
                     progressBar.style.width = '90%';
 
-                    // 3. Вызов функции
+                    // 4. Вызов функции
                     const funcRes = await supabaseClient.functions.invoke('pdf-processor', {
                         body: { 
                             record_id: recordId, 
@@ -225,16 +223,15 @@
                         <td>${new Date(file.upload_time).toLocaleString()}</td>
                         <td>${file.user_login}</td>
                         <td>${file.file_name}</td>
-                        <td>${file.total_chunks || '-'}</td>
+                        <td>${file.file_size_mb}</td>
                         <td>${file.upload_status}</td>
                         <td>${excelBtn}</td>
                     `;
                     tableBody.appendChild(row);
                 });
             }
-        } // Конец initUploader
+        }
         
-        // Глобальные функции
         window.downloadExcel = async function(path, name) {
             const supabaseClient = window.supabaseClient || supabase.createClient("https://ncdwlmgwljjwpuawlssr.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jZHdsbWd3bGpqd3B1YXdsc3NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0NTQxNDksImV4cCI6MjA4MzAzMDE0OX0.rrIznUflWydylTnUZvOxOkeF9eMp91qNN4Bjq2gXRL8");
             const { data, error } = await supabaseClient.storage.from('excel_outputs').download(path);
