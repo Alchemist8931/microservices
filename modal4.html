@@ -1,8 +1,8 @@
 <div class="helper" style="color: var(--text); font-weight: 600;">Раздел 4 - Загрузка PDF файлов</div>
-<p class="helper" style="color: var(--text); margin-top: 6px;">Загрузите PDF файлы для обработки</p>
+<p class="helper" style="color: var(--text); margin-top: 6px;">Загружайте финансовую отчетность (PDF). Конвертация в изображения происходит на вашем устройстве для максимальной точности OCR.</p>
 
-<!-- Библиотека Supabase уже подключена в index.html, этот тег можно удалить -->
-<!-- <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script> -->
+<!-- Подключаем PDF.js для рендеринга на клиенте -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
 <div class="upload-container">
     <div class="file-input-wrapper">
@@ -10,299 +10,223 @@
         <label for="pdf-file">Выберите PDF файл</label>
     </div>
 
+    <!-- Прогресс бар -->
+    <div id="progress-container" style="margin-top: 15px; display: none;">
+        <div style="background: #eee; border-radius: 4px; overflow: hidden;">
+            <div id="progress-bar" style="width: 0%; height: 20px; background: #28a745; text-align: center; color: white; font-size: 12px; transition: width 0.3s;"></div>
+        </div>
+        <p id="progress-text" style="font-size: 12px; color: #666; margin-top: 5px;">Подготовка...</p>
+    </div>
+
     <div id="upload-status"></div>
 
     <table id="files-table" class="files-table">
         <thead>
             <tr>
-                <th>Дата и время загрузки</th>
-                <th>Логин пользователя</th>
+                <th>Дата и время</th>
+                <th>Пользователь</th>
                 <th>Имя файла</th>
-                <th>Размер (МБ)</th>
-                <th>Статус загрузки</th>
-                <th>Скачать</th>
-                <th>Статус обработки</th>
-                <th>Скачать Excel</th>
+                <th>Страниц</th>
+                <th>Статус</th>
+                <th>Excel</th>
             </tr>
         </thead>
         <tbody id="files-table-body">
-            <!-- Записи будут добавляться динамически -->
+            <!-- Записи динамически -->
         </tbody>
     </table>
 </div>
 
 <style>
-    .upload-container {
-        padding: 20px;
-        max-width: 1200px;
-        margin: 0 auto;
-    }
-
-    .file-input-wrapper {
-        margin-bottom: 10px;
-    }
-
-    .file-input-wrapper input[type="file"] {
-        display: none;
-    }
-
+    .upload-container { padding: 20px; max-width: 1200px; margin: 0 auto; }
+    .file-input-wrapper { margin-bottom: 10px; }
+    .file-input-wrapper input[type="file"] { display: none; }
     .file-input-wrapper label {
-        display: inline-block;
-        padding: 10px 20px;
-        background-color: #007bff;
-        color: white;
-        border-radius: 4px;
-        cursor: pointer;
+        display: inline-block; padding: 10px 20px; background-color: #007bff;
+        color: white; border-radius: 4px; cursor: pointer; font-weight: 600;
     }
-
-    .file-input-wrapper label:hover {
-        background-color: #0056b3;
-    }
-
-    #upload-btn {
-        padding: 10px 20px;
-        background-color: #28a745;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        margin-left: 10px;
-    }
-
-    #upload-btn:hover {
-        background-color: #218838;
-    }
-
-    #upload-status {
-        margin: 15px 0;
-    }
-
-    .files-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 20px;
-    }
-
-    .files-table th,
-    .files-table td {
-        border: 1px solid #ddd;
-        padding: 8px;
-        text-align: left;
-    }
-
-    .files-table th {
-        background-color: #f2f2f2;
-    }
-
-    button {
-        padding: 5px 10px;
-        background-color: #17a2b8;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 12px;
-    }
-
-    button:hover {
-        background-color: #138496;
-    }
+    .file-input-wrapper label:hover { background-color: #0056b3; }
+    .files-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    .files-table th, .files-table td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 13px; }
+    .files-table th { background-color: #f2f2f2; }
+    button { padding: 5px 10px; background-color: #17a2b8; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; }
+    button:hover { background-color: #138496; }
+    button:disabled { background-color: #ccc; cursor: not-allowed; }
 </style>
 
 <script>
     (function() {
-        // Конфигурация Supabase (используем глобальный клиент, если есть)
+        // Настройка PDF.js Worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
         const SUPABASE_URL = "https://ncdwlmgwljjwpuawlssr.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jZHdsbWd3bGpqd3B1YXdsc3NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0NTQxNDksImV4cCI6MjA4MzAzMDE0OX0.rrIznUflWydylTnUZvOxOkeF9eMp91qNN4Bjq2gXRL8";
-
-        // Используем клиент из index.html или создаем новый, если его нет
         const supabaseClient = window.supabaseClient || supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Получаем элементы
         const fileInput = document.getElementById('pdf-file');
         const statusDiv = document.getElementById('upload-status');
         const tableBody = document.getElementById('files-table-body');
+        const progressContainer = document.getElementById('progress-container');
+        const progressBar = document.getElementById('progress-bar');
+        const progressText = document.getElementById('progress-text');
 
-        // Сразу загружаем список файлов
         loadExistingFiles();
 
-        // Обработка выбора файла
         fileInput.addEventListener('change', async function(e) {
-            console.log("File input changed:", fileInput.files);
-            if (!fileInput.files.length) {
-                console.log("No files selected");
-                return;
-            }
-
+            if (!fileInput.files.length) return;
             const file = fileInput.files[0];
-            console.log("Selected file:", file);
 
             if (file.type !== 'application/pdf') {
-                statusDiv.innerHTML = '<p style="color: red;">Можно загружать только PDF файлы</p>';
-                fileInput.value = '';
+                statusDiv.innerHTML = '<p style="color: red;">Только PDF файлы</p>';
                 return;
             }
 
-            statusDiv.innerHTML = '<p style="color: blue;">Проверка авторизации и загрузка...</p>';
+            // Проверка авторизации
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (!user) {
+                statusDiv.innerHTML = '<p style="color: red;">Ошибка: Вы не авторизованы.</p>';
+                return;
+            }
+
+            // Инициализация UI
+            statusDiv.innerHTML = '';
+            progressContainer.style.display = 'block';
+            progressBar.style.width = '0%';
+            progressText.innerText = 'Чтение PDF...';
+            fileInput.disabled = true;
 
             try {
-                // ВАЖНО: Проверяем, авторизован ли пользователь
-                const { data: { user } } = await supabaseClient.auth.getUser();
+                // 1. Создаем запись в БД (статус: конвертация)
+                const { data: record, error: dbErr } = await supabaseClient
+                    .from('pdf_uploads')
+                    .insert([{
+                        user_login: user.email,
+                        file_name: file.name,
+                        upload_status: 'конвертация',
+                        processing_status: 'загрузка изображений'
+                    }])
+                    .select().single();
                 
-                if (!user) {
-                    console.warn("Пользователь не авторизован! Загрузка может не сработать.");
-                    statusDiv.innerHTML = '<p style="color: red;">Ошибка: Вы не авторизованы.</p>';
-                    return; 
-                }
+                if (dbErr) throw dbErr;
+                const recordId = record.id;
 
-                const username = user.email;
+                // 2. Конвертируем PDF в изображения на клиенте
+                const imagePaths = await convertPdfToImages(file, recordId, user.email, (progress, text) => {
+                    progressBar.style.width = `${progress}%`;
+                    progressText.innerText = text;
+                });
 
-                // Create a safe filename for storage
-                const safeUsername = username.replace(/[^a-zA-Z0-9._-]/g, '_');
-                const safeFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-                const fileName = `${Date.now()}_${safeUsername}_${safeFileName}`;
-                const uploadTime = new Date().toISOString();
-                const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+                progressText.innerText = 'Отправка задачи в AI...';
+                progressBar.style.width = '90%';
 
-                statusDiv.innerHTML = '<p style="color: blue;">Создание записи в БД...</p>';
+                // 3. Вызываем Edge Function с списком путей
+                const funcRes = await supabaseClient.functions.invoke('pdf-processor', {
+                    body: { 
+                        record_id: recordId, 
+                        image_paths: imagePaths 
+                    }
+                });
 
-                // 1. Создаем запись в таблице
-                const { data: uploadRecord, error: insertError } = await supabaseClient
-                    .from('pdf_uploads')
-                    .insert([
-                        {
-                            upload_time: uploadTime,
-                            user_login: username,
-                            file_name: file.name,
-                            file_size_mb: parseFloat(fileSizeMB),
-                            upload_status: 'сохранение файла',
-                            processing_status: 'задача в работе'
-                        }
-                    ])
-                    .select()
-                    .single();
+                if (funcRes.error) throw new Error(funcRes.error.message);
 
-                if (insertError) {
-                    console.error("Insert error:", insertError);
-                    throw new Error(`Ошибка БД: ${insertError.message}`);
-                }
-
-                const recordId = uploadRecord.id;
-                console.log("Database record created:", recordId);
-
-                statusDiv.innerHTML = '<p style="color: blue;">Загрузка файла в хранилище...</p>';
-
-                // 2. Загружаем файл в Storage
-                const { data: storageData, error: storageError } = await supabaseClient
-                    .storage
-                    .from('pdf_files')
-                    .upload(fileName, file, {
-                        cacheControl: '3600',
-                        upsert: false
-                    });
-
-                if (storageError) {
-                    console.error("Storage error:", storageError);
-                    // Откатываем статус в БД
-                    await supabaseClient
-                        .from('pdf_uploads')
-                        .update({ upload_status: 'ошибка хранения', processing_status: 'ошибка' })
-                        .eq('id', recordId);
-                    throw new Error(`Ошибка Storage: ${storageError.message}`);
-                }
-
-                console.log("File uploaded to storage:", storageData);
-
-                // 3. Обновляем запись в БД
-                await supabaseClient
-                    .from('pdf_uploads')
-                    .update({
-                        upload_status: 'файл сохранен',
-                        file_path: storageData.path
-                    })
+                // 4. Обновляем статус
+                await supabaseClient.from('pdf_uploads')
+                    .update({ upload_status: 'файл обработан', total_chunks: imagePaths.length })
                     .eq('id', recordId);
 
-                statusDiv.innerHTML = '<p style="color: green;">Файл успешно загружен!</p>';
-                fileInput.value = '';
+                statusDiv.innerHTML = '<p style="color: green;">Успешно отправлено в обработку!</p>';
+                progressBar.style.width = '100%';
+                progressText.innerText = 'Готово!';
+                
                 loadExistingFiles();
 
-            } catch (error) {
-                console.error('Полная ошибка:', error);
-                statusDiv.innerHTML = `<p style="color: red;">Ошибка: ${error.message}</p>`;
+            } catch (err) {
+                console.error(err);
+                statusDiv.innerHTML = `<p style="color: red;">Ошибка: ${err.message}</p>`;
+                progressContainer.style.display = 'none';
+            } finally {
+                fileInput.disabled = false;
+                fileInput.value = '';
             }
         });
 
-        // Функция загрузки списка файлов
-        async function loadExistingFiles() {
-            try {
-                const { data: files, error } = await supabaseClient
-                    .from('pdf_uploads')
-                    .select('*')
-                    .order('upload_time', { ascending: false });
+        // Функция конвертации PDF в картинки
+        async function convertPdfToImages(file, recordId, userEmail, onProgress) {
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            const totalPages = pdf.numPages;
+            
+            const imagePaths = [];
+            const safeEmail = userEmail.replace(/[^a-zA-Z0-9]/g, '_');
+            const baseFolder = `vision_chunks/${recordId}`;
 
-                if (error) throw error;
+            // Группируем по 2 страницы для экономии запросов (можно по 1)
+            for (let i = 1; i <= totalPages; i++) {
+                onProgress(Math.round((i / totalPages) * 80), `Рендер страницы ${i}/${totalPages}...`);
+                
+                const page = await pdf.getPage(i);
+                const scale = 2.0; // Качество
+                const viewport = page.getViewport({ scale });
 
-                tableBody.innerHTML = '';
+                const canvas = document.createElement('canvas');
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                const ctx = canvas.getContext('2d');
 
-                if (!files || files.length === 0) {
-                    tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center">Нет загруженных файлов</td></tr>';
-                    return;
-                }
+                await page.render({ canvasContext: ctx, viewport }).promise;
+                
+                // Конвертируем в Blob (JPEG для экономии места)
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
+                
+                // Загружаем в Storage
+                const fileName = `${baseFolder}/page_${i}.jpg`;
+                const { error: uploadErr } = await supabaseClient.storage
+                    .from('pdf_images') // Убедитесь, что бакет pdf_images создан
+                    .upload(fileName, blob, { upsert: true });
 
-                files.forEach(file => {
-                    const row = document.createElement('tr');
-                    let downloadButton = file.file_path 
-                        ? `<button onclick="window.downloadFile('${file.file_path}', '${file.file_name}')">Скачать PDF</button>` 
-                        : '-';
-                    
-                    let excelButton = (file.processing_status === 'парсинг выполнен' && file.excel_path) 
-                        ? `<button onclick="window.downloadExcel('${file.excel_path}', '${file.file_name.replace('.pdf', '.xlsx')}')">Скачать Excel</button>` 
-                        : '-';
-
-                    row.innerHTML = `
-                        <td>${new Date(file.upload_time).toLocaleString()}</td>
-                        <td>${file.user_login}</td>
-                        <td>${file.file_name}</td>
-                        <td>${file.file_size_mb} МБ</td>
-                        <td>${file.upload_status}</td>
-                        <td>${downloadButton}</td>
-                        <td>${file.processing_status}</td>
-                        <td>${excelButton}</td>
-                    `;
-                    tableBody.appendChild(row);
-                });
-            } catch (error) {
-                console.error('Ошибка при загрузке списка:', error);
+                if (uploadErr) throw new Error(`Upload error page ${i}: ${uploadErr.message}`);
+                imagePaths.push(fileName);
             }
+            
+            return imagePaths;
         }
 
-        // Глобальные функции для скачивания (экспортируем в window для доступа из onclick)
-        window.downloadFile = async function(filePath, fileName) {
-            try {
-                const { data, error } = await supabaseClient.storage.from('pdf_files').download(filePath);
-                if (error) throw error;
-                const url = URL.createObjectURL(data);
-                const a = document.createElement('a');
-                a.href = url; a.download = fileName; document.body.appendChild(a); a.click(); document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            } catch (error) {
-                console.error('Ошибка скачивания:', error);
-                alert('Ошибка при скачивании файла: ' + error.message);
-            }
-        };
+        async function loadExistingFiles() {
+            const { data: files, error } = await supabaseClient
+                .from('pdf_uploads')
+                .select('*')
+                .order('upload_time', { ascending: false });
 
-        window.downloadExcel = async function(excelPath, fileName) {
-            try {
-                const { data, error } = await supabaseClient.storage.from('excel_outputs').download(excelPath);
-                if (error) throw error;
-                const url = URL.createObjectURL(data);
-                const a = document.createElement('a');
-                a.href = url; a.download = fileName; document.body.appendChild(a); a.click(); document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            } catch (error) {
-                console.error('Ошибка скачивания Excel:', error);
-                alert('Ошибка при скачивании Excel: ' + error.message);
+            if (error) { console.error(error); return; }
+            tableBody.innerHTML = '';
+            if (!files?.length) {
+                tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center">Нет записей</td></tr>';
+                return;
             }
+
+            files.forEach(file => {
+                const row = document.createElement('tr');
+                let excelBtn = (file.processing_status === 'парсинг выполнен' && file.excel_path)
+                    ? `<button onclick="window.downloadExcel('${file.excel_path}', '${file.file_name.replace('.pdf', '.xlsx')}')">Excel</button>`
+                    : `<span style="color:#999; font-size:11px;">${file.processing_status || 'в процессе'}</span>`;
+
+                row.innerHTML = `
+                    <td>${new Date(file.upload_time).toLocaleString()}</td>
+                    <td>${file.user_login}</td>
+                    <td>${file.file_name}</td>
+                    <td>${file.total_chunks || '-'}</td>
+                    <td>${file.upload_status}</td>
+                    <td>${excelBtn}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        window.downloadExcel = async function(path, name) {
+            const { data, error } = await supabaseClient.storage.from('excel_outputs').download(path);
+            if (error) return alert("Ошибка скачивания");
+            const url = URL.createObjectURL(data);
+            const a = document.createElement('a'); a.href = url; a.download = name; a.click(); URL.revokeObjectURL(url);
         };
     })();
 </script>
