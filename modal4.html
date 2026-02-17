@@ -110,6 +110,7 @@
                 try {
                     const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
 
+                    // 1. Создаем запись
                     const { data: record, error: dbErr } = await supabaseClient
                         .from('pdf_uploads')
                         .insert([{
@@ -124,6 +125,7 @@
                     if (dbErr) throw dbErr;
                     const recordId = record.id;
 
+                    // 2. Конвертируем
                     const imagePaths = await convertPdfToImages(file, recordId, user.email, (progress, text) => {
                         progressBar.style.width = `${progress}%`;
                         progressText.innerText = text;
@@ -132,6 +134,7 @@
                     progressText.innerText = 'Отправка задачи в AI...';
                     progressBar.style.width = '90%';
 
+                    // 3. Вызываем функцию
                     const funcRes = await supabaseClient.functions.invoke('pdf-processor', {
                         body: { 
                             record_id: recordId, 
@@ -141,14 +144,13 @@
 
                     if (funcRes.error) throw new Error(funcRes.error.message);
 
-                    await supabaseClient.from('pdf_uploads')
-                        .update({ upload_status: 'файл обработан', total_chunks: imagePaths.length })
-                        .eq('id', recordId);
-
-                    STATUS_DIV.innerHTML = '<p style="color: green;">Успешно отправлено!</p>';
-                    progressBar.style.width = '100%';
-                    progressText.innerText = 'Готово!';
+                    // УБРАЛИ ЛИШНЕЕ ОБНОВЛЕНИЕ ЗДЕСЬ. Бэкенд сам обновит статус на "выполнено" когда все чанки придут.
                     
+                    STATUS_DIV.innerHTML = '<p style="color: green;">Файл отправлен в обработку. Ожидайте результата.</p>';
+                    progressBar.style.width = '100%';
+                    progressText.innerText = 'Ожидание обработки...';
+                    
+                    // Обновляем таблицу, но статус будет "задача в работе"
                     loadExistingFiles();
 
                 } catch (err) {
@@ -187,11 +189,10 @@
                     
                     const fileName = `${baseFolder}/page_${i}.jpg`;
                     
-                    // ИСПРАВЛЕНО: Явно указываем contentType
                     const { error: uploadErr } = await supabaseClient.storage
                         .from('pdf_files') 
                         .upload(fileName, blob, { 
-                            contentType: 'image/jpeg', // <--- ВАЖНО
+                            contentType: 'image/jpeg',
                             upsert: true 
                         });
 
@@ -216,6 +217,7 @@
 
                 files.forEach(file => {
                     const row = document.createElement('tr');
+                    // Показываем кнопку ТОЛЬКО если статус 'парсинг выполнен' И есть путь к файлу
                     let excelBtn = (file.processing_status === 'парсинг выполнен' && file.excel_path)
                         ? `<button onclick="window.downloadExcel('${file.excel_path}', '${file.file_name.replace('.pdf', '.xlsx')}')">Excel</button>`
                         : `<span style="color:#999; font-size:11px;">${file.processing_status || 'в процессе'}</span>`;
