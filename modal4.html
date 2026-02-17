@@ -1,5 +1,5 @@
 <div class="helper" style="color: var(--text); font-weight: 600;">Раздел 4 - Загрузка PDF файлов</div>
-<p class="helper" style="color: var(--text); margin-top: 6px;">_</p>
+<p class="helper" style="color: var(--text); margin-top: 6px;">Загружайте финансовую отчетность (PDF). Конвертация в изображения происходит на вашем устройстве.</p>
 
 <div class="upload-container">
     <div class="file-input-wrapper">
@@ -108,18 +108,19 @@
                 fileInput.disabled = true;
 
                 try {
-                    // 1. Подсчет размера файла (ОБЯЗАТЕЛЬНО)
+                    // 1. Подсчет размера файла
                     const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
 
-                    // 2. Создаем запись в БД (с размером файла)
+                    // 2. Создаем запись в БД
+                    // ИСПОЛЬЗУЕМ СТАТУС 'задача в работе' (КОРРЕКТНЫЙ ДЛЯ CHECK CONSTRAINT)
                     const { data: record, error: dbErr } = await supabaseClient
                         .from('pdf_uploads')
                         .insert([{
                             user_login: user.email,
                             file_name: file.name,
-                            file_size_mb: parseFloat(fileSizeMB), // ДОБАВЛЕНО
+                            file_size_mb: parseFloat(fileSizeMB),
                             upload_status: 'конвертация',
-                            processing_status: 'загрузка изображений'
+                            processing_status: 'задача в работе' // ИСПРАВЛЕНО
                         }])
                         .select().single();
                     
