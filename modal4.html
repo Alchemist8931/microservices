@@ -110,23 +110,20 @@
                 try {
                     const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
 
-                    // 2. Создаем запись в БД
-                    // ИСПРАВЛЕНО: используем корректные статусы 'сохранение файла' и 'задача в работе'
                     const { data: record, error: dbErr } = await supabaseClient
                         .from('pdf_uploads')
                         .insert([{
                             user_login: user.email,
                             file_name: file.name,
                             file_size_mb: parseFloat(fileSizeMB),
-                            upload_status: 'сохранение файла',    // ИСПРАВЛЕНО
-                            processing_status: 'задача в работе'  // ИСПРАВЛЕНО
+                            upload_status: 'сохранение файла',
+                            processing_status: 'задача в работе'
                         }])
                         .select().single();
                     
                     if (dbErr) throw dbErr;
                     const recordId = record.id;
 
-                    // 3. Конвертация
                     const imagePaths = await convertPdfToImages(file, recordId, user.email, (progress, text) => {
                         progressBar.style.width = `${progress}%`;
                         progressText.innerText = text;
@@ -135,7 +132,6 @@
                     progressText.innerText = 'Отправка задачи в AI...';
                     progressBar.style.width = '90%';
 
-                    // 4. Вызов функции
                     const funcRes = await supabaseClient.functions.invoke('pdf-processor', {
                         body: { 
                             record_id: recordId, 
@@ -190,8 +186,10 @@
                     const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
                     
                     const fileName = `${baseFolder}/page_${i}.jpg`;
+                    
+                    // ИСПРАВЛЕНО: Используем существующий бакет 'pdf_files'
                     const { error: uploadErr } = await supabaseClient.storage
-                        .from('pdf_images') 
+                        .from('pdf_files') 
                         .upload(fileName, blob, { upsert: true });
 
                     if (uploadErr) throw new Error(`Upload error page ${i}: ${uploadErr.message}`);
