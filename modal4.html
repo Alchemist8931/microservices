@@ -108,19 +108,18 @@
                 fileInput.disabled = true;
 
                 try {
-                    // 1. Подсчет размера файла
                     const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
 
                     // 2. Создаем запись в БД
-                    // ИСПОЛЬЗУЕМ СТАТУС 'задача в работе' (КОРРЕКТНЫЙ ДЛЯ CHECK CONSTRAINT)
+                    // ИСПРАВЛЕНО: используем корректные статусы 'сохранение файла' и 'задача в работе'
                     const { data: record, error: dbErr } = await supabaseClient
                         .from('pdf_uploads')
                         .insert([{
                             user_login: user.email,
                             file_name: file.name,
                             file_size_mb: parseFloat(fileSizeMB),
-                            upload_status: 'конвертация',
-                            processing_status: 'задача в работе' // ИСПРАВЛЕНО
+                            upload_status: 'сохранение файла',    // ИСПРАВЛЕНО
+                            processing_status: 'задача в работе'  // ИСПРАВЛЕНО
                         }])
                         .select().single();
                     
