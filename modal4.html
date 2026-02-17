@@ -1,8 +1,5 @@
 <div class="helper" style="color: var(--text); font-weight: 600;">Раздел 4 - Загрузка PDF файлов</div>
-<p class="helper" style="color: var(--text); margin-top: 6px;">Загружайте финансовую отчетность (PDF). Конвертация в изображения происходит на вашем устройстве для максимальной точности OCR.</p>
-
-<!-- Подключаем PDF.js для рендеринга на клиенте -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<p class="helper" style="color: var(--text); margin-top: 6px;">_</p>
 
 <div class="upload-container">
     <div class="file-input-wrapper">
@@ -10,7 +7,6 @@
         <label for="pdf-file">Выберите PDF файл</label>
     </div>
 
-    <!-- Прогресс бар -->
     <div id="progress-container" style="margin-top: 15px; display: none;">
         <div style="background: #eee; border-radius: 4px; overflow: hidden;">
             <div id="progress-bar" style="width: 0%; height: 20px; background: #28a745; text-align: center; color: white; font-size: 12px; transition: width 0.3s;"></div>
@@ -31,9 +27,7 @@
                 <th>Excel</th>
             </tr>
         </thead>
-        <tbody id="files-table-body">
-            <!-- Записи динамически -->
-        </tbody>
+        <tbody id="files-table-body"></tbody>
     </table>
 </div>
 
@@ -56,173 +50,193 @@
 
 <script>
     (function() {
-        // Настройка PDF.js Worker
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-
-        const SUPABASE_URL = "https://ncdwlmgwljjwpuawlssr.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jZHdsbWd3bGpqd3B1YXdsc3NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0NTQxNDksImV4cCI6MjA4MzAzMDE0OX0.rrIznUflWydylTnUZvOxOkeF9eMp91qNN4Bjq2gXRL8";
-        const supabaseClient = window.supabaseClient || supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        const fileInput = document.getElementById('pdf-file');
-        const statusDiv = document.getElementById('upload-status');
-        const tableBody = document.getElementById('files-table-body');
-        const progressContainer = document.getElementById('progress-container');
-        const progressBar = document.getElementById('progress-bar');
-        const progressText = document.getElementById('progress-text');
-
-        loadExistingFiles();
-
-        fileInput.addEventListener('change', async function(e) {
-            if (!fileInput.files.length) return;
-            const file = fileInput.files[0];
-
-            if (file.type !== 'application/pdf') {
-                statusDiv.innerHTML = '<p style="color: red;">Только PDF файлы</p>';
-                return;
-            }
-
-            // Проверка авторизации
-            const { data: { user } } = await supabaseClient.auth.getUser();
-            if (!user) {
-                statusDiv.innerHTML = '<p style="color: red;">Ошибка: Вы не авторизованы.</p>';
-                return;
-            }
-
-            // Инициализация UI
-            statusDiv.innerHTML = '';
-            progressContainer.style.display = 'block';
-            progressBar.style.width = '0%';
-            progressText.innerText = 'Чтение PDF...';
-            fileInput.disabled = true;
-
-            try {
-                // 1. Создаем запись в БД (статус: конвертация)
-                const { data: record, error: dbErr } = await supabaseClient
-                    .from('pdf_uploads')
-                    .insert([{
-                        user_login: user.email,
-                        file_name: file.name,
-                        upload_status: 'конвертация',
-                        processing_status: 'загрузка изображений'
-                    }])
-                    .select().single();
-                
-                if (dbErr) throw dbErr;
-                const recordId = record.id;
-
-                // 2. Конвертируем PDF в изображения на клиенте
-                const imagePaths = await convertPdfToImages(file, recordId, user.email, (progress, text) => {
-                    progressBar.style.width = `${progress}%`;
-                    progressText.innerText = text;
-                });
-
-                progressText.innerText = 'Отправка задачи в AI...';
-                progressBar.style.width = '90%';
-
-                // 3. Вызываем Edge Function с списком путей
-                const funcRes = await supabaseClient.functions.invoke('pdf-processor', {
-                    body: { 
-                        record_id: recordId, 
-                        image_paths: imagePaths 
-                    }
-                });
-
-                if (funcRes.error) throw new Error(funcRes.error.message);
-
-                // 4. Обновляем статус
-                await supabaseClient.from('pdf_uploads')
-                    .update({ upload_status: 'файл обработан', total_chunks: imagePaths.length })
-                    .eq('id', recordId);
-
-                statusDiv.innerHTML = '<p style="color: green;">Успешно отправлено в обработку!</p>';
-                progressBar.style.width = '100%';
-                progressText.innerText = 'Готово!';
-                
-                loadExistingFiles();
-
-            } catch (err) {
-                console.error(err);
-                statusDiv.innerHTML = `<p style="color: red;">Ошибка: ${err.message}</p>`;
-                progressContainer.style.display = 'none';
-            } finally {
-                fileInput.disabled = false;
-                fileInput.value = '';
-            }
-        });
-
-        // Функция конвертации PDF в картинки
-        async function convertPdfToImages(file, recordId, userEmail, onProgress) {
-            const arrayBuffer = await file.arrayBuffer();
-            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-            const totalPages = pdf.numPages;
-            
-            const imagePaths = [];
-            const safeEmail = userEmail.replace(/[^a-zA-Z0-9]/g, '_');
-            const baseFolder = `vision_chunks/${recordId}`;
-
-            // Группируем по 2 страницы для экономии запросов (можно по 1)
-            for (let i = 1; i <= totalPages; i++) {
-                onProgress(Math.round((i / totalPages) * 80), `Рендер страницы ${i}/${totalPages}...`);
-                
-                const page = await pdf.getPage(i);
-                const scale = 2.0; // Качество
-                const viewport = page.getViewport({ scale });
-
-                const canvas = document.createElement('canvas');
-                canvas.width = viewport.width;
-                canvas.height = viewport.height;
-                const ctx = canvas.getContext('2d');
-
-                await page.render({ canvasContext: ctx, viewport }).promise;
-                
-                // Конвертируем в Blob (JPEG для экономии места)
-                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
-                
-                // Загружаем в Storage
-                const fileName = `${baseFolder}/page_${i}.jpg`;
-                const { error: uploadErr } = await supabaseClient.storage
-                    .from('pdf_images') // Убедитесь, что бакет pdf_images создан
-                    .upload(fileName, blob, { upsert: true });
-
-                if (uploadErr) throw new Error(`Upload error page ${i}: ${uploadErr.message}`);
-                imagePaths.push(fileName);
-            }
-            
-            return imagePaths;
-        }
-
-        async function loadExistingFiles() {
-            const { data: files, error } = await supabaseClient
-                .from('pdf_uploads')
-                .select('*')
-                .order('upload_time', { ascending: false });
-
-            if (error) { console.error(error); return; }
-            tableBody.innerHTML = '';
-            if (!files?.length) {
-                tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center">Нет записей</td></tr>';
-                return;
-            }
-
-            files.forEach(file => {
-                const row = document.createElement('tr');
-                let excelBtn = (file.processing_status === 'парсинг выполнен' && file.excel_path)
-                    ? `<button onclick="window.downloadExcel('${file.excel_path}', '${file.file_name.replace('.pdf', '.xlsx')}')">Excel</button>`
-                    : `<span style="color:#999; font-size:11px;">${file.processing_status || 'в процессе'}</span>`;
-
-                row.innerHTML = `
-                    <td>${new Date(file.upload_time).toLocaleString()}</td>
-                    <td>${file.user_login}</td>
-                    <td>${file.file_name}</td>
-                    <td>${file.total_chunks || '-'}</td>
-                    <td>${file.upload_status}</td>
-                    <td>${excelBtn}</td>
-                `;
-                tableBody.appendChild(row);
+        const STATUS_DIV = document.getElementById('upload-status');
+        
+        // Функция загрузки скрипта
+        function loadScript(url) {
+            return new Promise((resolve, reject) => {
+                if (window.pdfjsLib) return resolve(); // Уже загружен
+                const script = document.createElement('script');
+                script.src = url;
+                script.onload = () => resolve();
+                script.onerror = () => reject(new Error(`Failed to load script ${url}`));
+                document.head.appendChild(script);
             });
         }
 
+        // ИНИЦИАЛИЗАЦИЯ
+        loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js')
+            .then(() => {
+                console.log("PDF.js loaded successfully");
+                // Устанавливаем Worker
+                pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+                
+                // Запускаем основной код
+                initUploader();
+            })
+            .catch(err => {
+                STATUS_DIV.innerHTML = '<p style="color: red;">Ошибка загрузки библиотеки PDF.js: ' + err.message + '</p>';
+            });
+
+        // === ОСНОВНОЙ КОД (выполняется после загрузки библиотеки) ===
+        function initUploader() {
+            const SUPABASE_URL = "https://ncdwlmgwljjwpuawlssr.supabase.co";
+            const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jZHdsbWd3bGpqd3B1YXdsc3NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0NTQxNDksImV4cCI6MjA4MzAzMDE0OX0.rrIznUflWydylTnUZvOxOkeF9eMp91qNN4Bjq2gXRL8";
+            const supabaseClient = window.supabaseClient || supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+            const fileInput = document.getElementById('pdf-file');
+            const tableBody = document.getElementById('files-table-body');
+            const progressContainer = document.getElementById('progress-container');
+            const progressBar = document.getElementById('progress-bar');
+            const progressText = document.getElementById('progress-text');
+
+            loadExistingFiles();
+
+            fileInput.addEventListener('change', async function(e) {
+                if (!fileInput.files.length) return;
+                const file = fileInput.files[0];
+
+                if (file.type !== 'application/pdf') {
+                    STATUS_DIV.innerHTML = '<p style="color: red;">Только PDF файлы</p>';
+                    return;
+                }
+
+                const { data: { user } } = await supabaseClient.auth.getUser();
+                if (!user) {
+                    STATUS_DIV.innerHTML = '<p style="color: red;">Ошибка: Вы не авторизованы.</p>';
+                    return;
+                }
+
+                STATUS_DIV.innerHTML = '';
+                progressContainer.style.display = 'block';
+                progressBar.style.width = '0%';
+                progressText.innerText = 'Подготовка...';
+                fileInput.disabled = true;
+
+                try {
+                    // 1. Создаем запись в БД
+                    const { data: record, error: dbErr } = await supabaseClient
+                        .from('pdf_uploads')
+                        .insert([{
+                            user_login: user.email,
+                            file_name: file.name,
+                            upload_status: 'конвертация',
+                            processing_status: 'загрузка изображений'
+                        }])
+                        .select().single();
+                    
+                    if (dbErr) throw dbErr;
+                    const recordId = record.id;
+
+                    // 2. Конвертация
+                    const imagePaths = await convertPdfToImages(file, recordId, user.email, (progress, text) => {
+                        progressBar.style.width = `${progress}%`;
+                        progressText.innerText = text;
+                    });
+
+                    progressText.innerText = 'Отправка задачи в AI...';
+                    progressBar.style.width = '90%';
+
+                    // 3. Вызов функции
+                    const funcRes = await supabaseClient.functions.invoke('pdf-processor', {
+                        body: { 
+                            record_id: recordId, 
+                            image_paths: imagePaths 
+                        }
+                    });
+
+                    if (funcRes.error) throw new Error(funcRes.error.message);
+
+                    await supabaseClient.from('pdf_uploads')
+                        .update({ upload_status: 'файл обработан', total_chunks: imagePaths.length })
+                        .eq('id', recordId);
+
+                    STATUS_DIV.innerHTML = '<p style="color: green;">Успешно отправлено!</p>';
+                    progressBar.style.width = '100%';
+                    progressText.innerText = 'Готово!';
+                    
+                    loadExistingFiles();
+
+                } catch (err) {
+                    console.error(err);
+                    STATUS_DIV.innerHTML = `<p style="color: red;">Ошибка: ${err.message}</p>`;
+                    progressContainer.style.display = 'none';
+                } finally {
+                    fileInput.disabled = false;
+                    fileInput.value = '';
+                }
+            });
+
+            async function convertPdfToImages(file, recordId, userEmail, onProgress) {
+                const arrayBuffer = await file.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                const totalPages = pdf.numPages;
+                
+                const imagePaths = [];
+                const baseFolder = `vision_chunks/${recordId}`;
+
+                for (let i = 1; i <= totalPages; i++) {
+                    onProgress(Math.round((i / totalPages) * 80), `Рендер страницы ${i}/${totalPages}...`);
+                    
+                    const page = await pdf.getPage(i);
+                    const scale = 2.0;
+                    const viewport = page.getViewport({ scale });
+
+                    const canvas = document.createElement('canvas');
+                    canvas.width = viewport.width;
+                    canvas.height = viewport.height;
+                    const ctx = canvas.getContext('2d');
+
+                    await page.render({ canvasContext: ctx, viewport }).promise;
+                    
+                    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
+                    
+                    const fileName = `${baseFolder}/page_${i}.jpg`;
+                    const { error: uploadErr } = await supabaseClient.storage
+                        .from('pdf_images') 
+                        .upload(fileName, blob, { upsert: true });
+
+                    if (uploadErr) throw new Error(`Upload error page ${i}: ${uploadErr.message}`);
+                    imagePaths.push(fileName);
+                }
+                return imagePaths;
+            }
+
+            async function loadExistingFiles() {
+                const { data: files, error } = await supabaseClient
+                    .from('pdf_uploads')
+                    .select('*')
+                    .order('upload_time', { ascending: false });
+
+                if (error) { console.error(error); return; }
+                tableBody.innerHTML = '';
+                if (!files?.length) {
+                    tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center">Нет записей</td></tr>';
+                    return;
+                }
+
+                files.forEach(file => {
+                    const row = document.createElement('tr');
+                    let excelBtn = (file.processing_status === 'парсинг выполнен' && file.excel_path)
+                        ? `<button onclick="window.downloadExcel('${file.excel_path}', '${file.file_name.replace('.pdf', '.xlsx')}')">Excel</button>`
+                        : `<span style="color:#999; font-size:11px;">${file.processing_status || 'в процессе'}</span>`;
+
+                    row.innerHTML = `
+                        <td>${new Date(file.upload_time).toLocaleString()}</td>
+                        <td>${file.user_login}</td>
+                        <td>${file.file_name}</td>
+                        <td>${file.total_chunks || '-'}</td>
+                        <td>${file.upload_status}</td>
+                        <td>${excelBtn}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            }
+        } // Конец initUploader
+        
+        // Глобальные функции
         window.downloadExcel = async function(path, name) {
+            const supabaseClient = window.supabaseClient || supabase.createClient("https://ncdwlmgwljjwpuawlssr.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jZHdsbWd3bGpqd3B1YXdsc3NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0NTQxNDksImV4cCI6MjA4MzAzMDE0OX0.rrIznUflWydylTnUZvOxOkeF9eMp91qNN4Bjq2gXRL8");
             const { data, error } = await supabaseClient.storage.from('excel_outputs').download(path);
             if (error) return alert("Ошибка скачивания");
             const url = URL.createObjectURL(data);
