@@ -187,10 +187,13 @@
                     
                     const fileName = `${baseFolder}/page_${i}.jpg`;
                     
-                    // ИСПРАВЛЕНО: Используем существующий бакет 'pdf_files'
+                    // ИСПРАВЛЕНО: Явно указываем contentType
                     const { error: uploadErr } = await supabaseClient.storage
                         .from('pdf_files') 
-                        .upload(fileName, blob, { upsert: true });
+                        .upload(fileName, blob, { 
+                            contentType: 'image/jpeg', // <--- ВАЖНО
+                            upsert: true 
+                        });
 
                     if (uploadErr) throw new Error(`Upload error page ${i}: ${uploadErr.message}`);
                     imagePaths.push(fileName);
