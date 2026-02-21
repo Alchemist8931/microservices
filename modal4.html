@@ -253,6 +253,21 @@
 
             loadExistingFiles();
 
+            // Function to check if a file with the same name already exists
+            async function checkForDuplicateFile(fileName) {
+                const { data: existingFiles, error } = await supabaseClient
+                    .from('pdf_uploads')
+                    .select('file_name')
+                    .eq('file_name', fileName);
+
+                if (error) {
+                    console.error('Error checking for duplicate file:', error);
+                    return false; // Assume not duplicate if there's an error
+                }
+
+                return existingFiles && existingFiles.length > 0;
+            }
+
             // Открытие модального окна
             openModalBtn.addEventListener('click', () => {
                 uploadModal.style.display = 'block';
@@ -301,31 +316,49 @@
             });
 
             // Функция обработки файлов
-            function handleFiles(files) {
+            async function handleFiles(files) {
                 if (files.length === 0) return;
 
                 totalFiles += files.length;
                 totalCount.textContent = totalFiles;
 
-                files.forEach(file => {
-                    addFileToList(file);
-                });
+                // Check for duplicates first
+                const filesWithStatus = [];
+                for (const file of files) {
+                    const isDuplicate = await checkForDuplicateFile(file.name);
+                    filesWithStatus.push({
+                        file: file,
+                        isDuplicate: isDuplicate
+                    });
+
+                    // Add file to list with appropriate status
+                    addFileToList(file, isDuplicate);
+                }
+
+                // Filter out duplicates and only upload unique files
+                const uniqueFiles = filesWithStatus.filter(item => !item.isDuplicate).map(item => item.file);
 
                 // Начинаем загрузку файлов
-                startUploading();
+                await startUploading(uniqueFiles);
             }
 
             // Добавление файла в список
-            function addFileToList(file) {
+            function addFileToList(file, isDuplicate = false) {
                 const fileId = 'file-' + Date.now() + Math.random();
 
                 const fileItem = document.createElement('div');
                 fileItem.className = 'file-item';
                 fileItem.id = fileId;
 
+                // Add visual indication if file is duplicate
+                if (isDuplicate) {
+                    fileItem.style.opacity = '0.5';
+                    fileItem.title = 'Файл с таким именем уже загружен (дубль)';
+                }
+
                 fileItem.innerHTML = `
                     <div class="file-info">
-                        <div class="file-name">${file.name}</div>
+                        <div class="file-name">${file.name}${isDuplicate ? ' (дубль)' : ''}</div>
                         <div class="file-size">${(file.size / (1024 * 1024)).toFixed(2)} MB</div>
                     </div>
                     <div class="file-progress">
@@ -337,8 +370,7 @@
             }
 
             // Начало загрузки файлов
-            async function startUploading() {
-                const files = Array.from(fileInput.files).filter(file => file.type === 'application/pdf');
+            async function startUploading(files) {
 
                 for (const file of files) {
                     await uploadSingleFile(file);
