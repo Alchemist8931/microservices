@@ -131,10 +131,8 @@
         font-size: 12px;
     }
 </style>
-
 <script>
     (function() {
-        // Инициализация Supabase
         const SUPABASE_URL = "https://ncdwlmgwljjwpuawlssr.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jZHdsbWd3bGpqd3B1YXdsc3NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0NTQxNDksImV4cCI6MjA4MzAzMDE0OX0.rrIznUflWydylTnUZvOxOkeF9eMp91qNN4Bjq2gXRL8";
         const supabaseClient = window.supabaseClient || supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -155,36 +153,50 @@
                 }
 
                 try {
-                    // Явно получаем текущую сессию
+                    // 1. Получаем сессию
                     const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
                     
-                    if (sessionError || !session) {
-                        throw new Error('Сессия не найдена. Пожалуйста, перезайдите в систему.');
-                    }
+                    if (sessionError) throw new Error("Ошибка получения сессии: " + sessionError.message);
+                    if (!session) throw new Error("Сессия не найдена. Вы не авторизованы.");
 
-                    // Вызываем функцию, ЯВНО передавая токен в заголовках
-                    const { data, error } = await supabaseClient.functions.invoke('create-user', {
-                        body: JSON.stringify({ 
-                            email: username, 
-                            password: password 
-                        }),
+                    console.log("TOKEN SENT:", session.access_token); // Для отладки в консоли
+
+                    // 2. Вызываем функцию
+                    // Важно: передаем headers явно
+                    const response = await supabaseClient.functions.invoke('create-user', {
+                        body: { email: username, password: password },
                         headers: {
                             Authorization: `Bearer ${session.access_token}`
                         }
                     });
 
-                    if (error) {
-                        // Обрабатываем ошибку HTTP ответа
-                        const errorMessage = error.message || 'Unknown error';
-                        throw new Error(errorMessage);
+                    // 3. Обрабатываем ответ вручную, чтобы увидеть детали ошибки
+                    if (response.error) {
+                        console.error("Full error object:", response.error);
+                        
+                        // Пытаемся извлечь сообщение из ответа (context)
+                        let serverMessage = response.error.message;
+                        
+                        if (response.error.context) {
+                            try {
+                                // Пытаемся прочитать тело ответа как JSON
+                                const errorBody = await response.error.context.json();
+                                console.log("Error body from server:", errorBody);
+                                serverMessage = errorBody.error || serverMessage;
+                            } catch (parseError) {
+                                console.log("Could not parse error body");
+                            }
+                        }
+                        
+                        throw new Error(serverMessage);
                     }
 
                     alert('Пользователь успешно создан');
                     document.getElementById('create-user-form').reset();
                     loadUsersList(); 
                 } catch (error) {
-                    console.error('Ошибка при создании пользователя:', error);
-                    alert('Ошибка при создании пользователя: ' + error.message);
+                    console.error('Финальная ошибка:', error);
+                    alert('Ошибка: ' + error.message);
                 }
             });
         }
@@ -193,134 +205,72 @@
         async function loadUsersList() {
             try {
                 const { data: { user } } = await supabaseClient.auth.getUser();
-                if (!user) {
-                    throw new Error('Вы не авторизованы');
-                }
+                if (!user) throw new Error('Вы не авторизованы');
 
                 const { data: adminInfo, error: adminError } = await supabaseClient
-                    .from('app_users')
-                    .select('group_key, role')
-                    .eq('user_id', user.id)
-                    .single();
+                    .from('app_users').select('group_key, role').eq('user_id', user.id).single();
 
-                if (adminError || !adminInfo || adminInfo.role !== 'admin') {
-                    throw new Error('Только администратор может просматривать список пользователей');
-                }
+                if (adminError || !adminInfo || adminInfo.role !== 'admin') throw new Error('Доступ запрещен');
 
                 const { data: users, error: usersError } = await supabaseClient
                     .from('app_users')
                     .select('user_id, username, role, enabled, page_unlock')
                     .eq('group_key', adminInfo.group_key)
-                    .neq('role', 'admin'); 
+                    .neq('role', 'admin');
 
-                if (usersError) {
-                    throw usersError;
-                }
+                if (usersError) throw usersError;
 
                 const usersList = document.getElementById('users-list');
                 usersList.innerHTML = '';
-
                 if (users && users.length > 0) {
                     users.forEach(user => {
                         const userItem = document.createElement('div');
                         userItem.className = 'user-item';
-
                         userItem.innerHTML = `
                             <div class="user-info">
-                                <strong>${user.username}</strong>
-                                <br>
-                                <small>ID: ${user.user_id}</small>
-                                <br>
-                                <small>Доступ к группам: ${user.page_unlock || 'Нет'}</small>
+                                <strong>${user.username}</strong><br>
+                                <small>Доступ: ${user.page_unlock || 'Нет'}</small>
                             </div>
                             <div class="user-actions">
-                                <button class="toggle-btn ${!user.enabled ? 'inactive' : ''}"
-                                        onclick="toggleUserStatus('${user.user_id}', ${user.enabled})">
-                                    ${user.enabled ? 'Активен' : 'Неактивен'}
-                                </button>
+                                <button class="toggle-btn ${!user.enabled ? 'inactive' : ''}" onclick="toggleUserStatus('${user.user_id}', ${user.enabled})">${user.enabled ? 'Активен' : 'Неактивен'}</button>
                                 <button class="permissions-btn" onclick="editUserPermissions('${user.user_id}', '${user.page_unlock || ''}')">Права</button>
                                 <button class="delete-btn" onclick="deleteUser('${user.user_id}')">Удалить</button>
                             </div>
                         `;
-
                         usersList.appendChild(userItem);
                     });
                 } else {
-                    usersList.innerHTML = '<p>В этой группе пока нет обычных пользователей.</p>';
+                    usersList.innerHTML = '<p>Нет пользователей.</p>';
                 }
             } catch (error) {
-                console.error('Ошибка при загрузке списка пользователей:', error);
-                document.getElementById('users-list').innerHTML = '<p>Ошибка при загрузке списка пользователей: ' + error.message + '</p>';
+                document.getElementById('users-list').innerHTML = '<p>Ошибка: ' + error.message + '</p>';
             }
         }
 
         window.toggleUserStatus = async function(userId, currentStatus) {
             try {
-                const newStatus = !currentStatus;
-
-                const { error } = await supabaseClient
-                    .from('app_users')
-                    .update({ enabled: newStatus })
-                    .eq('user_id', userId);
-
-                if (error) {
-                    throw error;
-                }
-
-                alert(`Статус пользователя ${newStatus ? 'активирован' : 'деактивирован'}`);
-                loadUsersList(); 
-            } catch (error) {
-                console.error('Ошибка при изменении статуса пользователя:', error);
-                alert('Ошибка при изменении статуса пользователя: ' + error.message);
-            }
-        };
-
-        window.updateUserPermissions = async function(userId, newPermissions) {
-            try {
-                const { error } = await supabaseClient
-                    .from('app_users')
-                    .update({ page_unlock: newPermissions })
-                    .eq('user_id', userId);
-
-                if (error) {
-                    throw error;
-                }
-
-                alert('Разрешения пользователя обновлены');
-                loadUsersList(); 
-            } catch (error) {
-                console.error('Ошибка при обновлении разрешений пользователя:', error);
-                alert('Ошибка при обновлении разрешений пользователя: ' + error.message);
-            }
+                const { error } = await supabaseClient.from('app_users').update({ enabled: !currentStatus }).eq('user_id', userId);
+                if (error) throw error;
+                loadUsersList();
+            } catch (error) { alert(error.message); }
         };
 
         window.deleteUser = async function(userId) {
-            if (!confirm('Вы уверены, что хотите удалить этого пользователя?')) {
-                return;
-            }
-
+            if (!confirm('Удалить пользователя из таблицы?')) return;
             try {
-                const { error } = await supabaseClient
-                    .from('app_users')
-                    .delete()
-                    .eq('user_id', userId);
-
-                if (error) {
-                    throw error;
-                }
-
-                alert('Пользователь удален из таблицы группы');
-                loadUsersList(); 
-            } catch (error) {
-                console.error('Ошибка при удалении пользователя:', error);
-                alert('Ошибка при удалении пользователя: ' + error.message);
-            }
+                const { error } = await supabaseClient.from('app_users').delete().eq('user_id', userId);
+                if (error) throw error;
+                loadUsersList();
+            } catch (error) { alert(error.message); }
         };
 
         window.editUserPermissions = function(userId, currentPermissions) {
-            const newPermissions = prompt('Введите разрешенные группы через запятую (например, Group1, Group2):', currentPermissions);
+            const newPermissions = prompt('Группы (Group1,Group2):', currentPermissions);
             if (newPermissions !== null) {
-                updateUserPermissions(userId, newPermissions);
+                (async () => {
+                    const { error } = await supabaseClient.from('app_users').update({ page_unlock: newPermissions }).eq('user_id', userId);
+                    if (error) alert(error.message); else loadUsersList();
+                })();
             }
         };
 
