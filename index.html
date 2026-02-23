@@ -444,8 +444,8 @@
     .sidebar {
       background: #f8fafc;
       border-right: 1px solid var(--border);
-      display: grid;
-      align-content: start;
+      display: flex;          /* Изменено с grid на flex */
+      flex-direction: column; /* Выстраиваем элементы в колонку */
       gap: 18px;
       padding: 14px 10px;
       border-radius: 18px;
@@ -475,6 +475,13 @@
       --btn-bg: var(--accent-bg, #e8f0ff);
       --btn-border: 1.5px solid var(--accent);
       --btn-color: var(--accent);
+    }
+    /* Прижимаем Group0 к низу меню */
+    #group0-nav {
+      margin-top: auto;              /* Толкает элемент в самый низ */
+      order: 2;                      /* Гарантирует, что элемент будет последним визуально */
+      border-top: 1px solid var(--border); /* Добавляем разделитель сверху */
+      padding-top: 10px;             /* Отступ от разделителя */
     }
     .content {
       display: grid;
