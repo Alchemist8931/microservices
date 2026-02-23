@@ -820,8 +820,9 @@
       // Group0 is always accessible to admins
       if (pageGroup === 'group0') return true;
 
-      // Get the allowed groups from the user's profile (stored in a global variable after login)
-      const allowedGroups = window.currentUserPageUnlock ? window.currentUserPageUnlock.split(',') : [];
+      // Convert the format from Supabase (Group0, Group1, Group2) to lowercase (group0, group1, group2)
+      const rawGroups = window.currentUserPageUnlock ? window.currentUserPageUnlock.split(',') : [];
+      const allowedGroups = rawGroups.map(group => group.trim().toLowerCase());
       return allowedGroups.includes(pageGroup);
     }
 
@@ -830,8 +831,9 @@
       // Show Group0 by default
       document.getElementById('group0-nav').style.display = 'grid';
 
-      // Show other groups based on permissions
-      const allowedGroups = window.currentUserPageUnlock ? window.currentUserPageUnlock.split(',') : [];
+      // Convert the format from Supabase (Group0, Group1, Group2) to lowercase (group0, group1, group2)
+      const rawGroups = window.currentUserPageUnlock ? window.currentUserPageUnlock.split(',') : [];
+      const allowedGroups = rawGroups.map(group => group.trim().toLowerCase());
 
       if (allowedGroups.includes('group1')) {
         document.getElementById('group1-nav').style.display = 'grid';
@@ -986,6 +988,7 @@
       balanceState.balance = Number(profile.admin_balance || 0);
       balanceState.topups = [];
 
+      // Store the original page unlock string without modification
       window.currentUserPageUnlock = profile.page_unlock || '';
 
       showApp(profile.username || username);;
@@ -1022,7 +1025,7 @@
         role: "admin",
         username,
         admin_balance: balance || 0,
-        page_unlock: 'group0'
+        page_unlock: 'Group0'
       }]);
 
       if (insErr) {
