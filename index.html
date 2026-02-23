@@ -457,11 +457,9 @@
       overflow: hidden;
     }
     .nav-group {
-      border-top: 1px solid var(--border);
-      padding-top: 10px;
       width: 63px;
     }
-    .nav-group:first-of-type { border-top: 0; padding-top: 0; width: 63px; }
+    .nav-group:first-of-type { width: 63px; }
     .nav-title { display: none; }
     .nav-btn {
       margin-bottom: 10px;
@@ -480,8 +478,6 @@
     #group0-nav {
       margin-top: auto;              /* Толкает элемент в самый низ */
       order: 2;                      /* Гарантирует, что элемент будет последним визуально */
-      border-top: 1px solid var(--border); /* Добавляем разделитель сверху */
-      padding-top: 10px;             /* Отступ от разделителя */
     }
     .content {
       display: grid;
@@ -774,19 +770,46 @@
       closeBalanceModal();
     }
 
-    function showApp(username) {
+        function showApp(username) {
       authPanel.classList.remove("active");
       appShell.classList.add("active");
       document.body.classList.add("app-active");
       statusText.textContent = `Авторизация успешна. Здравствуйте, ${username}! Выберите микросервис слева.`;
-      const activeButton = document.querySelector(".nav-btn.active");
-      updateAccent(activeButton?.dataset.group);
-      loadFragment(activeButton?.dataset.file, activeButton?.dataset.group);
+      
       openAuth.textContent = "Выйти";
       balanceTrigger.classList.remove("hidden");
       balanceState.isAuthenticated = true;
-      updateBalanceDisplay();
+      
+      // 1. Сначала обновляем видимость групп на основе прав доступа
       updateNavigationVisibility();
+
+      // 2. Ищем первую доступную кнопку (Приоритет: Group1 -> Group2 -> Group0)
+      let firstAvailableBtn = null;
+      
+      const g1 = document.getElementById('group1-nav');
+      if (g1.style.display === 'grid') {
+        firstAvailableBtn = g1.querySelector('.nav-btn');
+      }
+      
+      if (!firstAvailableBtn) {
+        const g2 = document.getElementById('group2-nav');
+        if (g2.style.display === 'grid') {
+          firstAvailableBtn = g2.querySelector('.nav-btn');
+        }
+      }
+      
+      // Если Group1 и Group2 нет, загружаем Group0 (она всегда доступна админу)
+      if (!firstAvailableBtn) {
+        const g0 = document.getElementById('group0-nav');
+        firstAvailableBtn = g0.querySelector('.nav-btn');
+      }
+
+      // 3. Загружаем страницу и обновляем баланс
+      if (firstAvailableBtn) {
+        loadFragment(firstAvailableBtn.dataset.file, firstAvailableBtn.dataset.group);
+      }
+      
+      updateBalanceDisplay();
     }
 
     function switchTab(tab) {
