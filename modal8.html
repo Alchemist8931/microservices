@@ -140,7 +140,7 @@
 
         const createUserForm = document.getElementById('create-user-form');
 
-                        if (createUserForm) {
+                               if (createUserForm) {
             createUserForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
 
@@ -154,25 +154,28 @@
                 }
 
                 try {
-                    // Проверяем, что мы вообще залогинены
+                    // 1. Явно получаем сессию
                     const { data: { session } } = await supabaseClient.auth.getSession();
+                    
                     if (!session) {
-                        throw new Error("Вы не авторизованы. Перезайдите в систему.");
+                        throw new Error("Сессия не найдена. Пожалуйста, перезайдите в систему.");
                     }
 
-                    // Вызываем функцию. Supabase сам подтянет Authorization header из текущей сессии.
+                    // 2. Вызываем функцию с ЯВНЫМ заголовком Authorization
                     const { data, error } = await supabaseClient.functions.invoke('create-user', {
                         body: { 
                             email: username, 
                             password: password 
+                        },
+                        headers: {
+                            // Мы вручную вставляем токен в заголовок
+                            Authorization: `Bearer ${session.access_token}`
                         }
                     });
 
                     if (error) {
-                        // Выводим ошибку
-                        console.error("Error object:", error);
+                        // Улучшенная обработка ошибок
                         let msg = error.message;
-                        // Пытаемся достать текст ошибки из ответа, если он есть
                         if (error.context) {
                              try {
                                 const errBody = await error.context.json();
