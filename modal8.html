@@ -154,21 +154,20 @@
 
                 try {
                     // 1. Получаем сессию
-                    const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+                    const { data: { session } } = await supabaseClient.auth.getSession();
                     
                     if (sessionError) throw new Error("Ошибка получения сессии: " + sessionError.message);
                     if (!session) throw new Error("Сессия не найдена. Вы не авторизованы.");
 
                     console.log("TOKEN SENT:", session.access_token); // Для отладки в консоли
 
-                    // 2. Вызываем функцию
-                    // Важно: передаем headers явно
-                    const response = await supabaseClient.functions.invoke('create-user', {
-                        body: { email: username, password: password },
-                        headers: {
-                            Authorization: `Bearer ${session.access_token}`
-                        }
-                    });
+                    // 2. Вызываем функцию с явным заголовком
+const response = await supabaseClient.functions.invoke('create-user', {
+    body: { email: username, password: password },
+    headers: {
+        Authorization: `Bearer ${session.access_token}`
+    }
+});
 
                     // 3. Обрабатываем ответ вручную, чтобы увидеть детали ошибки
                     if (response.error) {
