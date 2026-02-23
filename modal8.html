@@ -1,0 +1,311 @@
+<div class="helper" style="color: var(--text); font-weight: 600;">Раздел 8 - Управление пользователями</div>
+<p class="helper" style="color: var(--text); margin-top: 6px;">Создание и управление обычными пользователями для вашей группы.</p>
+
+<div class="users-management">
+    <div class="section">
+        <h3>Создать нового пользователя</h3>
+        <form id="create-user-form">
+            <div class="input-group">
+                <label for="username">Имя пользователя (email):</label>
+                <input type="email" id="username" required placeholder="user@example.com">
+            </div>
+            <div class="input-group">
+                <label for="password">Пароль:</label>
+                <input type="password" id="password" required placeholder="Введите пароль">
+            </div>
+            <div class="input-group">
+                <label for="confirm-password">Подтвердите пароль:</label>
+                <input type="password" id="confirm-password" required placeholder="Повторите пароль">
+            </div>
+            <button type="submit">Создать пользователя</button>
+        </form>
+    </div>
+
+    <div class="section">
+        <h3>Список пользователей группы</h3>
+        <div id="users-list">
+            <!-- Список пользователей будет загружен здесь -->
+        </div>
+    </div>
+</div>
+
+<style>
+    .users-management {
+        padding: 20px;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .section {
+        margin-bottom: 30px;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+    }
+
+    .section h3 {
+        margin-top: 0;
+        color: var(--text);
+    }
+
+    .input-group {
+        margin-bottom: 15px;
+    }
+
+    .input-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 500;
+        color: var(--text);
+    }
+
+    .input-group input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 14px;
+        box-sizing: border-box;
+    }
+
+    .input-group input:focus {
+        outline: none;
+        border-color: #007bff;
+    }
+
+    button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    button:hover {
+        background-color: #0056b3;
+    }
+
+    .user-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        margin-bottom: 10px;
+        background-color: white;
+    }
+
+    .user-info {
+        flex-grow: 1;
+    }
+
+    .user-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .toggle-btn {
+        background-color: #28a745;
+        padding: 5px 10px;
+        font-size: 12px;
+    }
+
+    .toggle-btn.inactive {
+        background-color: #dc3545;
+    }
+
+    .delete-btn {
+        background-color: #dc3545;
+        padding: 5px 10px;
+        font-size: 12px;
+    }
+</style>
+
+<script>
+    (function() {
+        // Инициализация Supabase
+        const SUPABASE_URL = "https://ncdwlmgwljjwpuawlssr.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jZHdsbWd3bGpqd3B1YXdsc3NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0NTQxNDksImV4cCI6MjA4MzAzMDE0OX0.rrIznUflWydylTnUZvOxOkeF9eMp91qNN4Bjq2gXRL8";
+        const supabaseClient = window.supabaseClient || supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Форма создания пользователя
+        const createUserForm = document.getElementById('create-user-form');
+
+        if (createUserForm) {
+            createUserForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                const confirmPassword = document.getElementById('confirm-password').value;
+
+                if (password !== confirmPassword) {
+                    alert('Пароли не совпадают');
+                    return;
+                }
+
+                try {
+                    // Получаем информацию о текущем администраторе
+                    const { data: { user } } = await supabaseClient.auth.getUser();
+                    if (!user) {
+                        throw new Error('Вы не авторизованы');
+                    }
+
+                    // Получаем информацию о текущем администраторе из таблицы app_users
+                    const { data: adminInfo, error: adminError } = await supabaseClient
+                        .from('app_users')
+                        .select('group_key, role')
+                        .eq('user_id', user.id)
+                        .single();
+
+                    if (adminError || !adminInfo || adminInfo.role !== 'admin') {
+                        throw new Error('Только администратор может создавать пользователей');
+                    }
+
+                    // Хэшируем пароль (в реальном приложении используйте более надежное хэширование)
+                    const passwordHash = btoa(password); // Простое кодирование для демонстрации
+
+                    // Создаем нового пользователя в таблице app_users
+                    const { data: newUser, error: insertError } = await supabaseClient
+                        .from('app_users')
+                        .insert([{
+                            group_key: adminInfo.group_key,
+                            role: 'user',  // Роль обычного пользователя
+                            user_id: crypto.randomUUID(), // В реальности Supabase сгенерирует UUID
+                            username: username,
+                            password_hash: passwordHash,
+                            page_unlock: null  // Пока нет разрешений на страницы
+                        }]);
+
+                    if (insertError) {
+                        throw insertError;
+                    }
+
+                    alert('Пользователь успешно создан');
+                    document.getElementById('create-user-form').reset();
+                    loadUsersList(); // Обновляем список пользователей
+                } catch (error) {
+                    console.error('Ошибка при создании пользователя:', error);
+                    alert('Ошибка при создании пользователя: ' + error.message);
+                }
+            });
+        }
+
+        // Загрузка списка пользователей
+        async function loadUsersList() {
+            try {
+                const { data: { user } } = await supabaseClient.auth.getUser();
+                if (!user) {
+                    throw new Error('Вы не авторизованы');
+                }
+
+                // Получаем информацию о текущем администраторе
+                const { data: adminInfo, error: adminError } = await supabaseClient
+                    .from('app_users')
+                    .select('group_key, role')
+                    .eq('user_id', user.id)
+                    .single();
+
+                if (adminError || !adminInfo || adminInfo.role !== 'admin') {
+                    throw new Error('Только администратор может просматривать список пользователей');
+                }
+
+                // Загружаем всех пользователей этой группы
+                const { data: users, error: usersError } = await supabaseClient
+                    .from('app_users')
+                    .select('user_id, username, role, enabled')
+                    .eq('group_key', adminInfo.group_key)
+                    .neq('role', 'admin'); // Исключаем администраторов
+
+                if (usersError) {
+                    throw usersError;
+                }
+
+                const usersList = document.getElementById('users-list');
+                usersList.innerHTML = '';
+
+                if (users && users.length > 0) {
+                    users.forEach(user => {
+                        const userItem = document.createElement('div');
+                        userItem.className = 'user-item';
+
+                        userItem.innerHTML = `
+                            <div class="user-info">
+                                <strong>${user.username}</strong>
+                                <br>
+                                <small>ID: ${user.user_id}</small>
+                            </div>
+                            <div class="user-actions">
+                                <button class="toggle-btn ${!user.enabled ? 'inactive' : ''}"
+                                        onclick="toggleUserStatus('${user.user_id}', ${user.enabled})">
+                                    ${user.enabled ? 'Активен' : 'Неактивен'}
+                                </button>
+                                <button class="delete-btn" onclick="deleteUser('${user.user_id}')">Удалить</button>
+                            </div>
+                        `;
+
+                        usersList.appendChild(userItem);
+                    });
+                } else {
+                    usersList.innerHTML = '<p>В этой группе пока нет обычных пользователей.</p>';
+                }
+            } catch (error) {
+                console.error('Ошибка при загрузке списка пользователей:', error);
+                document.getElementById('users-list').innerHTML = '<p>Ошибка при загрузке списка пользователей: ' + error.message + '</p>';
+            }
+        }
+
+        // Функция переключения статуса пользователя
+        window.toggleUserStatus = async function(userId, currentStatus) {
+            try {
+                const newStatus = !currentStatus;
+
+                const { error } = await supabaseClient
+                    .from('app_users')
+                    .update({ enabled: newStatus })
+                    .eq('user_id', userId);
+
+                if (error) {
+                    throw error;
+                }
+
+                alert(`Статус пользователя ${newStatus ? 'активирован' : 'деактивирован'}`);
+                loadUsersList(); // Обновляем список
+            } catch (error) {
+                console.error('Ошибка при изменении статуса пользователя:', error);
+                alert('Ошибка при изменении статуса пользователя: ' + error.message);
+            }
+        };
+
+        // Функция удаления пользователя
+        window.deleteUser = async function(userId) {
+            if (!confirm('Вы уверены, что хотите удалить этого пользователя?')) {
+                return;
+            }
+
+            try {
+                const { error } = await supabaseClient
+                    .from('app_users')
+                    .delete()
+                    .eq('user_id', userId);
+
+                if (error) {
+                    throw error;
+                }
+
+                alert('Пользователь удален');
+                loadUsersList(); // Обновляем список
+            } catch (error) {
+                console.error('Ошибка при удалении пользователя:', error);
+                alert('Ошибка при удалении пользователя: ' + error.message);
+            }
+        };
+
+        // Загружаем список пользователей при загрузке страницы
+        loadUsersList();
+    })();
+</script>
