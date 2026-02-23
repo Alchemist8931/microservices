@@ -1,0 +1,566 @@
+<div class="helper" style="color: var(--text); font-weight: 600;">Раздел 4 - Загрузка PDF файлов</div>
+<p class="helper" style="color: var(--text); margin-top: 6px;">Загружайте финансовую отчетность (PDF). Конвертация в изображения происходит на вашем устройстве.</p>
+
+<div class="upload-container">
+    <button id="open-upload-modal" class="open-modal-btn">Открыть окно загрузки PDF</button>
+
+    <!-- Модальное окно для загрузки -->
+    <div id="upload-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Загрузка PDF файлов</h3>
+                <button id="close-modal" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="drop-zone" class="drop-zone">
+                    <p>Кликните на это поле что бы выбрать файлы для загрузки</p>
+                    <input type="file" id="pdf-files" name="pdf-files" accept=".pdf" multiple style="display: none;" />
+                </div>
+
+                <div id="upload-counter" class="upload-counter">
+                    Успешно загружено <span id="uploaded-count">0</span> из <span id="total-count">0</span>
+                </div>
+
+                <div id="file-list" class="file-list">
+                    <!-- Список файлов будет добавляться сюда -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="progress-container" style="margin-top: 15px; display: none;">
+        <div style="background: #eee; border-radius: 4px; overflow: hidden;">
+            <div id="progress-bar" style="width: 0%; height: 20px; background: #28a745; text-align: center; color: white; font-size: 12px; transition: width 0.3s;"></div>
+        </div>
+        <p id="progress-text" style="font-size: 12px; color: #666; margin-top: 5px;">Подготовка...</p>
+    </div>
+
+    <div id="upload-status"></div>
+
+    <table id="files-table" class="files-table">
+        <thead>
+            <tr>
+                <th>Дата и время</th>
+                <th>Пользователь</th>
+                <th>Имя файла</th>
+                <th>Размер (МБ)</th>
+                <th>Статус</th>
+                <th>Excel</th>
+            </tr>
+        </thead>
+        <tbody id="files-table-body"></tbody>
+    </table>
+</div>
+
+<style>
+    .upload-container { padding: 20px; max-width: 1200px; margin: 0 auto; }
+    .file-input-wrapper { margin-bottom: 10px; }
+    .file-input-wrapper input[type="file"] { display: none; }
+    .file-input-wrapper label {
+        display: inline-block; padding: 10px 20px; background-color: #007bff;
+        color: white; border-radius: 4px; cursor: pointer; font-weight: 600;
+    }
+    .file-input-wrapper label:hover { background-color: #0056b3; }
+    .open-modal-btn {
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+    .open-modal-btn:hover { background-color: #218838; }
+
+    /* Стили модального окна */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: none;
+        z-index: 1000;
+    }
+
+    .modal-content {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        width: 600px;
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 20px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .modal-header h3 {
+        margin: 0;
+        font-size: 18px;
+    }
+
+    .close-btn {
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: #999;
+    }
+
+    .close-btn:hover {
+        color: #333;
+    }
+
+    .modal-body {
+        padding: 20px;
+    }
+
+    .drop-zone {
+        border: 2px dashed #ccc;
+        border-radius: 8px;
+        padding: 10px 30px;
+        text-align: center;
+        cursor: pointer;
+        margin-bottom: 20px;
+        transition: border-color 0.3s;
+    }
+
+    .drop-zone:hover, .drop-zone.dragover {
+        border-color: #007bff;
+    }
+
+    .upload-counter {
+        font-size: 14px;
+        margin-bottom: 15px;
+        text-align: center;
+    }
+
+    .file-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px;
+        border: 1px solid #eee;
+        border-radius: 4px;
+        margin-bottom: 8px;
+        opacity: 1;
+        transition: opacity 0.3s;
+    }
+
+    .file-item.completed {
+        opacity: 0.5;
+    }
+
+    .file-item.downloaded {
+        order: 1; /* Перемещаем вниз */
+    }
+
+    .file-info {
+        flex-grow: 1;
+    }
+
+    .file-name {
+        font-weight: bold;
+        margin-bottom: 4px;
+    }
+
+    .file-size {
+        font-size: 12px;
+        color: #666;
+    }
+
+    .file-progress {
+        width: 100px;
+        height: 6px;
+        background-color: #eee;
+        border-radius: 3px;
+        margin-left: 10px;
+        overflow: hidden;
+    }
+
+    .file-progress-bar {
+        height: 100%;
+        background-color: #28a745;
+        width: 0%;
+        transition: width 0.3s;
+    }
+    .files-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    .files-table th, .files-table td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 13px; }
+    .files-table th { background-color: #f2f2f2; }
+    button { padding: 5px 10px; background-color: #17a2b8; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; }
+    button:hover { background-color: #138496; }
+    button:disabled { background-color: #ccc; cursor: not-allowed; }
+</style>
+
+<script>
+    (function() {
+        const STATUS_DIV = document.getElementById('upload-status');
+
+        function loadScript(url) {
+            return new Promise((resolve, reject) => {
+                if (window.pdfjsLib) return resolve();
+                const script = document.createElement('script');
+                script.src = url;
+                script.onload = () => resolve();
+                script.onerror = () => reject(new Error(`Failed to load script ${url}`));
+                document.head.appendChild(script);
+            });
+        }
+
+        loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js')
+            .then(() => {
+                console.log("PDF.js loaded successfully");
+                pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+                initUploader();
+            })
+            .catch(err => {
+                STATUS_DIV.innerHTML = '<p style="color: red;">Ошибка загрузки библиотеки PDF.js: ' + err.message + '</p>';
+            });
+
+        function initUploader() {
+            const SUPABASE_URL = "https://ncdwlmgwljjwpuawlssr.supabase.co";
+            const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jZHdsbWd3bGpqd3B1YXdsc3NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0NTQxNDksImV4cCI6MjA4MzAzMDE0OX0.rrIznUflWydylTnUZvOxOkeF9eMp91qNN4Bjq2gXRL8";
+            const supabaseClient = window.supabaseClient || supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+            const openModalBtn = document.getElementById('open-upload-modal');
+            const closeModalBtn = document.getElementById('close-modal');
+            const uploadModal = document.getElementById('upload-modal');
+            const dropZone = document.getElementById('drop-zone');
+            const fileInput = document.getElementById('pdf-files');
+            const fileList = document.getElementById('file-list');
+            const uploadedCount = document.getElementById('uploaded-count');
+            const totalCount = document.getElementById('total-count');
+            const tableBody = document.getElementById('files-table-body');
+            const progressContainer = document.getElementById('progress-container');
+            const progressBar = document.getElementById('progress-bar');
+            const progressText = document.getElementById('progress-text');
+
+            let totalFiles = 0;
+            let uploadedFiles = 0;
+
+            loadExistingFiles();
+
+            // Function to check if a file with the same name already exists
+            async function checkForDuplicateFile(fileName) {
+                const { data: existingFiles, error } = await supabaseClient
+                    .from('pdf_uploads')
+                    .select('file_name')
+                    .eq('file_name', fileName);
+
+                if (error) {
+                    console.error('Error checking for duplicate file:', error);
+                    return false; // Assume not duplicate if there's an error
+                }
+
+                return existingFiles && existingFiles.length > 0;
+            }
+
+            // Открытие модального окна
+            openModalBtn.addEventListener('click', () => {
+                uploadModal.style.display = 'block';
+            });
+
+            // Закрытие модального окна
+            closeModalBtn.addEventListener('click', () => {
+                uploadModal.style.display = 'none';
+            });
+
+            // Закрытие модального окна при клике вне его
+            window.addEventListener('click', (e) => {
+                if (e.target === uploadModal) {
+                    uploadModal.style.display = 'none';
+                }
+            });
+
+            // Клик по зоне загрузки для выбора файлов
+            dropZone.addEventListener('click', () => {
+                fileInput.click();
+            });
+
+            // Drag and drop события
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('dragover');
+            });
+
+            dropZone.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+            });
+
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+
+                const files = Array.from(e.dataTransfer.files).filter(file => file.type === 'application/pdf');
+                handleFiles(files);
+            });
+
+            // Обработка выбранных файлов
+            fileInput.addEventListener('change', (e) => {
+                const files = Array.from(e.target.files).filter(file => file.type === 'application/pdf');
+                handleFiles(files);
+            });
+
+            // Функция обработки файлов
+            async function handleFiles(files) {
+                if (files.length === 0) return;
+
+                totalFiles += files.length;
+                totalCount.textContent = totalFiles;
+
+                // Check for duplicates first
+                const filesWithStatus = [];
+                for (const file of files) {
+                    const isDuplicate = await checkForDuplicateFile(file.name);
+                    filesWithStatus.push({
+                        file: file,
+                        isDuplicate: isDuplicate
+                    });
+
+                    // Add file to list with appropriate status
+                    addFileToList(file, isDuplicate);
+                }
+
+                // Filter out duplicates and only upload unique files
+                const uniqueFiles = filesWithStatus.filter(item => !item.isDuplicate).map(item => item.file);
+
+                // Начинаем загрузку файлов
+                await startUploading(uniqueFiles);
+            }
+
+            // Добавление файла в список
+            function addFileToList(file, isDuplicate = false) {
+                const fileId = 'file-' + Date.now() + Math.random();
+
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                fileItem.id = fileId;
+
+                // Add visual indication if file is duplicate
+                if (isDuplicate) {
+                    fileItem.style.opacity = '0.5';
+                    fileItem.title = 'Файл с таким именем уже загружен (дубль)';
+                }
+
+                fileItem.innerHTML = `
+                    <div class="file-info">
+                        <div class="file-name">${file.name}${isDuplicate ? ' (дубль)' : ''}</div>
+                        <div class="file-size">${(file.size / (1024 * 1024)).toFixed(2)} MB</div>
+                    </div>
+                    <div class="file-progress">
+                        <div class="file-progress-bar"></div>
+                    </div>
+                `;
+
+                fileList.appendChild(fileItem);
+            }
+
+            // Начало загрузки файлов
+            async function startUploading(files) {
+
+                for (const file of files) {
+                    await uploadSingleFile(file);
+                }
+
+                // Проверяем, все ли файлы загружены
+                if (uploadedFiles === totalFiles) {
+                    // Показываем уведомление о завершении
+                    showNotification('Загрузка завершена');
+                    // Закрываем модальное окно
+                    setTimeout(() => {
+                        uploadModal.style.display = 'none';
+                    }, 1000);
+                }
+            }
+
+            // Загрузка одного файла
+            async function uploadSingleFile(file) {
+                const { data: { user } } = await supabaseClient.auth.getUser();
+                if (!user) {
+                    STATUS_DIV.innerHTML = '<p style="color: red;">Ошибка: Вы не авторизованы.</p>';
+                    return;
+                }
+
+                // Находим элемент файла в списке
+                const fileItems = document.querySelectorAll('.file-item');
+                const fileItem = Array.from(fileItems).find(item => item.querySelector('.file-name').textContent === file.name);
+
+                if (fileItem) {
+                    const progressBar = fileItem.querySelector('.file-progress-bar');
+
+                try {
+                        const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+
+                    // 1. Создаем запись
+                        const { data: record, error: dbErr } = await supabaseClient
+                            .from('pdf_uploads')
+                            .insert([{
+                                user_login: user.email,
+                                file_name: file.name,
+                                file_size_mb: parseFloat(fileSizeMB),
+                                upload_status: 'сохранение файла',
+                                processing_status: 'задача в работе'
+                            }])
+                            .select().single();
+
+                    if (dbErr) throw dbErr;
+                        const recordId = record.id;
+
+                    // 2. Конвертируем
+                        const imagePaths = await convertPdfToImages(file, recordId, user.email, (progress, text) => {
+                            if (progressBar) {
+                                progressBar.style.width = `${progress}%`;
+                            }
+                        });
+
+                    if (progressBar) {
+                            progressBar.style.width = '100%';
+                        }
+
+                    // 3. Вызываем функцию
+                        const funcRes = await supabaseClient.functions.invoke('pdf-processor', {
+                            body: {
+                                record_id: recordId,
+                                image_paths: imagePaths
+                            }
+                        });
+
+                    if (funcRes.error) throw new Error(funcRes.error.message);
+
+                   // Увеличиваем счетчик загруженных файлов
+                        uploadedFiles++;
+                        uploadedCount.textContent = uploadedFiles;
+
+                        // Помечаем файл как загруженный
+                        if (fileItem) {
+                            fileItem.classList.add('completed', 'downloaded');
+                        }
+
+                    // Обновляем таблицу, но статус будет "задача в работе"
+                        loadExistingFiles();
+
+                } catch (err) {
+                        console.error(err);
+                        STATUS_DIV.innerHTML = `<p style="color: red;">Ошибка при загрузке файла ${file.name}: ${err.message}</p>`;
+                    }
+                }
+            }
+
+            async function convertPdfToImages(file, recordId, userEmail, onProgress) {
+                const arrayBuffer = await file.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                const totalPages = pdf.numPages;
+
+                const imagePaths = [];
+                const baseFolder = `vision_chunks/${recordId}`;
+
+                for (let i = 1; i <= totalPages; i++) {
+                    onProgress(Math.round((i / totalPages) * 100), `Рендер страницы ${i}/${totalPages}...`);
+
+                    const page = await pdf.getPage(i);
+                    const scale = 2.0;
+                    const viewport = page.getViewport({ scale });
+
+                    const canvas = document.createElement('canvas');
+                    canvas.width = viewport.width;
+                    canvas.height = viewport.height;
+                    const ctx = canvas.getContext('2d');
+
+                    await page.render({ canvasContext: ctx, viewport }).promise;
+
+                    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
+
+                    const fileName = `${baseFolder}/page_${i}.jpg`;
+
+                    const { error: uploadErr } = await supabaseClient.storage
+                        .from('pdf_files')
+                        .upload(fileName, blob, {
+                            contentType: 'image/jpeg',
+                            upsert: true
+                        });
+
+                    if (uploadErr) throw new Error(`Upload error page ${i}: ${uploadErr.message}`);
+                    imagePaths.push(fileName);
+                }
+                return imagePaths;
+            }
+
+            // Функция показа уведомления
+            function showNotification(message) {
+                // Создаем элемент уведомления
+                const notification = document.createElement('div');
+                notification.style.position = 'fixed';
+                notification.style.top = '20px';
+                notification.style.right = '20px';
+                notification.style.backgroundColor = '#28a745';
+                notification.style.color = 'white';
+                notification.style.padding = '15px 20px';
+                notification.style.borderRadius = '5px';
+                notification.style.zIndex = '10000';
+                notification.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
+                notification.textContent = message;
+
+                document.body.appendChild(notification);
+
+                // Удаляем уведомление через 3 секунды
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 3000);
+            }
+
+            async function loadExistingFiles() {
+                const { data: files, error } = await supabaseClient
+                    .from('pdf_uploads')
+                    .select('*')
+                    .order('upload_time', { ascending: false });
+
+                if (error) { console.error(error); return; }
+                tableBody.innerHTML = '';
+                if (!files?.length) {
+                    tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center">Нет записей</td></tr>';
+                    return;
+                }
+
+                files.forEach(file => {
+                    const row = document.createElement('tr');
+                    // Показываем кнопку ТОЛЬКО если статус 'парсинг выполнен' И есть путь к файлу
+                    let excelBtn = (file.processing_status === 'парсинг выполнен' && file.excel_path)
+                        ? `<button onclick="window.downloadExcel('${file.excel_path}', '${file.file_name.replace('.pdf', '.xlsx')}')">Excel</button>`
+                        : `<span style="color:#999; font-size:11px;">${file.processing_status || 'в процессе'}</span>`;
+
+                    row.innerHTML = `
+                        <td>${new Date(file.upload_time).toLocaleString()}</td>
+                        <td>${file.user_login}</td>
+                        <td>${file.file_name}</td>
+                        <td>${file.file_size_mb}</td>
+                        <td>${file.upload_status}</td>
+                        <td>${excelBtn}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            }
+        }
+
+        window.downloadExcel = async function(path, name) {
+            const supabaseClient = window.supabaseClient || supabase.createClient("https://ncdwlmgwljjwpuawlssr.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jZHdsbWd3bGpqd3B1YXdsc3NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0NTQxNDksImV4cCI6MjA4MzAzMDE0OX0.rrIznUflWydylTnUZvOxOkeF9eMp91qNN4Bjq2gXRL8");
+            const { data, error } = await supabaseClient.storage.from('excel_outputs').download(path);
+            if (error) return alert("Ошибка скачивания");
+            const url = URL.createObjectURL(data);
+            const a = document.createElement('a'); a.href = url; a.download = name; a.click(); URL.revokeObjectURL(url);
+        };
+    })();
+</script>
