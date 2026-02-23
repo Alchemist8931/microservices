@@ -140,7 +140,7 @@
 
         const createUserForm = document.getElementById('create-user-form');
 
-                if (createUserForm) {
+                        if (createUserForm) {
             createUserForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
 
@@ -154,33 +154,32 @@
                 }
 
                 try {
-                    // 1. Получаем сессию
-                    const sessionResponse = await supabaseClient.auth.getSession();
-                    const session = sessionResponse.data.session;
-                    const sessionError = sessionResponse.error;
+                    // Проверяем, что мы вообще залогинены
+                    const { data: { session } } = await supabaseClient.auth.getSession();
+                    if (!session) {
+                        throw new Error("Вы не авторизованы. Перезайдите в систему.");
+                    }
 
-                    if (sessionError) throw new Error("Ошибка сессии: " + sessionError.message);
-                    if (!session) throw new Error("Сессия не найдена.");
-
-                    // 2. Вызываем функцию, передавая токен В ТЕЛЕ (body)
+                    // Вызываем функцию. Supabase сам подтянет Authorization header из текущей сессии.
                     const { data, error } = await supabaseClient.functions.invoke('create-user', {
                         body: { 
                             email: username, 
-                            password: password,
-                            token: session.access_token // Передаем токен здесь
+                            password: password 
                         }
                     });
 
                     if (error) {
-                        let serverMessage = error.message;
-                        // Пытаемся извлечь детали ошибки
+                        // Выводим ошибку
+                        console.error("Error object:", error);
+                        let msg = error.message;
+                        // Пытаемся достать текст ошибки из ответа, если он есть
                         if (error.context) {
                              try {
-                                const errorBody = await error.context.json();
-                                if (errorBody.error) serverMessage = errorBody.error;
-                             } catch (e) {}
+                                const errBody = await error.context.json();
+                                if (errBody.error) msg = errBody.error;
+                             } catch {}
                         }
-                        throw new Error(serverMessage);
+                        throw new Error(msg);
                     }
 
                     alert('Пользователь успешно создан');
@@ -188,7 +187,7 @@
                     loadUsersList(); 
                 } catch (error) {
                     console.error('Ошибка:', error);
-                    alert('Ошибка: ' + error.message);
+                    alert('Ошибка при создании: ' + error.message);
                 }
             });
         }
