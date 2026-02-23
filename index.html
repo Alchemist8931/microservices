@@ -974,9 +974,10 @@
       }
 
       const uid = data.user.id;
+      // ИСПРАВЛЕНИЕ ЗДЕСЬ: добавлено page_unlock в select
       const { data: profile, error: pErr } = await sb
         .from("app_users")
-        .select("username, role, group_key, admin_balance")
+        .select("username, role, group_key, admin_balance, page_unlock")
         .eq("user_id", uid)
         .single();
 
