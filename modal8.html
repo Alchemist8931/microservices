@@ -155,25 +155,28 @@
                 }
 
                 try {
-                    // Получаем текущую сессию для передачи токена авторизации
-                    const { data: { session } } = await supabaseClient.auth.getSession();
+                    // Явно получаем текущую сессию
+                    const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
                     
-                    if (!session) {
-                        throw new Error('Сессия истекла. Пожалуйста, войдите заново.');
+                    if (sessionError || !session) {
+                        throw new Error('Сессия не найдена. Пожалуйста, перезайдите в систему.');
                     }
 
-                    // Вызываем Edge Function
+                    // Вызываем функцию, ЯВНО передавая токен в заголовках
                     const { data, error } = await supabaseClient.functions.invoke('create-user', {
                         body: JSON.stringify({ 
                             email: username, 
                             password: password 
                         }),
+                        headers: {
+                            Authorization: `Bearer ${session.access_token}`
+                        }
                     });
 
                     if (error) {
-                        // Пытаемся распарсить ошибку от функции
-                        const errData = await error.context.json().catch(() => ({ message: error.message }));
-                        throw new Error(errData.error || errData.message || 'Unknown error');
+                        // Обрабатываем ошибку HTTP ответа
+                        const errorMessage = error.message || 'Unknown error';
+                        throw new Error(errorMessage);
                     }
 
                     alert('Пользователь успешно создан');
