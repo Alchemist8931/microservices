@@ -556,7 +556,7 @@
       <div>
         <p class="chip"><span class="material-symbols-outlined">spark</span> Стартовая страница</p>
         <h1>Управляйте своими рабочими пространствами</h1>
-        <p>Пожалуйста авторизуйтесь, чтобы увидеть панель с доступными для вашей рабочей группы сервисами.</p>
+        <p>Пожалуйста авторизуйтесь, чтобы открыть меню навигации с доступными для вашей рабочей группы сервисами.</p>
       </div>
       <div class="highlights">
         <div class="chip"><span class="material-symbols-outlined">admin_panel_settings</span> Сервис 1</div>
@@ -763,7 +763,7 @@
       authPanel.classList.add("active");
       appShell.classList.remove("active");
       document.body.classList.remove("app-active");
-      authTitle.textContent = tabLogin.classList.contains("active") ? "Вход в панель" : "Регистрация администратора";
+      authTitle.textContent = tabLogin.classList.contains("active") ? "Введите свой логин и пароль" : "Регистрация администратора";
       openAuth.textContent = "Вход";
       balanceTrigger.classList.add("hidden");
       balanceState.isAuthenticated = false;
