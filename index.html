@@ -835,13 +835,13 @@
       const rawGroups = window.currentUserPageUnlock ? window.currentUserPageUnlock.split(',') : [];
       const allowedGroups = rawGroups.map(group => group.trim().toLowerCase());
 
-      if (allowedGroups.includes('group1')) {
+      if (allowedGroups.includes('group1') || allowedGroups.includes('group1')) {
         document.getElementById('group1-nav').style.display = 'grid';
       } else {
         document.getElementById('group1-nav').style.display = 'none';
       }
 
-      if (allowedGroups.includes('group2')) {
+      if (allowedGroups.includes('group2') || allowedGroups.includes('group2')) {
         document.getElementById('group2-nav').style.display = 'grid';
       } else {
         document.getElementById('group2-nav').style.display = 'none';
