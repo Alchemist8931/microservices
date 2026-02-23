@@ -139,7 +139,6 @@
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jZHdsbWd3bGpqd3B1YXdsc3NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0NTQxNDksImV4cCI6MjA4MzAzMDE0OX0.rrIznUflWydylTnUZvOxOkeF9eMp91qNN4Bjq2gXRL8";
         const supabaseClient = window.supabaseClient || supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Форма создания пользователя
         const createUserForm = document.getElementById('create-user-form');
 
         if (createUserForm) {
@@ -156,46 +155,30 @@
                 }
 
                 try {
-                    // Получаем информацию о текущем администраторе
-                    const { data: { user } } = await supabaseClient.auth.getUser();
-                    if (!user) {
-                        throw new Error('Вы не авторизованы');
+                    // Получаем текущую сессию для передачи токена авторизации
+                    const { data: { session } } = await supabaseClient.auth.getSession();
+                    
+                    if (!session) {
+                        throw new Error('Сессия истекла. Пожалуйста, войдите заново.');
                     }
 
-                    // Получаем информацию о текущем администраторе из таблицы app_users
-                    const { data: adminInfo, error: adminError } = await supabaseClient
-                        .from('app_users')
-                        .select('group_key, role')
-                        .eq('user_id', user.id)
-                        .single();
+                    // Вызываем Edge Function
+                    const { data, error } = await supabaseClient.functions.invoke('create-user', {
+                        body: JSON.stringify({ 
+                            email: username, 
+                            password: password 
+                        }),
+                    });
 
-                    if (adminError || !adminInfo || adminInfo.role !== 'admin') {
-                        throw new Error('Только администратор может создавать пользователей');
-                    }
-
-                    // Хэшируем пароль (в реальном приложении используйте более надежное хэширование)
-                    const passwordHash = btoa(password); // Простое кодирование для демонстрации
-
-                    // Создаем нового пользователя в таблице app_users
-                    const { data: newUser, error: insertError } = await supabaseClient
-                        .from('app_users')
-                        .insert([{
-                            group_key: adminInfo.group_key,
-                            role: 'user',  // Роль обычного пользователя
-                            user_id: crypto.randomUUID(), // В реальности Supabase сгенерирует UUID
-                            username: username,
-                            password_hash: passwordHash,
-                            page_unlock: '',  // Пока нет разрешений на страницы
-                            enabled: true   // По умолчанию пользователь активен
-                        }]);
-
-                    if (insertError) {
-                        throw insertError;
+                    if (error) {
+                        // Пытаемся распарсить ошибку от функции
+                        const errData = await error.context.json().catch(() => ({ message: error.message }));
+                        throw new Error(errData.error || errData.message || 'Unknown error');
                     }
 
                     alert('Пользователь успешно создан');
                     document.getElementById('create-user-form').reset();
-                    loadUsersList(); // Обновляем список пользователей
+                    loadUsersList(); 
                 } catch (error) {
                     console.error('Ошибка при создании пользователя:', error);
                     alert('Ошибка при создании пользователя: ' + error.message);
@@ -211,7 +194,6 @@
                     throw new Error('Вы не авторизованы');
                 }
 
-                // Получаем информацию о текущем администраторе
                 const { data: adminInfo, error: adminError } = await supabaseClient
                     .from('app_users')
                     .select('group_key, role')
@@ -222,12 +204,11 @@
                     throw new Error('Только администратор может просматривать список пользователей');
                 }
 
-                // Загружаем всех пользователей этой группы
                 const { data: users, error: usersError } = await supabaseClient
                     .from('app_users')
                     .select('user_id, username, role, enabled, page_unlock')
                     .eq('group_key', adminInfo.group_key)
-                    .neq('role', 'admin'); // Исключаем администраторов
+                    .neq('role', 'admin'); 
 
                 if (usersError) {
                     throw usersError;
@@ -270,7 +251,6 @@
             }
         }
 
-        // Функция переключения статуса пользователя
         window.toggleUserStatus = async function(userId, currentStatus) {
             try {
                 const newStatus = !currentStatus;
@@ -285,14 +265,13 @@
                 }
 
                 alert(`Статус пользователя ${newStatus ? 'активирован' : 'деактивирован'}`);
-                loadUsersList(); // Обновляем список
+                loadUsersList(); 
             } catch (error) {
                 console.error('Ошибка при изменении статуса пользователя:', error);
                 alert('Ошибка при изменении статуса пользователя: ' + error.message);
             }
         };
 
-        // Функция обновления разрешений пользователя
         window.updateUserPermissions = async function(userId, newPermissions) {
             try {
                 const { error } = await supabaseClient
@@ -305,14 +284,13 @@
                 }
 
                 alert('Разрешения пользователя обновлены');
-                loadUsersList(); // Обновляем список
+                loadUsersList(); 
             } catch (error) {
                 console.error('Ошибка при обновлении разрешений пользователя:', error);
                 alert('Ошибка при обновлении разрешений пользователя: ' + error.message);
             }
         };
 
-        // Функция удаления пользователя
         window.deleteUser = async function(userId) {
             if (!confirm('Вы уверены, что хотите удалить этого пользователя?')) {
                 return;
@@ -328,23 +306,21 @@
                     throw error;
                 }
 
-                alert('Пользователь удален');
-                loadUsersList(); // Обновляем список
+                alert('Пользователь удален из таблицы группы');
+                loadUsersList(); 
             } catch (error) {
                 console.error('Ошибка при удалении пользователя:', error);
                 alert('Ошибка при удалении пользователя: ' + error.message);
             }
         };
 
-        // Функция редактирования прав пользователя
         window.editUserPermissions = function(userId, currentPermissions) {
-            const newPermissions = prompt('Введите разрешенные группы через запятую (например, group1,group2):', currentPermissions);
+            const newPermissions = prompt('Введите разрешенные группы через запятую (например, Group1, Group2):', currentPermissions);
             if (newPermissions !== null) {
                 updateUserPermissions(userId, newPermissions);
             }
         };
 
-        // Загружаем список пользователей при загрузке страницы
         loadUsersList();
     })();
 </script>
