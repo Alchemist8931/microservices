@@ -131,6 +131,7 @@
         font-size: 12px;
     }
 </style>
+
 <script>
     (function() {
         const SUPABASE_URL = "https://ncdwlmgwljjwpuawlssr.supabase.co";
@@ -153,40 +154,45 @@
                 }
 
                 try {
-                    // 1. Получаем сессию
-                    const { data: { session } } = await supabaseClient.auth.getSession();
+                    // --- ИСПРАВЛЕНИЕ ПОЛУЧЕНИЯ СЕССИИ ---
+                    // Сначала получаем весь объект ответа
+                    const sessionResponse = await supabaseClient.auth.getSession();
                     
-                    if (sessionError) throw new Error("Ошибка получения сессии: " + sessionError.message);
-                    if (!session) throw new Error("Сессия не найдена. Вы не авторизованы.");
+                    // Проверяем наличие сессии
+                    const session = sessionResponse.data.session;
+                    const sessionError = sessionResponse.error;
 
-                    console.log("TOKEN SENT:", session.access_token); // Для отладки в консоли
+                    if (sessionError) {
+                        throw new Error("Ошибка получения сессии: " + sessionError.message);
+                    }
+                    if (!session) {
+                        throw new Error("Сессия не найдена. Пожалуйста, войдите заново.");
+                    }
 
-                    // 2. Вызываем функцию с явным заголовком
-const response = await supabaseClient.functions.invoke('create-user', {
-    body: { email: username, password: password },
-    headers: {
-        Authorization: `Bearer ${session.access_token}`
-    }
-});
+                    const token = session.access_token;
 
-                    // 3. Обрабатываем ответ вручную, чтобы увидеть детали ошибки
-                    if (response.error) {
-                        console.error("Full error object:", response.error);
-                        
-                        // Пытаемся извлечь сообщение из ответа (context)
-                        let serverMessage = response.error.message;
-                        
-                        if (response.error.context) {
+                    // Вызываем Edge Function
+                    const { data, error } = await supabaseClient.functions.invoke('create-user', {
+                        body: { 
+                            email: username, 
+                            password: password 
+                        },
+                        headers: {
+                            Authorization: `Bearer ${token}`
+                        }
+                    });
+
+                    if (error) {
+                        // Распаковка ошибки
+                        let serverMessage = error.message;
+                        if (error.context) {
                             try {
-                                // Пытаемся прочитать тело ответа как JSON
-                                const errorBody = await response.error.context.json();
-                                console.log("Error body from server:", errorBody);
-                                serverMessage = errorBody.error || serverMessage;
-                            } catch (parseError) {
-                                console.log("Could not parse error body");
+                                const errorBody = await error.context.json();
+                                if (errorBody.error) serverMessage = errorBody.error;
+                            } catch (e) {
+                                console.log("Could not parse error context");
                             }
                         }
-                        
                         throw new Error(serverMessage);
                     }
 
@@ -194,7 +200,7 @@ const response = await supabaseClient.functions.invoke('create-user', {
                     document.getElementById('create-user-form').reset();
                     loadUsersList(); 
                 } catch (error) {
-                    console.error('Финальная ошибка:', error);
+                    console.error('Ошибка при создании:', error);
                     alert('Ошибка: ' + error.message);
                 }
             });
@@ -207,9 +213,14 @@ const response = await supabaseClient.functions.invoke('create-user', {
                 if (!user) throw new Error('Вы не авторизованы');
 
                 const { data: adminInfo, error: adminError } = await supabaseClient
-                    .from('app_users').select('group_key, role').eq('user_id', user.id).single();
+                    .from('app_users')
+                    .select('group_key, role')
+                    .eq('user_id', user.id)
+                    .single();
 
-                if (adminError || !adminInfo || adminInfo.role !== 'admin') throw new Error('Доступ запрещен');
+                if (adminError || !adminInfo || adminInfo.role !== 'admin') {
+                    throw new Error('Доступ запрещен');
+                }
 
                 const { data: users, error: usersError } = await supabaseClient
                     .from('app_users')
@@ -221,6 +232,7 @@ const response = await supabaseClient.functions.invoke('create-user', {
 
                 const usersList = document.getElementById('users-list');
                 usersList.innerHTML = '';
+
                 if (users && users.length > 0) {
                     users.forEach(user => {
                         const userItem = document.createElement('div');
@@ -228,6 +240,7 @@ const response = await supabaseClient.functions.invoke('create-user', {
                         userItem.innerHTML = `
                             <div class="user-info">
                                 <strong>${user.username}</strong><br>
+                                <small>ID: ${user.user_id}</small><br>
                                 <small>Доступ: ${user.page_unlock || 'Нет'}</small>
                             </div>
                             <div class="user-actions">
@@ -242,6 +255,7 @@ const response = await supabaseClient.functions.invoke('create-user', {
                     usersList.innerHTML = '<p>Нет пользователей.</p>';
                 }
             } catch (error) {
+                console.error('Ошибка загрузки списка:', error);
                 document.getElementById('users-list').innerHTML = '<p>Ошибка: ' + error.message + '</p>';
             }
         }
