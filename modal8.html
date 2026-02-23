@@ -140,7 +140,7 @@
 
         const createUserForm = document.getElementById('create-user-form');
 
-        if (createUserForm) {
+                if (createUserForm) {
             createUserForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
 
@@ -154,44 +154,31 @@
                 }
 
                 try {
-                    // --- ИСПРАВЛЕНИЕ ПОЛУЧЕНИЯ СЕССИИ ---
-                    // Сначала получаем весь объект ответа
+                    // 1. Получаем сессию
                     const sessionResponse = await supabaseClient.auth.getSession();
-                    
-                    // Проверяем наличие сессии
                     const session = sessionResponse.data.session;
                     const sessionError = sessionResponse.error;
 
-                    if (sessionError) {
-                        throw new Error("Ошибка получения сессии: " + sessionError.message);
-                    }
-                    if (!session) {
-                        throw new Error("Сессия не найдена. Пожалуйста, войдите заново.");
-                    }
+                    if (sessionError) throw new Error("Ошибка сессии: " + sessionError.message);
+                    if (!session) throw new Error("Сессия не найдена.");
 
-                    const token = session.access_token;
-
-                    // Вызываем Edge Function
+                    // 2. Вызываем функцию, передавая токен В ТЕЛЕ (body)
                     const { data, error } = await supabaseClient.functions.invoke('create-user', {
                         body: { 
                             email: username, 
-                            password: password 
-                        },
-                        headers: {
-                            Authorization: `Bearer ${token}`
+                            password: password,
+                            token: session.access_token // Передаем токен здесь
                         }
                     });
 
                     if (error) {
-                        // Распаковка ошибки
                         let serverMessage = error.message;
+                        // Пытаемся извлечь детали ошибки
                         if (error.context) {
-                            try {
+                             try {
                                 const errorBody = await error.context.json();
                                 if (errorBody.error) serverMessage = errorBody.error;
-                            } catch (e) {
-                                console.log("Could not parse error context");
-                            }
+                             } catch (e) {}
                         }
                         throw new Error(serverMessage);
                     }
@@ -200,7 +187,7 @@
                     document.getElementById('create-user-form').reset();
                     loadUsersList(); 
                 } catch (error) {
-                    console.error('Ошибка при создании:', error);
+                    console.error('Ошибка:', error);
                     alert('Ошибка: ' + error.message);
                 }
             });
