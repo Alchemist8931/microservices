@@ -194,7 +194,7 @@
         }
 
         // ... (Остальной код loadUsersList и функций без изменений) ...
-        async function loadUsersList() {
+         async function loadUsersList() {
             try {
                 const { data: { user } } = await supabaseClient.auth.getUser();
                 if (!user) throw new Error('Вы не авторизованы');
@@ -208,7 +208,8 @@
                     users.forEach(user => {
                         const userItem = document.createElement('div');
                         userItem.className = 'user-item';
-                        userItem.innerHTML = `<div class="user-info"><strong>${user.username}</strong><br><small>Доступ: ${user.page_unlock || 'Нет'}</small></div><div class="user-actions"><button class="toggle-btn ${!user.enabled ? 'inactive' : ''}" onclick="toggleUserStatus('${user.user_id}', ${user.enabled})">${user.enabled ? 'Активен' : 'Неактивен'}</button><button class="permissions-btn" onclick="editUserPermissions('${user.user_id}', '${user.page_unlock || ''}')">Права</button><button class="delete-btn" onclick="deleteUser('${user.user_id}')">Удалить</button></div>`;
+                        // Кнопка "Права" удалена
+                        userItem.innerHTML = `<div class="user-info"><strong>${user.username}</strong><br><small>Доступ: ${user.page_unlock || 'Нет'}</small></div><div class="user-actions"><button class="toggle-btn ${!user.enabled ? 'inactive' : ''}" onclick="toggleUserStatus('${user.user_id}', ${user.enabled})">${user.enabled ? 'Активен' : 'Неактивен'}</button><button class="delete-btn" onclick="deleteUser('${user.user_id}')">Удалить</button></div>`;
                         usersList.appendChild(userItem);
                     });
                 } else { usersList.innerHTML = '<p>Нет пользователей.</p>'; }
