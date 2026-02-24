@@ -153,35 +153,33 @@
                 }
 
                 try {
-                    // 1. Получаем сессию
-                    const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
-                    
-                    if (sessionError) throw new Error("Ошибка сессии: " + sessionError.message);
-                    if (!session) throw new Error("Сессия не найдена. Вы не авторизованы.");
-                    
+                    // 1. Получаем сессию и токен
+                    const { data: { session } } = await supabaseClient.auth.getSession();
+                    if (!session || !session.access_token) {
+                        throw new Error("Сессия не найдена. Пожалуйста, перезайдите.");
+                    }
                     const token = session.access_token;
-                    if (!token) throw new Error("Токен доступа отсутствует в сессии.");
 
-                    // 2. Отправляем запрос
+                    // 2. Вызываем функцию
+                    // ВАЖНО: Добавляем заголовок Authorization, чтобы Gateway пропустил запрос
                     const response = await fetch(`${SUPABASE_URL}/functions/v1/create-user`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'apikey': SUPABASE_ANON_KEY
+                            'apikey': SUPABASE_ANON_KEY,
+                            'Authorization': `Bearer ${token}` // <--- Ключевое исправление
                         },
                         body: JSON.stringify({
                             email: username,
-                            password: password,
-                            token: token // Передаем токен в теле
+                            password: password
+                            // Токен здесь больше не нужен, он идет в заголовке
                         })
                     });
 
                     // 3. Обрабатываем ответ
-                    // Пытаемся прочитать JSON в любом случае (даже при ошибке)
                     const result = await response.json();
 
                     if (!response.ok) {
-                        // Выводим ошибку, которую прислал сервер
                         throw new Error(result.error || `Ошибка сервера: ${response.status}`);
                     }
 
@@ -195,7 +193,7 @@
             });
         }
 
-        // ... (Функции loadUsersList, toggleUserStatus, deleteUser, editUserPermissions остаются без изменений) ...
+        // ... (Остальной код loadUsersList и функций без изменений) ...
         async function loadUsersList() {
             try {
                 const { data: { user } } = await supabaseClient.auth.getUser();
