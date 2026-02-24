@@ -154,26 +154,28 @@
                 }
 
                 try {
-                    // 1. ЯВНО получаем сессию и токен
+                    // 1. Получаем сессию
                     const { data: { session } } = await supabaseClient.auth.getSession();
                     
                     if (!session || !session.access_token) {
-                        throw new Error("Сессия истекла. Пожалуйста, перезайдите в систему.");
+                        throw new Error("Сессия истекла. Пожалуйста, перезайдите.");
                     }
 
-                    const token = session.access_token;
-
-                    // 2. Вызываем функцию, ПЕРЕДАВАЯ ТОКЕН В ТЕЛЕ (body)
+                    // 2. Вызываем функцию с ЯВНЫМ заголовком Authorization
+                    // Используем headers параметр, чтобы гарантировать передачу токена
                     const { data, error } = await supabaseClient.functions.invoke('create-user', {
                         body: { 
                             email: username, 
-                            password: password,
-                            token: token // <--- Ключевое исправление: токен здесь
+                            password: password 
+                        },
+                        headers: {
+                            Authorization: `Bearer ${session.access_token}`
                         }
                     });
 
                     if (error) {
                         let msg = error.message;
+                        // Пытаемся извлечь текст ошибки из ответа сервера
                         if (error.context) {
                              try {
                                 const errBody = await error.context.json();
@@ -193,7 +195,7 @@
             });
         }
 
-        // Загрузка списка пользователей
+        // ... (Остальной код loadUsersList и прочих функций оставляем без изменений) ...
         async function loadUsersList() {
             try {
                 const { data: { user } } = await supabaseClient.auth.getUser();
