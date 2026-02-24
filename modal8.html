@@ -154,16 +154,21 @@
                 }
 
                 try {
-                    // Проверяем сессию (для уверенности, что пользователь залогинен)
+                    // 1. ЯВНО получаем сессию и токен
                     const { data: { session } } = await supabaseClient.auth.getSession();
-                    if (!session) throw new Error("Сессия не найдена.");
+                    
+                    if (!session || !session.access_token) {
+                        throw new Error("Сессия истекла. Пожалуйста, перезайдите в систему.");
+                    }
 
-                    // ВЫЗЫВАЕМ ФУНКЦИЮ БЕЗ ЯВНОЙ ПЕРЕДАЧИ ТОКЕНА
-                    // Supabase SDK сам подставит заголовок Authorization
+                    const token = session.access_token;
+
+                    // 2. Вызываем функцию, ПЕРЕДАВАЯ ТОКЕН В ТЕЛЕ (body)
                     const { data, error } = await supabaseClient.functions.invoke('create-user', {
                         body: { 
                             email: username, 
-                            password: password 
+                            password: password,
+                            token: token // <--- Ключевое исправление: токен здесь
                         }
                     });
 
@@ -188,7 +193,7 @@
             });
         }
 
-        // Загрузка списка пользователей (без изменений)
+        // Загрузка списка пользователей
         async function loadUsersList() {
             try {
                 const { data: { user } } = await supabaseClient.auth.getUser();
