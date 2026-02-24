@@ -140,7 +140,7 @@
 
         const createUserForm = document.getElementById('create-user-form');
 
-                               if (createUserForm) {
+        if (createUserForm) {
             createUserForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
 
@@ -154,22 +154,19 @@
                 }
 
                 try {
-                    // 1. Явно получаем сессию
+                    // 1. Получаем сессию
                     const { data: { session } } = await supabaseClient.auth.getSession();
                     
                     if (!session) {
                         throw new Error("Сессия не найдена. Пожалуйста, перезайдите в систему.");
                     }
 
-                    // 2. Вызываем функцию с ЯВНЫМ заголовком Authorization
+                    // 2. Вызываем функцию, передавая токен В ТЕЛЕ запроса
                     const { data, error } = await supabaseClient.functions.invoke('create-user', {
                         body: { 
                             email: username, 
-                            password: password 
-                        },
-                        headers: {
-                            // Мы вручную вставляем токен в заголовок
-                            Authorization: `Bearer ${session.access_token}`
+                            password: password,
+                            token: session.access_token // Передаем токен здесь
                         }
                     });
 
