@@ -846,33 +846,43 @@
     }
 
     // Check if page is allowed for current user
+        // Check if page is allowed for current user
     function isPageAllowed(pageGroup) {
       if (!pageGroup) return false;
-      // Group0 is always accessible to admins
-      if (pageGroup === 'group0') return true;
+      
+      // Group0 доступна ТОЛЬКО администраторам
+      if (pageGroup === 'group0') {
+        return window.currentUserRole === 'admin';
+      }
 
-      // Convert the format from Supabase (Group0, Group1, Group2) to lowercase (group0, group1, group2)
+      // Для остальных групп проверяем page_unlock
       const rawGroups = window.currentUserPageUnlock ? window.currentUserPageUnlock.split(',') : [];
       const allowedGroups = rawGroups.map(group => group.trim().toLowerCase());
       return allowedGroups.includes(pageGroup);
     }
 
     // Update navigation based on user permissions
+        // Update navigation based on user permissions
     function updateNavigationVisibility() {
-      // Show Group0 by default
-      document.getElementById('group0-nav').style.display = 'grid';
+      // Group0 видна только администраторам
+      const group0Nav = document.getElementById('group0-nav');
+      if (window.currentUserRole === 'admin') {
+        group0Nav.style.display = 'grid';
+      } else {
+        group0Nav.style.display = 'none';
+      }
 
-      // Convert the format from Supabase (Group0, Group1, Group2) to lowercase (group0, group1, group2)
+      // Логика для Group1 и Group2
       const rawGroups = window.currentUserPageUnlock ? window.currentUserPageUnlock.split(',') : [];
       const allowedGroups = rawGroups.map(group => group.trim().toLowerCase());
 
-      if (allowedGroups.includes('group1') || allowedGroups.includes('group1')) {
+      if (allowedGroups.includes('group1')) {
         document.getElementById('group1-nav').style.display = 'grid';
       } else {
         document.getElementById('group1-nav').style.display = 'none';
       }
 
-      if (allowedGroups.includes('group2') || allowedGroups.includes('group2')) {
+      if (allowedGroups.includes('group2')) {
         document.getElementById('group2-nav').style.display = 'grid';
       } else {
         document.getElementById('group2-nav').style.display = 'none';
@@ -1004,7 +1014,6 @@
       }
 
       const uid = data.user.id;
-      // ИСПРАВЛЕНИЕ ЗДЕСЬ: добавлено page_unlock в select
       const { data: profile, error: pErr } = await sb
         .from("app_users")
         .select("username, role, group_key, admin_balance, page_unlock")
@@ -1020,8 +1029,9 @@
       balanceState.balance = Number(profile.admin_balance || 0);
       balanceState.topups = [];
 
-      // Store the original page unlock string without modification
+      // Сохраняем права и РОЛЬ
       window.currentUserPageUnlock = profile.page_unlock || '';
+      window.currentUserRole = profile.role; // <--- ДОБАВЛЕНО
 
       showApp(profile.username || username);;
       e.target.reset();
